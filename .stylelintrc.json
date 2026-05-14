@@ -1,0 +1,42 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Use design tokens (CSS variables) instead of raw hex colors. See globals.css.",
+        "severity": "warning"
+      }
+    ],
+    "declaration-property-value-disallowed-list": {
+      "color": ["/^rgb\\(/", "/^rgba\\(/"],
+      "background-color": ["/^rgb\\(/", "/^rgba\\(/"],
+      "/^border/": ["/^rgb\\(/", "/^rgba\\(/"]
+    },
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "apply",
+          "variants",
+          "responsive",
+          "screen",
+          "theme",
+          "custom-variant",
+          "import",
+          "layer"
+        ]
+      }
+    ],
+    "import-notation": null,
+    "no-empty-source": null,
+    "selector-class-pattern": null
+  },
+  "ignoreFiles": [
+    "node_modules/**/*",
+    ".next/**/*",
+    "out/**/*",
+    ".vercel/**/*"
+  ]
+}

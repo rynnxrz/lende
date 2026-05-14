@@ -14,6 +14,7 @@ import type {
     StagingImportEvent,
 } from '@/types'
 import { requireAdmin } from '@/lib/auth/guards'
+import { BRAND_NAME, BRAND_PRODUCT_LOOKUP_DOMAIN } from '@/lib/constants/brand'
 import {
     createCharacterSummary,
     inferCharacterFamilyFromText,
@@ -3666,7 +3667,10 @@ function scoreWebsiteMatch(item: {
 }
 
 async function fetchWebsiteSuggestions(query: string): Promise<ShopifySearchProduct[]> {
-    const searchUrl = new URL('https://ivyjstudio.com/search/suggest.json')
+    if (!BRAND_PRODUCT_LOOKUP_DOMAIN) {
+        return []
+    }
+    const searchUrl = new URL(`https://${BRAND_PRODUCT_LOOKUP_DOMAIN}/search/suggest.json`)
     searchUrl.searchParams.set('q', query)
     searchUrl.searchParams.set('resources[type]', 'product')
     searchUrl.searchParams.set('resources[limit]', '8')
@@ -3707,7 +3711,7 @@ export async function runWebsiteMatchAction(batchIds: string[]): Promise<{
         await logImportEvent(supabase, {
             batchId,
             step: 'website_match',
-            message: 'Checking the Ivy J Studio website for matching photos and links.',
+            message: `Checking the ${BRAND_NAME} website for matching photos and links.`,
         })
 
         const { data: items, error } = await supabase
@@ -3773,7 +3777,9 @@ export async function runWebsiteMatchAction(batchIds: string[]): Promise<{
                 .filter(issue => issue !== 'website_match')
             const websiteUrl = bestMatch.candidate.url?.startsWith('http')
                 ? bestMatch.candidate.url
-                : `https://ivyjstudio.com${bestMatch.candidate.url || ''}`
+                : (BRAND_PRODUCT_LOOKUP_DOMAIN
+                    ? `https://${BRAND_PRODUCT_LOOKUP_DOMAIN}${bestMatch.candidate.url || ''}`
+                    : (bestMatch.candidate.url || ''))
             const websiteDescription = stripHtml(bestMatch.candidate.body || '')
             const imageUrl = bestMatch.candidate.featured_image?.url || null
 

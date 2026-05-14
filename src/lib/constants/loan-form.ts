@@ -1,3 +1,25 @@
+/**
+ * Loan-form copy & legal document structure.
+ *
+ * Brand-specific strings (studio name, instagram, contact) are read from
+ * src/lib/constants/brand.ts (env-driven). For the legacy single-tenant
+ * deployment, set NEXT_PUBLIC_BRAND_* env vars to render the studio's
+ * branded loan form. Default fallback = 'lende' / D1 product name.
+ *
+ * BRIEF-07 — brand-name string scrub（2026-05-02）
+ * BRIEF-03 follow-up: when org context lands, replace these constants with
+ * a function that takes (organization) and returns a per-tenant document.
+ */
+
+import {
+  BRAND_NAME,
+  BRAND_NAME_UPPER,
+  BRAND_INSTAGRAM,
+  BRAND_CONTACT_EMAIL,
+  BRAND_PHONE,
+  BRAND_ADDRESS_LINES,
+} from './brand'
+
 export const IVY_PAYMENT_CONTEXT_COPY =
   'Action Required: Review Agreement & Confirm Payment. Please transfer the total amount to the bank account below, review the rental terms, and provide your signature to secure your reservation. Items will only be dispatched after payment is received.'
 
@@ -7,8 +29,21 @@ export const IVY_BANK_DETAILS = {
   accountNumber: '12138',
 } as const
 
-export const IVY_LOAN_FORM_DOCUMENT = {
-  brand: 'IVY J STUDIO',
+type LoanFormSection = {
+  readonly title: string
+  readonly bullets: readonly string[]
+}
+
+type LoanFormDocument = {
+  readonly brand: string
+  readonly title: string
+  readonly sections: readonly LoanFormSection[]
+  readonly fields: readonly string[]
+  readonly contactLines: readonly string[]
+}
+
+export const IVY_LOAN_FORM_DOCUMENT: LoanFormDocument = {
+  brand: BRAND_NAME_UPPER,
   title: 'LOAN FORM',
   sections: [
     {
@@ -29,7 +64,7 @@ export const IVY_LOAN_FORM_DOCUMENT = {
     {
       title: '3.Immediate Damage Notification:',
       bullets: [
-        'Ivy J Studio must be informed immediately of any damage, loss, or issue affecting the loaned items during the loan period.',
+        `${BRAND_NAME} must be informed immediately of any damage, loss, or issue affecting the loaned items during the loan period.`,
       ],
     },
     {
@@ -41,27 +76,27 @@ export const IVY_LOAN_FORM_DOCUMENT = {
     {
       title: '5.Signed Documentation:',
       bullets: [
-        'All loan documentation must be signed and returned to Ivy J Studio before the pieces are collected.',
+        `All loan documentation must be signed and returned to ${BRAND_NAME} before the pieces are collected.`,
       ],
     },
     {
       title: '6.Design Credit:',
       bullets: [
         'All headpieces used must be credited correctly in both print and digital formats.',
-        'Credit must appear as: Ivy J Studio\nInstagram handle: @ivyjstudio.',
+        `Credit must appear as: ${BRAND_NAME}\nInstagram handle: @${BRAND_INSTAGRAM}.`,
       ],
     },
     {
       title: '7.Image Sharing:',
       bullets: [
-        'Any behind-the-scenes imagery or final published images featuring Ivy J Studio pieces should be shared with the designer for archival and promotional purposes.',
+        `Any behind-the-scenes imagery or final published images featuring ${BRAND_NAME} pieces should be shared with the designer for archival and promotional purposes.`,
       ],
     },
     {
       title: '8. Pricing:',
       bullets: [
-        'Rental pricing is outlined in a separate Ivy J Studio Rental Pricing List. Please refer to the pricing form for detailed rental rates.',
-        'Rental fees and/or security deposits may apply and are subject to the discretion of Ivy J Studio. Any applicable charges will be confirmed prior to the loan period',
+        `Rental pricing is outlined in a separate ${BRAND_NAME} Rental Pricing List. Please refer to the pricing form for detailed rental rates.`,
+        `Rental fees and/or security deposits may apply and are subject to the discretion of ${BRAND_NAME}. Any applicable charges will be confirmed prior to the loan period`,
       ],
     },
   ],
@@ -73,13 +108,11 @@ export const IVY_LOAN_FORM_DOCUMENT = {
     'Stylist Signature:',
   ],
   contactLines: [
-    'ivyjstudiolondon@gmail.com',
-    '07411955466',
-    '334 Queenstown Rd',
-    'London',
-    'SW11 8NP',
-  ],
-} as const
+    BRAND_CONTACT_EMAIL,
+    BRAND_PHONE,
+    ...BRAND_ADDRESS_LINES,
+  ].filter((line): line is string => Boolean(line)),
+}
 
 export const IVY_LOAN_FORM_ACCEPTANCE_NOTE =
-  'Customer confirmed bank transfer and accepted the Ivy J Studio Loan Form Terms & Conditions via the payment confirmation page.'
+  `Customer confirmed bank transfer and accepted the ${BRAND_NAME} Loan Form Terms & Conditions via the payment confirmation page.`

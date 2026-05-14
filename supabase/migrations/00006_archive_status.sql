@@ -4,7 +4,24 @@
 -- ============================================================
 
 -- 1. Add 'archived' to the reservation_status ENUM type
-ALTER TYPE reservation_status ADD VALUE IF NOT EXISTS 'archived';
+-- 2026-05-07 patch (BRIEF-47 §7.3 unblock): 00001 把 reservations.status 定为 TEXT+CHECK，
+-- 原 ALTER 假设 ENUM 存在是错的——ENUM 实际在 prod Supabase dashboard 手动创建（参 00058 注释）。
+-- 干净本地 db 跑此行会撞 "type reservation_status does not exist"。后续 00039 重建 ENUM（含 archived
+-- compat 路径）+ 00058 codify 新 7-value enum，'archived' 在新 schema 已不使用。
+-- 故改为 idempotent guard：type 存在则 best-effort ADD VALUE；不存在则 NO-OP（00039+00058 接管）。
+-- prod schema_migrations 已记录本 migration 跑过，不会重跑——本改动只影响本地干净 db。
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'reservation_status') THEN
+    BEGIN
+      EXECUTE 'ALTER TYPE reservation_status ADD VALUE IF NOT EXISTS ''archived''';
+    EXCEPTION WHEN OTHERS THEN
+      RAISE NOTICE '[00006] ALTER TYPE skipped: %', SQLERRM;
+    END;
+  ELSE
+    RAISE NOTICE '[00006] reservation_status ENUM not yet created — skip ADD VALUE (00039+00058 接管)';
+  END IF;
+END$$;
 
 -- 2. Create restore_reservation RPC function
 -- Attempts to restore an archived reservation to 'confirmed' status

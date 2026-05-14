@@ -49,23 +49,44 @@
 :root {
   color-scheme: light dark;
   --radius: 0.625rem;
+  /* sRGB hex fallbacks for older Safari < 15.4 / Chromium < 111 (M-01).
+     Two declarations per token: hex first, then oklch(). Browsers without
+     oklch() support keep the first; modern browsers override with oklch(). */
+  --background: #ffffff;
   --background: oklch(1 0 0);
+  --foreground: #0f172a;
   --foreground: oklch(0.129 0.042 264.695);
+  --card: #ffffff;
   --card: oklch(1 0 0);
+  --card-foreground: #0f172a;
   --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: #ffffff;
   --popover: oklch(1 0 0);
+  --popover-foreground: #0f172a;
   --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: #1e293b;
   --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: #f8fafc;
   --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: #f1f5f9;
   --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: #1e293b;
   --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: #f1f5f9;
   --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: #64748b;
   --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: #f1f5f9;
   --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: #1e293b;
   --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: #dc2626;
   --destructive: oklch(0.577 0.245 27.325);
+  --border: #e2e8f0;
   --border: oklch(0.929 0.013 255.508);
+  --input: #e2e8f0;
   --input: oklch(0.929 0.013 255.508);
+  --ring: #94a3b8;
   --ring: oklch(0.704 0.04 256.788);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -116,13 +137,76 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* Follow system dark/light preference (no JS, no class toggle).
+ * Reuses .dark token values so .dark class override still works for
+ * future per-component theming (e.g. admin panel light-only). */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: oklch(0.129 0.042 264.695);
+    --foreground: oklch(0.984 0.003 247.858);
+    --card: oklch(0.208 0.042 265.755);
+    --card-foreground: oklch(0.984 0.003 247.858);
+    --popover: oklch(0.208 0.042 265.755);
+    --popover-foreground: oklch(0.984 0.003 247.858);
+    --primary: oklch(0.929 0.013 255.508);
+    --primary-foreground: oklch(0.208 0.042 265.755);
+    --secondary: oklch(0.279 0.041 260.031);
+    --secondary-foreground: oklch(0.984 0.003 247.858);
+    --muted: oklch(0.279 0.041 260.031);
+    --muted-foreground: oklch(0.704 0.04 256.788);
+    --accent: oklch(0.279 0.041 260.031);
+    --accent-foreground: oklch(0.984 0.003 247.858);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.551 0.027 264.364);
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.208 0.042 265.755);
+    --sidebar-foreground: oklch(0.984 0.003 247.858);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+    --sidebar-accent: oklch(0.279 0.041 260.031);
+    --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.551 0.027 264.364);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
 
+  html {
+    scroll-padding-top: 64px;
+  }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* M-14: global :focus-visible outline. Applies to any element that becomes
+     keyboard-focused without a more specific focus style overriding it. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* L-10 (bonus): respect prefers-reduced-motion. Disables long animations and
+   smooth scroll for users who opt out of motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -38,6 +38,7 @@ import {
   IVY_BANK_DETAILS,
   IVY_LOAN_FORM_DOCUMENT,
 } from '@/lib/constants/loan-form'
+import { BRAND_NAME } from '@/lib/constants/brand'
 
 interface PaymentConfirmationLineItem {
   id: string
@@ -156,7 +157,7 @@ function LoanFormDetailsSection({
           Confirmed Loan Details
         </p>
         <p className="mt-1 text-sm text-slate-600">
-          These fields are system-rendered from Ivy J Studio&apos;s confirmed reservation record.
+          These fields are system-rendered from {BRAND_NAME}&apos;s confirmed reservation record.
         </p>
       </div>
       <div className="grid gap-px overflow-hidden rounded-xl border border-slate-300 bg-slate-300 md:grid-cols-2">
@@ -245,7 +246,7 @@ function LoanFormDocumentSection({
             Terms & Conditions
           </p>
           <p className="mt-1 text-sm text-slate-600">
-            Review the complete Ivy J Studio loan form before signing.
+            Review the complete {BRAND_NAME} loan form before signing.
           </p>
         </div>
         <ScrollArea
@@ -376,7 +377,7 @@ export default function PaymentConfirmationClient({
           </h2>
           <p className="mt-2 text-sm leading-6 text-emerald-900">
             Invoice <span className="font-semibold">{invoiceNumber}</span> has been recorded.
-            Ivy J Studio will review the transfer and dispatch the items once payment is verified.
+            {BRAND_NAME} will review the transfer and dispatch the items once payment is verified.
           </p>
         </CardContent>
       </Card>
@@ -595,7 +596,7 @@ export default function PaymentConfirmationClient({
                     className="mt-1 h-4 w-4 rounded border-slate-300 accent-slate-900"
                   />
                   <span>
-                    I have read and agree to the Ivy J Studio Loan Form Terms & Conditions.
+                    I have read and agree to the {BRAND_NAME} Loan Form Terms & Conditions.
                   </span>
                 </label>
               </div>

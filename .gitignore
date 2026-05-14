@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/test-results
+/.playwright-cli/
 
 # next.js
 /.next/
@@ -23,6 +25,7 @@
 # misc
 .DS_Store
 *.pem
+/output/pdf/
 
 # debug
 npm-debug.log*
@@ -32,6 +35,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -40,5 +44,29 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# supabase local runtime state
+/supabase/.temp/
+
 # sensitive docs
 rules.txt
+
+# personal / temp files
+interview-prep-*.md
+*面试准备包*.md
+saas-conversion-roadmap.md
+lh.html
+src/app/_test_mv.tmp
+src/test_write_perm.tmp
+
+# agent / tool artifacts
+.agent/
+.claude/
+.venv-lookbook/
+outputs/
+
+# BRIEF-53 spike (real SKU snapshot + intermediate JPEGs — never commit)
+/scripts/spike-vision-ocr/output/
+/scripts/spike-vision-ocr/inventory-snapshot.json
+# samples/ folder is a v1 artifact that mirrors docs/2026SS.pdf + docs/Ivy J Studio Pricing List.pdf
+# (sandbox couldn't delete it during the v1→v2 retraction; safe to ignore + remove on next clean checkout)
+/scripts/spike-vision-ocr/samples/

@@ -24,26 +24,42 @@ import {
     SheetTrigger,
     SheetTitle
 } from "@/components/ui/sheet"
+import { OrgSwitcher, type OrgSwitcherMembership } from './OrgSwitcher'
 
-const navItems = [
+const navItems: { href: string; label: string; icon: typeof LayoutDashboard; tour?: string }[] = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/items', label: 'Items', icon: Package },
-    { href: '/admin/reservations', label: 'Reservations', icon: Calendar },
-    { href: '/admin/invoices', label: 'Invoices', icon: FileText },
-    { href: '/admin/customers', label: 'Customers', icon: Users },
+    { href: '/admin/items', label: 'Items', icon: Package, tour: 'listings' },
+    { href: '/admin/reservations', label: 'Reservations', icon: Calendar, tour: 'reservations' },
+    { href: '/admin/invoices', label: 'Invoices', icon: FileText, tour: 'lookbook' },
+    { href: '/admin/customers', label: 'Customers', icon: Users, tour: 'team' },
 ]
 
 
-/* 
+/*
   SIDEBAR LOGIC:
   - Mobile (< md): Hidden by default. Toggle button fixed top-right. Opens Sheet.
-  - Desktop (>= md): Fixed left, full height. 
+  - Desktop (>= md): Fixed left, full height.
     - Default width: w-16 (collapsed).
     - Hover: w-64 (expanded).
     - Content in layout must have md:pl-16.
+  - Top section: OrgSwitcher (BRIEF-63) when org context is supplied;
+    legacy "Ivy's Rental" brand header otherwise. The legacy
+    `src/app/admin/layout.tsx` route (out of scope per BRIEF-63 file
+    boundaries) still renders <Sidebar /> without props, so all three
+    org props remain optional.
 */
 
-export const Sidebar = () => {
+export interface SidebarProps {
+    currentOrg?: { id: string; slug: string; name: string }
+    currentRole?: string
+    memberships?: OrgSwitcherMembership[]
+}
+
+export const Sidebar = ({
+    currentOrg,
+    currentRole,
+    memberships,
+}: SidebarProps) => {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
@@ -56,6 +72,45 @@ export const Sidebar = () => {
     }
 
     const closeMobileMenu = () => setIsMobileOpen(false)
+
+    // BRIEF-63 — render the OrgSwitcher only when the caller supplied
+    // org context (the new `/[slug]/admin/layout.tsx` does). The legacy
+    // `/admin/layout.tsx` mounts <Sidebar /> bare and keeps the old
+    // brand header so IVYJSTUDIO's production deployment is untouched.
+    const hasOrgContext =
+        !!currentOrg &&
+        typeof currentRole === 'string' &&
+        Array.isArray(memberships)
+
+    const renderTopSlot = (expanded: boolean) => {
+        if (hasOrgContext) {
+            return (
+                <OrgSwitcher
+                    currentOrg={currentOrg!}
+                    currentRole={currentRole!}
+                    memberships={memberships!}
+                    expanded={expanded}
+                />
+            )
+        }
+        return (
+            <div
+                className={cn(
+                    'flex h-12 items-center px-4',
+                    !expanded && 'justify-center px-0',
+                )}
+            >
+                <span
+                    className={cn(
+                        'text-lg font-semibold text-slate-900 whitespace-nowrap transition-opacity',
+                        expanded ? 'opacity-100 delay-200' : 'opacity-0',
+                    )}
+                >
+                    Ivy&apos;s Rental
+                </span>
+            </div>
+        )
+    }
 
     // Navigation Item Renderer (Reused)
     const renderNavItems = (expanded: boolean, onClick?: () => void) => (
@@ -70,6 +125,7 @@ export const Sidebar = () => {
                         href={item.href}
                         onClick={onClick}
                         title={!expanded ? item.label : undefined}
+                        data-tour={item.tour}
                         className={cn(
                             'flex items-center rounded-lg py-2 text-sm font-medium transition-colors whitespace-nowrap',
                             !expanded ? 'justify-center px-2' : 'gap-3 px-3',
@@ -107,8 +163,8 @@ export const Sidebar = () => {
                     <SheetContent side="left" className="w-64 p-0 bg-slate-50 border-r-slate-200">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         <div className="flex h-full flex-col">
-                            <div className="flex h-16 items-center px-6 border-b border-slate-200 bg-white">
-                                <span className="text-lg font-semibold text-slate-900">Ivy&apos;s Rental</span>
+                            <div className="border-b border-slate-200 bg-white py-3">
+                                {renderTopSlot(true)}
                             </div>
 
                             {renderNavItems(true, closeMobileMenu)}
@@ -147,16 +203,9 @@ export const Sidebar = () => {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                {/* Header */}
-                <div className="flex h-16 items-center px-4" style={{ width: '240px' }}>
-                    <span
-                        className={cn(
-                            "text-lg font-bold text-slate-900 whitespace-nowrap transition-opacity",
-                            isHovered ? "opacity-100 delay-200" : "opacity-0"
-                        )}
-                    >
-                        Ivy&apos;s Rental
-                    </span>
+                {/* Top slot — OrgSwitcher when org context supplied, legacy brand header otherwise */}
+                <div className="py-3" style={{ width: '240px' }}>
+                    {renderTopSlot(isHovered)}
                 </div>
 
                 <Separator className="bg-slate-200/50" />
@@ -173,6 +222,7 @@ export const Sidebar = () => {
                                     key={item.href}
                                     href={item.href}
                                     title={!isHovered ? item.label : undefined}
+                                    data-tour={item.tour}
                                     className={cn(
                                         'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
                                         isActive
@@ -204,6 +254,7 @@ export const Sidebar = () => {
                     <Link
                         href="/admin/settings"
                         title={!isHovered ? 'Settings' : undefined}
+                        data-tour="settings"
                         className={cn(
                             'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
                             pathname === '/admin/settings'

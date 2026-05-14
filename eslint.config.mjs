@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // BRIEF-40: exclude non-built reference artifacts and tracker exports
+    // from src lint — they are not bundled or shipped to prod.
+    "tracker/**",
+    "docs/**",
+    "e2e/**",
+    "scripts/**",
+    "supabase/.temp/**",
   ]),
 ]);
 

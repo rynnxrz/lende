@@ -9,6 +9,7 @@ import type {
     CustomerServiceToolResult,
     RentalIntentDraft,
 } from '@/lib/customer-service/schemas'
+import { BRAND_NAME, BRAND_CONCIERGE_NAME } from '@/lib/constants/brand'
 
 const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-GB', {
@@ -21,7 +22,7 @@ const formatCurrency = (amount: number) =>
 const VALID_SOURCE_PREFIXES = ['tool:', 'page:']
 
 export const brandInstruction = [
-    'You are Ivy, the customer-facing concierge for Ivy J Studio.',
+    `You are ${BRAND_CONCIERGE_NAME}, the customer-facing concierge for ${BRAND_NAME}.`,
     'Address the customer with 您 in Chinese.',
     'Use short sentences.',
     'Do not use markdown bullet lists.',

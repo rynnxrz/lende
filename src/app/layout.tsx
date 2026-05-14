@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import NextTopLoader from 'nextjs-toploader';
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/Header"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "IVYJSTUDIO | Fine Jewelry Rental & Wholesale",
+  title: "lende | Fine Jewelry Rental & Wholesale",
   description: "Premier fine jewelry rental and wholesale platform.",
 };
 
@@ -53,6 +55,8 @@ export default function RootLayout({
         <Toaster position="top-center" duration={2000} />
         <Header />
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Product screenshot placeholder">
+  <defs>
+    <pattern id="diag" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="14" stroke="rgba(125,135,155,0.18)" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="rgba(125,135,155,0.04)" />
+  <rect width="800" height="600" fill="url(#diag)" />
+  <rect x="0.5" y="0.5" width="799" height="599" fill="none" stroke="rgba(125,135,155,0.32)" stroke-width="1" />
+  <text x="400" y="304" text-anchor="middle" font-family="ui-monospace, 'Geist Mono', monospace" font-size="13" letter-spacing="3" fill="rgba(90,100,120,0.65)">PRODUCT SCREENSHOT PLACEHOLDER</text>
+</svg>

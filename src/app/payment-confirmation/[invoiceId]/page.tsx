@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import PaymentConfirmationClient from './PaymentConfirmationClient'
 import { fetchPaymentConfirmationData } from '@/lib/invoice/document'
 import { IVY_PAYMENT_CONTEXT_COPY } from '@/lib/constants/loan-form'
+import { BRAND_NAME } from '@/lib/constants/brand'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +37,7 @@ export default async function PaymentConfirmationPage({ params }: PageProps) {
         {invoice.contractDetails.hasDateModification && (
           <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 shadow-sm">
             <p className="text-sm font-medium leading-6 text-amber-950">
-              ⚠️ Important Update: Ivy J Studio has modified your requested rental dates based on
+              ⚠️ Important Update: {BRAND_NAME} has modified your requested rental dates based on
               availability. Please carefully review the Confirmed Loan Details below before signing.
             </p>
           </div>

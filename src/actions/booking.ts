@@ -3,6 +3,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { RESERVATION_STATUSES } from '@/lib/constants/reservation-status'
+import { track } from '@/lib/analytics/track'
 import {
     buildReservationContractMetadata,
     isMissingReservationContractColumnsError,
@@ -173,6 +174,15 @@ export async function createGuestBooking(data: GuestBookingData) {
     if (reservationError) {
         console.error('Reservation creation failed:', reservationError)
         return { error: 'Failed to create reservation' }
+    }
+
+    // Check if this is the org's first reservation
+    const { count } = await supabase
+        .from('reservations')
+        .select('id', { count: 'exact', head: true })
+
+    if (count === 1) {
+        track('first_reservation_created', { item_id: data.item_id })
     }
 
     revalidatePath(`/catalog/${data.item_id}`)
