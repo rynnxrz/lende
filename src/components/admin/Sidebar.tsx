@@ -42,11 +42,12 @@ const navSuffixes: { suffix: string; label: string; icon: typeof LayoutDashboard
     - Default width: w-16 (collapsed).
     - Hover: w-64 (expanded).
     - Content in layout must have md:pl-16.
-  - Top section: OrgSwitcher (BRIEF-63) when org context is supplied;
-    legacy "Ivy's Rental" brand header otherwise. The legacy
-    `src/app/admin/layout.tsx` route (out of scope per BRIEF-63 file
-    boundaries) still renders <Sidebar /> without props, so all three
-    org props remain optional.
+  - Top section: OrgSwitcher when org context (currentOrg + currentRole
+    + memberships) is supplied; legacy brand header otherwise. Both the
+    `/admin/layout.tsx` and `/[slug]/admin/layout.tsx` route trees feed
+    the OrgSwitcher when they can resolve the current org. The bare
+    `<Sidebar />` no-context branch remains for the legacy-admin
+    fallback path (profiles.role === 'admin' with no org membership).
 */
 
 export interface SidebarProps {
@@ -82,10 +83,10 @@ export const Sidebar = ({
 
     const closeMobileMenu = () => setIsMobileOpen(false)
 
-    // BRIEF-63 — render the OrgSwitcher only when the caller supplied
-    // org context (the new `/[slug]/admin/layout.tsx` does). The legacy
-    // `/admin/layout.tsx` mounts <Sidebar /> bare and keeps the old
-    // brand header so IVYJSTUDIO's production deployment is untouched.
+    // Render the OrgSwitcher whenever the caller supplied org context.
+    // Both `/admin/layout.tsx` and `/[slug]/admin/layout.tsx` feed it
+    // now; the bare-Sidebar fallback only applies to the rare
+    // legacy-admin path (profiles.role === 'admin', no membership).
     const hasOrgContext =
         !!currentOrg &&
         typeof currentRole === 'string' &&

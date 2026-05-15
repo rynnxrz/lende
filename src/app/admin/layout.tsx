@@ -6,17 +6,20 @@ import { EmailVerificationBanner } from '@/components/EmailVerificationBanner'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 
 /**
- * BRIEF-05 — Admin layout extended with:
+ * Admin layout for the root `/admin/*` route tree (default-org via
+ * middleware rewrite from `/{DEFAULT_ORG}/admin/*`).
+ *
  *   - EmailVerificationBanner (visible until email_confirmed_at is set)
  *   - OnboardingWizard (rendered only when ?onboarding=1, hydrated by
  *     reading organizations.settings.onboarding.step)
+ *   - Sidebar with OrgSwitcher when org context is resolvable from the
+ *     `x-org-slug` header. Mirrors the `[slug]/admin/layout.tsx` so
+ *     the OrgSwitcher dropdown is consistent across both route trees.
  *
- * The legacy single-tenant admin guard (`profiles.role = 'admin'`) is
- * preserved as the primary check; for the new per-org members table we
- * also accept `owner` / `admin` membership in the org resolved from the
- * `x-org-slug` header (set by middleware on tenant rewrites). This
- * keeps the IVYJSTUDIO production deployment working unchanged while
- * letting fresh signups land here.
+ * Authorization: per-org membership (owner/admin) is the primary path;
+ * legacy `profiles.role === 'admin'` remains as a fallback so any
+ * pre-multi-tenant admin user can still reach the page (the bare
+ * <Sidebar /> branch handles that case without org context).
  */
 export default async function AdminLayout({
     children,
@@ -34,8 +37,8 @@ export default async function AdminLayout({
         redirect('/login')
     }
 
-    // Resolve org slug from middleware-injected header (BRIEF-03 path-
-    // based routing). Falls back to no slug — legacy single-tenant case.
+    // Resolve org slug from middleware-injected header (path-based
+    // routing). Falls back to no slug — legacy single-tenant case.
     const headerList = await headers()
     const orgSlug = headerList.get('x-org-slug')
 
@@ -45,11 +48,23 @@ export default async function AdminLayout({
     let onboardingStep = 0
     let onboardingCompletedAt: string | null = null
 
+    // Org context for the Sidebar's OrgSwitcher. Only populated when the
+    // per-org membership branch succeeds — the legacy fallback renders a
+    // bare Sidebar (no OrgSwitcher).
+    type RawMembership = {
+        organization_id: string
+        role: string
+        organizations: { id: string; slug: string; name: string } | null
+    }
+    let currentOrg: { id: string; slug: string; name: string } | null = null
+    let currentRole: string | null = null
+    let memberships: RawMembership[] = []
+
     if (orgSlug) {
         const service = createServiceClient()
         const { data: org } = await service
             .from('organizations')
-            .select('id, name, settings')
+            .select('id, name, slug, settings')
             .eq('slug', orgSlug)
             .maybeSingle()
         if (org) {
@@ -66,6 +81,23 @@ export default async function AdminLayout({
                 const onboarding = (settings.onboarding ?? {}) as Record<string, unknown>
                 onboardingStep = (onboarding.step as number) ?? 0
                 onboardingCompletedAt = (onboarding.completed_at as string | null) ?? null
+
+                currentOrg = {
+                    id: org.id as string,
+                    slug: org.slug as string,
+                    name: (org.name as string) ?? orgSlug,
+                }
+                currentRole = member.role
+
+                // Fetch every membership for the OrgSwitcher dropdown.
+                // Service role bypasses the RLS that would otherwise
+                // hide rows for orgs other than current_org_id.
+                const { data: membershipsRaw } = await service
+                    .from('organization_members')
+                    .select('organization_id, role, organizations!inner(id, slug, name)')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: true })
+                memberships = (membershipsRaw ?? []) as unknown as RawMembership[]
             }
         }
     }
@@ -96,7 +128,15 @@ export default async function AdminLayout({
                 <EmailVerificationBanner email={user.email} />
             )}
 
-            <Sidebar />
+            {currentOrg && currentRole ? (
+                <Sidebar
+                    currentOrg={currentOrg}
+                    currentRole={currentRole}
+                    memberships={memberships}
+                />
+            ) : (
+                <Sidebar />
+            )}
 
             {/*
               Desktop: Sidebar is fixed w-16, so main needs pl-16.
