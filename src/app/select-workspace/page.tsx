@@ -154,7 +154,13 @@ function SelectWorkspaceContent() {
                       <button
                         onClick={() => onPick(m.organization_id, orgSlug)}
                         disabled={pickingId !== null}
-                        className="group w-full text-left rounded-md border border-border bg-background p-4 hover:border-foreground/40 hover:bg-muted/50 transition-colors disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        className={`group w-full text-left rounded-md border bg-background p-4 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ${
+                          pickingId === m.organization_id
+                            ? "border-foreground/40 bg-muted/50"
+                            : pickingId !== null
+                              ? "opacity-50 pointer-events-none border-border"
+                              : "border-border hover:border-foreground/40 hover:bg-muted/50"
+                        }`}
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
@@ -171,9 +177,17 @@ function SelectWorkspaceContent() {
                             <p className="mt-0.5 text-xs text-muted-foreground">
                               lende.shipbyx.com/{orgSlug} · {m.role}
                             </p>
+                            {pickingId === m.organization_id && (
+                              <p className="mt-1 text-xs text-muted-foreground">Switching…</p>
+                            )}
                           </div>
                           <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                            {pickingId === m.organization_id ? "…" : "→"}
+                            {pickingId === m.organization_id ? (
+                              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
+                            ) : "→"}
                           </span>
                         </div>
                       </button>

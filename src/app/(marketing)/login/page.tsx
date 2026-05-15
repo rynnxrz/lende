@@ -10,6 +10,7 @@ import {
   requestLoginOtpAction,
   verifyLoginOtpAction,
 } from "@/app/actions/auth/login-otp"
+import { toast } from "sonner"
 
 type Stage = "email" | "code" | "password"
 
@@ -53,6 +54,7 @@ function LoginContent() {
 
   // Resend cooldown for OTP stage.
   const [resendIn, setResendIn] = useState(RESEND_COOLDOWN_S)
+  const [resending, setResending] = useState(false)
   useEffect(() => {
     if (stage !== "code") return
     setResendIn(RESEND_COOLDOWN_S)
@@ -157,14 +159,18 @@ function LoginContent() {
   }
 
   const onResendCode = async () => {
-    if (resendIn > 0) return
+    if (resendIn > 0 || resending) return
+    setResending(true)
     setError(null)
     const res = await requestLoginOtpAction({ email: email.trim() })
     if (!res.ok) {
+      setResending(false)
       setError(res.error)
       return
     }
+    setResending(false)
     setResendIn(RESEND_COOLDOWN_S)
+    toast.success("Verification code sent")
   }
 
   // ---------------------------------------------------------------------
@@ -341,10 +347,14 @@ function LoginContent() {
                   <button
                     type="button"
                     onClick={onResendCode}
-                    disabled={resendIn > 0}
+                    disabled={resendIn > 0 || resending}
                     className="hover:text-foreground hover:underline underline-offset-4 disabled:opacity-60 disabled:no-underline"
                   >
-                    {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
+                    {resending
+                      ? "Sending..."
+                      : resendIn > 0
+                        ? `Resend in ${resendIn}s`
+                        : "Resend code"}
                   </button>
                 </div>
               </form>

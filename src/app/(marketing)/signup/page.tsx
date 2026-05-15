@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/auth/signup-otp"
 import { signupAction } from "@/app/actions/auth/signup"
 import { track } from "@/lib/analytics/track"
+import { toast } from "sonner"
 
 type Stage = "form" | "code"
 
@@ -63,6 +64,7 @@ function OtpSignupFlow({ router }: OtpFlowProps) {
 
   // Countdown for "Resend code" — starts when entering Stage B.
   const [resendIn, setResendIn] = useState(RESEND_COOLDOWN_S)
+  const [resending, setResending] = useState(false)
 
   useEffect(() => {
     if (stage !== "code") return
@@ -145,7 +147,8 @@ function OtpSignupFlow({ router }: OtpFlowProps) {
   }
 
   const onResend = async () => {
-    if (resendIn > 0) return
+    if (resendIn > 0 || resending) return
+    setResending(true)
     setError(null)
     const res = await requestSignupOtpAction({
       email: email.trim(),
@@ -154,11 +157,14 @@ function OtpSignupFlow({ router }: OtpFlowProps) {
       country: country.trim() || undefined,
     })
     if (!res.ok) {
+      setResending(false)
       setError(res.error)
       return
     }
     track("signup_otp_sent", { email_domain: emailDomain(email), resend: true })
+    setResending(false)
     setResendIn(RESEND_COOLDOWN_S)
+    toast.success("Verification code sent")
   }
 
   return (
@@ -322,12 +328,14 @@ function OtpSignupFlow({ router }: OtpFlowProps) {
                     <button
                       type="button"
                       onClick={onResend}
-                      disabled={resendIn > 0}
+                      disabled={resendIn > 0 || resending}
                       className="hover:text-foreground hover:underline underline-offset-4 disabled:opacity-60 disabled:no-underline"
                     >
-                      {resendIn > 0
-                        ? `Resend in ${resendIn}s`
-                        : "Resend code"}
+                      {resending
+                        ? "Sending..."
+                        : resendIn > 0
+                          ? `Resend in ${resendIn}s`
+                          : "Resend code"}
                     </button>
                   </div>
                 </form>
