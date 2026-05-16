@@ -16,6 +16,10 @@ import { updateSession } from '@/lib/supabase/middleware'
  * `src/app/(internal)/[org]/admin` and `src/app/{catalog,...}` →
  * `src/app/(public)/[org]/...`. When that move lands, the rewrite
  * branches below should be deleted; only the redirect branch stays.
+ *
+ * Also merges in the wholesale-gate logic that previously lived in
+ * `src/proxy.ts` (deleted): when `/catalog?mode=wholesale` is hit
+ * without the `wholesale_authenticated` cookie, redirect to `/wholesale`.
  */
 
 // Routes that belong to a tenant (exclude marketing / auth / api).
@@ -74,6 +78,20 @@ export async function middleware(request: NextRequest) {
     const segments = pathname.split('/').filter(Boolean)
     const first = segments[0]
     const second = segments[1]
+
+    // (0) Wholesale gate (merged from former src/proxy.ts):
+    //     /catalog?mode=wholesale without auth cookie → redirect to /wholesale.
+    //     Phase A: gate is keyed off the legacy root /catalog URL; PR-B will
+    //     update this to handle /{slug}/catalog?mode=wholesale per-org.
+    const mode = request.nextUrl.searchParams.get('mode')
+    const isWholesaleCatalog = pathname.startsWith('/catalog') && mode === 'wholesale'
+    const hasWholesaleCookie = request.cookies.get('wholesale_authenticated')?.value === 'true'
+    if (isWholesaleCatalog && !hasWholesaleCookie) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/wholesale'
+        url.search = ''
+        return NextResponse.redirect(url)
+    }
 
     // (1) Old root-level tenant URL → 301 to /{DEFAULT_ORG}/...
     //     e.g. `/admin/items` → `/ivyjstudio/admin/items`
