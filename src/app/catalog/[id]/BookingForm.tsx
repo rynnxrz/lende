@@ -18,9 +18,11 @@ interface BookingFormProps {
         image_paths: string[] | null
         status: string
     }
+    orgSlug: string
 }
 
-export function BookingForm({ item }: BookingFormProps) {
+export function BookingForm({ item, orgSlug }: BookingFormProps) {
+    const catalogHref = `/${orgSlug}/catalog`
     const [isMounted, setIsMounted] = React.useState(false)
 
     const { dateRange: globalDateRange, addItem, removeItem, hasItem } = useRequestStore()
@@ -57,7 +59,7 @@ export function BookingForm({ item }: BookingFormProps) {
         return (
             <div className="space-y-4">
                 <div className="hidden md:block">
-                    <Link href="/catalog">
+                    <Link href={catalogHref}>
                         <Button
                             variant="outline"
                             className="w-full h-12 rounded-md text-sm border-slate-300 text-slate-600 hover:bg-slate-50"
@@ -73,7 +75,7 @@ export function BookingForm({ item }: BookingFormProps) {
                     className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-50 md:hidden"
                     style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
                 >
-                    <Link href="/catalog">
+                    <Link href={catalogHref}>
                         <Button
                             variant="outline"
                             className="w-full h-12 rounded-md text-sm border-slate-300 text-slate-600"

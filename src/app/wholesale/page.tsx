@@ -12,6 +12,12 @@ import { Lock, ArrowRight, Loader2, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { verifyWholesalePassword, checkWholesaleAuth } from '@/actions/wholesale'
 import { cn } from '@/lib/utils'
 
+// PR-A: legacy /wholesale path is rewritten from /ivyjstudio/wholesale via
+// middleware Phase A. After PR-B physical move, this page lives at
+// /[slug]/wholesale and reads params.slug. For now, hard-code IVYJSTUDIO —
+// it's the only org accepted by Phase A middleware anyway.
+const ORG_SLUG = 'ivyjstudio'
+
 export default function WholesalePage() {
     const router = useRouter()
     const [password, setPassword] = useState('')
@@ -22,9 +28,9 @@ export default function WholesalePage() {
     useEffect(() => {
         // Check if already authenticated
         const checkAuth = async () => {
-            const isAuthenticated = await checkWholesaleAuth()
+            const isAuthenticated = await checkWholesaleAuth(ORG_SLUG)
             if (isAuthenticated) {
-                router.replace('/catalog?mode=wholesale')
+                router.replace(`/${ORG_SLUG}/catalog?mode=wholesale`)
             } else {
                 setIsCheckingAuth(false)
             }
@@ -39,7 +45,7 @@ export default function WholesalePage() {
         setIsLoading(true)
 
         try {
-            const result = await verifyWholesalePassword(password)
+            const result = await verifyWholesalePassword(password, ORG_SLUG)
             if (result.success) {
                 setIsSuccess(true)
                 toast.success("Access Granted", {
@@ -48,7 +54,7 @@ export default function WholesalePage() {
                 })
                 // Small delay to show success state before redirect
                 setTimeout(() => {
-                    router.replace('/catalog?mode=wholesale')
+                    router.replace(`/${ORG_SLUG}/catalog?mode=wholesale`)
                 }, 800)
             } else {
                 toast.error("Access Denied", {
@@ -195,7 +201,8 @@ export default function WholesalePage() {
                 storageKey="customer-service:wholesale"
                 baseContext={{
                     pageType: 'wholesale_gate',
-                    path: '/wholesale',
+                    path: `/${ORG_SLUG}/wholesale`,
+                    orgSlug: ORG_SLUG,
                     wholesale: {
                         authenticated: isSuccess,
                     },

@@ -856,7 +856,8 @@ export function CustomerServiceWidget({
 
         toast.success(widgetCopy.intakeApplied)
         setOpen(false)
-        router.push(items.length > 0 ? '/request/summary' : '/catalog')
+        const slugPrefix = baseContext.orgSlug ? `/${baseContext.orgSlug}` : ''
+        router.push(items.length > 0 ? `${slugPrefix}/request/summary` : `${slugPrefix}/catalog`)
     }
 
     const renderPresentation = (presentation: CustomerServicePresentation | null, draftForMessage: RentalIntentDraft | null) => {

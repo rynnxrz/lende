@@ -41,7 +41,11 @@ import {
     normalizeBillableDays,
 } from "@/lib/invoice/pricing"
 
-export function SummaryClient() {
+interface SummaryClientProps {
+    orgSlug: string
+}
+
+export function SummaryClient({ orgSlug }: SummaryClientProps) {
     const { items, dateRange, clearRequest, contactInfo, setContactInfo } = useRequestStore()
     const router = useRouter()
     const [isSubmitting, startSubmitTransition] = React.useTransition()
@@ -123,7 +127,7 @@ export function SummaryClient() {
                         access_password: contactInfo.access_password,
                         notes: contactInfo.notes,
                         fingerprint
-                    })
+                    }, orgSlug)
 
                     if (result.success === false) {
                         setRecoveryStatus(result.recoveryStatus ?? 'BACKUP_FAILED')

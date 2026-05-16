@@ -1,48 +1,71 @@
 import { Suspense } from 'react'
+import { headers } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { CatalogClient } from '../CatalogClient'
 
-// Force dynamic rendering to ensure we always get latest items (shell), but verify data is cached
+// Force dynamic rendering so we always resolve the per-request org from
+// the x-org-slug header (middleware sets it on rewrites from /{slug}/catalog).
 export const dynamic = 'force-dynamic'
 
-// Cached Data Fetcher
-const getCachedCatalogData = unstable_cache(
-    async () => {
-        const supabase = createServiceClient()
-        return Promise.all([
-            supabase
-                .from('items')
-                .select('*')
-                .eq('status', 'active')
-                .order('priority', { ascending: false })
-                .order('created_at', { ascending: false }),
-            supabase
-                .from('categories')
-                .select('*')
-                .eq('hidden_in_portal', false)
-                .order('name'),
-            supabase
-                .from('collections')
-                .select('*')
-                .eq('hidden_in_portal', false)
-                .order('name')
-        ])
-    },
-    ['catalog-data-v1'],
-    { revalidate: 60, tags: ['catalog'] }
-)
+// Per-org cached data fetcher. Cache key includes orgId so different
+// tenants get separate cache entries.
+const buildCachedCatalogFetcher = (orgId: string) =>
+    unstable_cache(
+        async () => {
+            const supabase = createServiceClient()
+            return Promise.all([
+                supabase
+                    .from('items')
+                    .select('*')
+                    .eq('organization_id', orgId)
+                    .eq('status', 'active')
+                    .order('priority', { ascending: false })
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('categories')
+                    .select('*')
+                    .eq('organization_id', orgId)
+                    .eq('hidden_in_portal', false)
+                    .order('name'),
+                supabase
+                    .from('collections')
+                    .select('*')
+                    .eq('organization_id', orgId)
+                    .eq('hidden_in_portal', false)
+                    .order('name')
+            ])
+        },
+        ['catalog-data-v2', orgId],
+        { revalidate: 60, tags: [`catalog-${orgId}`] }
+    )
+
+const DEFAULT_ORG_SLUG = 'ivyjstudio'
 
 export default async function CatalogPage() {
-    // Parallel filters fetch (Cached)
-    // Parallel filters fetch (Cached)
+    // Resolve org from middleware-injected header; fall back to default
+    // tenant for legacy /catalog requests (which middleware 301-redirects
+    // to /ivyjstudio/catalog then rewrites back here in Phase A).
+    const headerList = await headers()
+    const orgSlug = (headerList.get('x-org-slug') ?? DEFAULT_ORG_SLUG).toLowerCase()
+
+    const supabase = createServiceClient()
+    const { data: org } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgSlug)
+        .maybeSingle()
+    if (!org) notFound()
+
+    // Parallel filters fetch (cached per-org)
     let allItems, visibleCategories, visibleCollections
     try {
         const [
             { data: items, error: itemsError },
             { data: cats },
             { data: cols }
-        ] = await getCachedCatalogData()
+        ] = await buildCachedCatalogFetcher(org.id)()
 
         if (itemsError) throw itemsError
 
@@ -86,6 +109,7 @@ export default async function CatalogPage() {
                 initialItems={validItems}
                 categories={visibleCategories || []}
                 collections={visibleCollections || []}
+                orgSlug={orgSlug}
             />
         </Suspense>
     )

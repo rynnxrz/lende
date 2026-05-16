@@ -55,6 +55,7 @@ interface ProductGroupCardProps {
     }) => void
     removeItem: (itemId: string) => void
     triggerDateError: () => void
+    orgSlug: string
 }
 
 const COLOR_HEX_MAP: Record<string, string> = {
@@ -214,6 +215,7 @@ export function ProductGroupCard({
     addItem,
     removeItem,
     triggerDateError,
+    orgSlug,
 }: ProductGroupCardProps) {
     const [activeVariant, setActiveVariant] = React.useState<CatalogVariant>(group.variants[0])
     const [hoverVariant, setHoverVariant] = React.useState<CatalogVariant | null>(null)
@@ -253,9 +255,10 @@ export function ProductGroupCard({
         ? `Tiered rental pricing. ${tierSummaryText}. ${WEEKLY_EXTENSION_NOTICE}. ${TIER_AMOUNT_UNAVAILABLE_MESSAGE}.`
         : `Tiered rental pricing. ${tierSummaryText}. ${WEEKLY_EXTENSION_NOTICE}.`
 
+    const detailBase = `/${orgSlug}/catalog/${activeVariant.id}`
     const href = committedDate
-        ? `/catalog/${activeVariant.id}?start=${format(committedDate.from, "yyyy-MM-dd")}&end=${format(committedDate.to, "yyyy-MM-dd")}`
-        : `/catalog/${activeVariant.id}`
+        ? `${detailBase}?start=${format(committedDate.from, "yyyy-MM-dd")}&end=${format(committedDate.to, "yyyy-MM-dd")}`
+        : detailBase
 
     return (
         <article className="group flex flex-col h-full bg-white relative" aria-label={variantLabel}>

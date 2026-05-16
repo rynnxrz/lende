@@ -45,6 +45,7 @@ interface ItemDetailClientProps {
     variants?: Item[]
     context?: string
     relatedItemsSlot?: React.ReactNode
+    orgSlug: string
 }
 
 
@@ -84,7 +85,7 @@ function findBestVariantMatch(
     return currentItem
 }
 
-export function ItemDetailClient({ item: initialItem, variants = [], context, relatedItemsSlot }: ItemDetailClientProps) {
+export function ItemDetailClient({ item: initialItem, variants = [], context, relatedItemsSlot, orgSlug }: ItemDetailClientProps) {
     const isArchiveMode = context === 'archive'
     const { dateRange } = useRequestStore()
 
@@ -266,7 +267,7 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
     const isReadyToBook = (!sizeOptions.length || activeSizeKey) && activeSwatchKey
 
     // Smart Back Button Logic
-    const backHref = isArchiveMode ? '/archive' : '/catalog'
+    const backHref = isArchiveMode ? `/${orgSlug}/archive` : `/${orgSlug}/catalog`
     const backLabel = isArchiveMode ? 'Back to Archive' : 'Back to Collection'
 
     return (
@@ -371,7 +372,7 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                                     </p>
                                 )}
                                 <div className={cn("transition-opacity duration-300", !isReadyToBook && "opacity-50 pointer-events-none")}>
-                                    <BookingForm item={item} />
+                                    <BookingForm item={item} orgSlug={orgSlug} />
                                 </div>
                             </div>
                         )}
@@ -504,7 +505,8 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                     storageKey={`customer-service:item:${item.id}`}
                     baseContext={{
                         pageType: 'catalog_item',
-                        path: `/catalog/${item.id}`,
+                        path: `/${orgSlug}/catalog/${item.id}`,
+                        orgSlug,
                         item: {
                             id: item.id,
                             name: item.name,

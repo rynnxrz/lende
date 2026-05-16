@@ -14,8 +14,10 @@ import {
 import { customerServiceVerifyCompleteQuerySchema } from '@/lib/customer-service/schemas'
 import { createServiceClient } from '@/lib/supabase/server'
 
+const FALLBACK_CATALOG_PATH = '/ivyjstudio/catalog'
+
 function buildRedirect(path: string | null | undefined, status: 'success' | 'failed', request: Request) {
-    const safePath = path && path.startsWith('/') ? path : '/catalog'
+    const safePath = path && path.startsWith('/') ? path : FALLBACK_CATALOG_PATH
     const url = new URL(safePath, request.url)
     url.searchParams.set('verification', status)
     return NextResponse.redirect(url)
@@ -42,15 +44,17 @@ export async function GET(request: Request) {
     }
 
     if (!parsed.success) {
-        return finish('/catalog', 'failed')
+        return finish(FALLBACK_CATALOG_PATH, 'failed')
     }
 
     const { token, sessionId } = parsed.data
     const session = await getCustomerServiceSession(sessionId)
-    const fallbackPath = session?.pageContext?.path || '/catalog'
+    const sessionOrgSlug = session?.pageContext?.orgSlug
+    const sessionCatalogPath = sessionOrgSlug ? `/${sessionOrgSlug}/catalog` : FALLBACK_CATALOG_PATH
+    const fallbackPath = session?.pageContext?.path || sessionCatalogPath
 
     if (!session) {
-        return finish('/catalog', 'failed')
+        return finish(FALLBACK_CATALOG_PATH, 'failed')
     }
 
     try {

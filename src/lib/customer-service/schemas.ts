@@ -89,6 +89,7 @@ export const customerServicePaymentContextSchema = z.object({
 export const customerServicePageContextSchema = z.object({
     pageType: customerServicePageTypeSchema,
     path: z.string(),
+    orgSlug: z.string().optional(),
     item: customerServiceItemContextSchema.optional(),
     catalog: z.object({
         mode: z.enum(['rental', 'wholesale']).optional(),

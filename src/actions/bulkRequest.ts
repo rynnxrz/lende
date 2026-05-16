@@ -47,7 +47,7 @@ function isValidEmail(email: string): boolean {
     return emailRegex.test(email);
 }
 
-export async function submitBulkRequest(data: BulkRequestData) {
+export async function submitBulkRequest(data: BulkRequestData, orgSlug: string) {
     // Use Service Role to bypass RLS for Guest/Public booking flow.
     // This allows creating profiles/reservations without an authenticated user session,
     // relying on the specific 'booking_password' validation below for security.
@@ -64,10 +64,23 @@ export async function submitBulkRequest(data: BulkRequestData) {
         return { error: 'Missing event location.' }
     }
 
-    // 2. Access Password Check
+    // 1b. Resolve org from slug — reservation.organization_id is NOT NULL
+    // (migration 00053). Same pattern as createGuestBooking.
+    const { data: org } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgSlug.toLowerCase())
+        .maybeSingle()
+    if (!org) {
+        console.error('submitBulkRequest: unknown org slug', orgSlug)
+        return { error: 'Workspace not found' }
+    }
+
+    // 2. Access Password Check (per-org)
     const { data: settings } = await supabase
         .from('app_settings')
         .select('booking_password')
+        .eq('organization_id', org.id)
         .single()
     const requiredPassword = settings?.booking_password
     if (requiredPassword && requiredPassword.trim() !== '') {
@@ -145,6 +158,7 @@ export async function submitBulkRequest(data: BulkRequestData) {
     const reservationsToInsert = data.items.map(itemId => ({
         item_id: itemId,
         renter_id: profileId,
+        organization_id: org.id,
         start_date: data.start_date,
         end_date: data.end_date,
         status: RESERVATION_STATUSES.PENDING_REQUEST,
@@ -227,7 +241,10 @@ export async function submitBulkRequest(data: BulkRequestData) {
     }
 
     // 5. Revalidate
-    data.items.forEach(id => revalidatePath(`/catalog/${id}`))
+    data.items.forEach(id => {
+        revalidatePath(`/${orgSlug}/catalog/${id}`)
+        revalidatePath(`/catalog/${id}`)
+    })
 
     // 6. Notify admin (fire-and-forget — never blocks request submission)
     const adminEmail = process.env.ADMIN_NOTIFY_EMAIL

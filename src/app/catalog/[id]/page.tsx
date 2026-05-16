@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { ItemDetailClient } from './ItemDetailClient'
 import { RelatedItems } from './RelatedItems'
@@ -10,31 +11,50 @@ interface Props {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-// Force dynamic rendering
+// Force dynamic rendering — orgSlug comes from per-request header.
 export const dynamic = 'force-dynamic'
+
+const DEFAULT_ORG_SLUG = 'ivyjstudio'
 
 export default async function ItemDetailPage({ params, searchParams }: Props) {
     const { id } = await params
     const { context } = await searchParams
-    const supabase = await createClient()
+
+    const headerList = await headers()
+    const orgSlug = (headerList.get('x-org-slug') ?? DEFAULT_ORG_SLUG).toLowerCase()
+
+    const supabase = createServiceClient()
+    const { data: org } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgSlug)
+        .maybeSingle()
+    if (!org) notFound()
 
     const { data: item, error } = await supabase
         .from('items')
         .select('*')
         .eq('id', id)
+        .eq('organization_id', org.id)
         .single()
 
     if (error || !item) {
         notFound()
     }
 
-    // Determine group key for fetching variants
+    // Determine group key for fetching variants. Always scope by
+    // organization_id so a sibling org's item with the same
+    // character_family / description / name doesn't leak into the
+    // variant group (cross-tenant data leak otherwise).
     const character = item.character_family?.trim()
     const description = item.description?.trim()
     const name = item.name?.trim()
     const itemGroupKey = (character || description || name || item.id).toLowerCase()
 
-    let variantsQuery = supabase.from('items').select('*')
+    let variantsQuery = supabase
+        .from('items')
+        .select('*')
+        .eq('organization_id', org.id)
     if (character) {
         variantsQuery = variantsQuery.eq('character_family', character)
     } else if (description) {
@@ -62,6 +82,7 @@ export default async function ItemDetailPage({ params, searchParams }: Props) {
             item={item}
             variants={variants}
             context={contextValue}
+            orgSlug={orgSlug}
             relatedItemsSlot={
                 item.collection_id ? (
                     <Suspense fallback={<RelatedItemsSkeleton />}>
@@ -69,6 +90,8 @@ export default async function ItemDetailPage({ params, searchParams }: Props) {
                             collectionId={item.collection_id}
                             currentId={item.id}
                             isArchiveMode={isArchiveMode}
+                            orgId={org.id}
+                            orgSlug={orgSlug}
                         />
                     </Suspense>
                 ) : null

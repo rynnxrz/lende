@@ -1,22 +1,22 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 interface Props {
     collectionId: string
     currentId: string
     isArchiveMode: boolean
+    orgId: string
+    orgSlug: string
 }
 
-export async function RelatedItems({ collectionId, currentId, isArchiveMode }: Props) {
-    const supabase = await createClient()
-
-    // Artificial delay to demonstrate Suspense (optional, but requested implicitly by "slow down 0.5s")
-    // await new Promise(resolve => setTimeout(resolve, 500))
+export async function RelatedItems({ collectionId, currentId, isArchiveMode, orgId, orgSlug }: Props) {
+    const supabase = createServiceClient()
 
     const { data: relatedItems } = await supabase
         .from('items')
         .select('id, name, color, rental_price, image_paths, category, status')
+        .eq('organization_id', orgId)
         .eq('collection_id', collectionId)
         .neq('id', currentId)
         .limit(4)
@@ -39,7 +39,7 @@ export async function RelatedItems({ collectionId, currentId, isArchiveMode }: P
                     return (
                         <Link
                             key={related.id}
-                            href={`/catalog/${related.id}${isArchiveMode ? '?context=archive' : ''}`}
+                            href={`/${orgSlug}/catalog/${related.id}${isArchiveMode ? '?context=archive' : ''}`}
                             className="group block focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-md"
                             aria-label={`View ${displayName}`}
                         >

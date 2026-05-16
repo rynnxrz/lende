@@ -56,7 +56,7 @@ function isValidEmail(email: string): boolean {
     return emailRegex.test(email)
 }
 
-export async function createGuestBooking(data: GuestBookingData) {
+export async function createGuestBooking(data: GuestBookingData, orgSlug: string) {
     // Check for service role key
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
         console.error('SUPABASE_SERVICE_ROLE_KEY is not configured')
@@ -71,10 +71,23 @@ export async function createGuestBooking(data: GuestBookingData) {
         return { error: 'Invalid email format' }
     }
 
-    // 2. Check if booking password is required
+    // 1b. Resolve org from slug — required so reservation.organization_id
+    // can be set (migration 00053 made the column NOT NULL).
+    const { data: org } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgSlug.toLowerCase())
+        .maybeSingle()
+    if (!org) {
+        console.error('createGuestBooking: unknown org slug', orgSlug)
+        return { error: 'Workspace not found' }
+    }
+
+    // 2. Check if booking password is required (per-org setting)
     const { data: settings } = await supabase
         .from('app_settings')
         .select('booking_password')
+        .eq('organization_id', org.id)
         .single()
 
     const requiredPassword = settings?.booking_password
@@ -134,6 +147,7 @@ export async function createGuestBooking(data: GuestBookingData) {
     const reservationPayload = {
         item_id: data.item_id,
         renter_id: profileId,
+        organization_id: org.id,
         start_date: data.start_date,
         end_date: data.end_date,
         status: RESERVATION_STATUSES.PENDING_REQUEST,
@@ -180,11 +194,13 @@ export async function createGuestBooking(data: GuestBookingData) {
     const { count } = await supabase
         .from('reservations')
         .select('id', { count: 'exact', head: true })
+        .eq('organization_id', org.id)
 
     if (count === 1) {
-        track('first_reservation_created', { item_id: data.item_id })
+        track('first_reservation_created', { item_id: data.item_id, org_slug: orgSlug })
     }
 
+    revalidatePath(`/${orgSlug}/catalog/${data.item_id}`)
     revalidatePath(`/catalog/${data.item_id}`)
     return { success: true }
 }

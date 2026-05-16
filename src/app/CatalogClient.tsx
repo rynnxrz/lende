@@ -80,11 +80,13 @@ interface CatalogClientProps {
     initialItems: Item[]
     categories: Category[]
     collections: Collection[]
+    orgSlug: string
 }
 
-export function CatalogClient({ initialItems, categories, collections }: CatalogClientProps) {
+export function CatalogClient({ initialItems, categories, collections, orgSlug }: CatalogClientProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const catalogBasePath = `/${orgSlug}/catalog`
 
     // Filter State
     const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null)
@@ -172,7 +174,7 @@ export function CatalogClient({ initialItems, categories, collections }: Catalog
         const params = new URLSearchParams(searchParams.toString())
         params.set('from', format(draftDate.from, 'yyyy-MM-dd'))
         params.set('to', format(draftDate.to, 'yyyy-MM-dd'))
-        router.replace(`/catalog?${params.toString()}`, { scroll: false })
+        router.replace(`${catalogBasePath}?${params.toString()}`, { scroll: false })
     }
 
     // Reset: Clear all, unlock UI, return to hero mode
@@ -187,7 +189,7 @@ export function CatalogClient({ initialItems, categories, collections }: Catalog
         params.delete('from')
         params.delete('to')
         const queryString = params.toString()
-        router.replace(queryString ? `/catalog?${queryString}` : '/catalog', { scroll: false })
+        router.replace(queryString ? `${catalogBasePath}?${queryString}` : catalogBasePath, { scroll: false })
     }
 
     // Open Calendar for specific input
@@ -815,6 +817,7 @@ export function CatalogClient({ initialItems, categories, collections }: Catalog
                                         addItem={addItem}
                                         removeItem={removeItem}
                                         triggerDateError={triggerDateError}
+                                        orgSlug={orgSlug}
                                     />
                                 ))}
                                 {/* Ghost Cells for Full Grid Fill */}
@@ -836,7 +839,8 @@ export function CatalogClient({ initialItems, categories, collections }: Catalog
                 storageKey="customer-service:catalog"
                 baseContext={{
                     pageType: 'catalog_list',
-                    path: '/catalog',
+                    path: catalogBasePath,
+                    orgSlug,
                     catalog: {
                         mode: searchParams.get('mode') === 'wholesale' ? 'wholesale' : 'rental',
                         itemCount: filteredItems.length,
