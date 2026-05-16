@@ -89,26 +89,24 @@ export default async function LookbookPage({
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
-            <div className="mx-auto max-w-6xl px-4 py-6">
-                <LookbookViewer
-                    orgName={org.name}
-                    organizationId={org.id}
-                    lookbookId={lookbook.id}
-                    lookbookTitle={lookbook.title}
-                    pageCount={lookbook.page_count ?? 0}
-                    pdfSignedUrl={pdfSignedUrl}
-                    items={items.map(row => ({
-                        id: row.id,
-                        page_number: row.page_number,
-                        bbox_x: Number(row.bbox_x ?? 0),
-                        bbox_y: Number(row.bbox_y ?? 0),
-                        bbox_w: Number(row.bbox_w ?? 0),
-                        bbox_h: Number(row.bbox_h ?? 0),
-                        inventory_item_id: row.inventory_item_id,
-                        item: Array.isArray(row.items) ? row.items[0] ?? null : row.items ?? null,
-                    }))}
-                />
-            </div>
+            <LookbookViewer
+                orgName={org.name}
+                organizationId={org.id}
+                lookbookId={lookbook.id}
+                lookbookTitle={lookbook.title}
+                pageCount={lookbook.page_count ?? 0}
+                pdfSignedUrl={pdfSignedUrl}
+                items={items.map(row => ({
+                    id: row.id,
+                    page_number: row.page_number,
+                    bbox_x: Number(row.bbox_x ?? 0),
+                    bbox_y: Number(row.bbox_y ?? 0),
+                    bbox_w: Number(row.bbox_w ?? 0),
+                    bbox_h: Number(row.bbox_h ?? 0),
+                    inventory_item_id: row.inventory_item_id,
+                    item: Array.isArray(row.items) ? row.items[0] ?? null : row.items ?? null,
+                }))}
+            />
         </div>
     )
 }

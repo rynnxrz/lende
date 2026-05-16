@@ -108,27 +108,36 @@ export function LookbookViewer({
         return map
     }, [items])
 
-    // Measure container for flip book dimensions
+    // Measure viewport for flip book dimensions (height-driven, with width fallback)
     useEffect(() => {
-        const el = containerRef.current
-        if (!el) return
+        if (typeof window === 'undefined') return
+
         const measure = () => {
-            const rect = el.getBoundingClientRect()
-            if (rect.width > 0 && rect.height > 0) {
-                const w = Math.round(rect.width)
-                const h = Math.round(rect.height)
-                setContainerSize(prev => {
-                    if (w === prev.width && h === prev.height) return prev
-                    setFlipKey(k => k + 1)
-                    return { width: w, height: h }
-                })
+            const padding = 32 // 16px on each side
+            const viewportW = window.innerWidth - padding
+            const viewportH = window.innerHeight - padding
+            const aspectRatio = isMobile ? 3 / 4 : 3 / 2
+
+            let h = viewportH
+            let w = h * aspectRatio
+            if (w > viewportW) {
+                w = viewportW
+                h = w / aspectRatio
             }
+
+            const wRounded = Math.round(w)
+            const hRounded = Math.round(h)
+            setContainerSize(prev => {
+                if (wRounded === prev.width && hRounded === prev.height) return prev
+                setFlipKey(k => k + 1)
+                return { width: wRounded, height: hRounded }
+            })
         }
+
         measure()
-        const ro = new ResizeObserver(measure)
-        ro.observe(el)
-        return () => ro.disconnect()
-    }, [])
+        window.addEventListener('resize', measure)
+        return () => window.removeEventListener('resize', measure)
+    }, [isMobile])
 
     // PDF rendering
     useEffect(() => {
@@ -258,119 +267,126 @@ export function LookbookViewer({
     }
 
     return (
-        <div className="relative">
-            {/* Top bar */}
-            <header className="mb-4 flex items-center justify-between">
-                <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-widest text-slate-500">
-                        {orgName}
-                    </p>
-                    <h1 className="truncate text-lg font-semibold">{lookbookTitle}</h1>
+        <div className="relative h-[100dvh] w-full overflow-hidden bg-slate-950">
+            {/* Floating top-left: org + title */}
+            <div className="pointer-events-none absolute left-4 top-4 z-30 max-w-[40%] rounded-md bg-slate-900/50 px-3 py-2 backdrop-blur-sm">
+                <p className="text-[10px] uppercase tracking-widest text-white/50">
+                    {orgName}
+                </p>
+                <h1 className="truncate text-sm font-medium text-white/90">
+                    {lookbookTitle}
+                </h1>
+            </div>
+
+            {/* Floating top-right: cart button */}
+            {cart.items.length > 0 && (
+                <button
+                    type="button"
+                    onClick={() => setCartOpen(true)}
+                    className="absolute right-4 top-4 z-30 rounded-full bg-slate-900/50 p-2.5 text-white/80 backdrop-blur-sm transition-colors hover:bg-slate-900/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    aria-label={`Cart, ${cart.items.length} items`}
+                >
+                    <ShoppingBag className="size-5" />
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-emerald-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+                        {cart.items.length}
+                    </span>
+                </button>
+            )}
+
+            {/* Book frame - viewport-centered, JS-sized in px */}
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                    ref={containerRef}
+                    className="relative overflow-hidden rounded-lg bg-slate-900"
+                    style={{
+                        width: `${containerSize.width}px`,
+                        height: `${containerSize.height}px`,
+                    }}
+                >
+                    {loading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
+                        </div>
+                    )}
+                    {error && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <p className="text-center text-rose-300">
+                                Failed to load lookbook ({error})
+                            </p>
+                        </div>
+                    )}
+
+                    {!loading && !error && renderedPages.length > 0 && (
+                        /* @ts-expect-error react-pageflip types are incomplete */
+                        <HTMLFlipBook
+                            key={flipKey}
+                            ref={flipBookRef}
+                            width={isMobile ? containerSize.width : Math.round(containerSize.width / 2)}
+                            height={containerSize.height}
+                            size="stretch"
+                            minWidth={280}
+                            maxWidth={1200}
+                            minHeight={370}
+                            maxHeight={1600}
+                            drawShadow={true}
+                            flippingTime={800}
+                            usePortrait={isMobile}
+                            maxShadowOpacity={0.5}
+                            showCover={!isMobile}
+                            mobileScrollSupport={true}
+                            onFlip={(e: { data: number }) => setCurrentPage(e.data)}
+                            className="book-shadow"
+                            startPage={0}
+                            clickEventForward={true}
+                            swipeDistance={30}
+                        >
+                            {renderedPages.map((rp) => (
+                                <FlipPage key={rp.pageNumber}>
+                                    <PageWithHotZones
+                                        pageNumber={rp.pageNumber}
+                                        canvas={rp.canvas}
+                                        items={itemsByPage.get(rp.pageNumber) ?? []}
+                                        pulsed={pulsed}
+                                        onItemClick={handleItemClick}
+                                    />
+                                </FlipPage>
+                            ))}
+                        </HTMLFlipBook>
+                    )}
+
+                    {/* Navigation arrows */}
+                    {!loading && !error && renderedPages.length > 1 && (
+                        <>
+                            {!isFirstPage && (
+                                <button
+                                    type="button"
+                                    onClick={flipPrev}
+                                    className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    aria-label="Previous page"
+                                >
+                                    <ChevronLeft className="size-5" />
+                                </button>
+                            )}
+                            {!isLastPage && (
+                                <button
+                                    type="button"
+                                    onClick={flipNext}
+                                    className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    aria-label="Next page"
+                                >
+                                    <ChevronRight className="size-5" />
+                                </button>
+                            )}
+                        </>
+                    )}
+
+                    {/* Page indicator */}
+                    {!loading && !error && totalPages > 1 && (
+                        <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs tabular-nums text-white/80 backdrop-blur-sm">
+                            {currentPage + 1} / {totalPages}
+                        </div>
+                    )}
                 </div>
-                {cart.items.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={() => setCartOpen(true)}
-                        className="relative ml-4 rounded-full p-2 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                        aria-label={`Cart, ${cart.items.length} items`}
-                    >
-                        <ShoppingBag className="size-5" />
-                        <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-emerald-600 px-1 text-[10px] font-semibold tabular-nums text-white">
-                            {cart.items.length}
-                        </span>
-                    </button>
-                )}
-            </header>
-
-            {/* Book frame */}
-            <div
-                ref={containerRef}
-                className="relative overflow-hidden rounded-lg bg-slate-900"
-                style={{ aspectRatio: isMobile ? '3 / 4' : '3 / 2' }}
-            >
-                {loading && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
-                    </div>
-                )}
-                {error && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-center text-rose-300">
-                            Failed to load lookbook ({error})
-                        </p>
-                    </div>
-                )}
-
-                {!loading && !error && renderedPages.length > 0 && (
-                    /* @ts-expect-error react-pageflip types are incomplete */
-                    <HTMLFlipBook
-                        key={flipKey}
-                        ref={flipBookRef}
-                        width={isMobile ? containerSize.width : Math.round(containerSize.width / 2)}
-                        height={containerSize.height}
-                        size="stretch"
-                        minWidth={280}
-                        maxWidth={960}
-                        minHeight={370}
-                        maxHeight={1280}
-                        drawShadow={true}
-                        flippingTime={800}
-                        usePortrait={isMobile}
-                        maxShadowOpacity={0.5}
-                        showCover={!isMobile}
-                        mobileScrollSupport={true}
-                        onFlip={(e: { data: number }) => setCurrentPage(e.data)}
-                        className="book-shadow"
-                        startPage={0}
-                        clickEventForward={true}
-                        swipeDistance={30}
-                    >
-                        {renderedPages.map((rp) => (
-                            <FlipPage key={rp.pageNumber}>
-                                <PageWithHotZones
-                                    pageNumber={rp.pageNumber}
-                                    canvas={rp.canvas}
-                                    items={itemsByPage.get(rp.pageNumber) ?? []}
-                                    pulsed={pulsed}
-                                    onItemClick={handleItemClick}
-                                />
-                            </FlipPage>
-                        ))}
-                    </HTMLFlipBook>
-                )}
-
-                {/* Navigation arrows */}
-                {!loading && !error && renderedPages.length > 1 && (
-                    <>
-                        {!isFirstPage && (
-                            <button
-                                type="button"
-                                onClick={flipPrev}
-                                className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                aria-label="Previous page"
-                            >
-                                <ChevronLeft className="size-5" />
-                            </button>
-                        )}
-                        {!isLastPage && (
-                            <button
-                                type="button"
-                                onClick={flipNext}
-                                className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                aria-label="Next page"
-                            >
-                                <ChevronRight className="size-5" />
-                            </button>
-                        )}
-                    </>
-                )}
-
-                {/* Page indicator */}
-                {!loading && !error && totalPages > 1 && (
-                    <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs tabular-nums text-white/80 backdrop-blur-sm">
-                        {currentPage + 1} / {totalPages}
-                    </div>
-                )}
             </div>
 
             {/* Cart drawer */}
