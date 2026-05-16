@@ -139,7 +139,8 @@ export function LookbookViewer({
         return () => window.removeEventListener('resize', measure)
     }, [isMobile])
 
-    // PDF rendering
+    // PDF rendering — wait for ALL pages before mounting flipbook so react-pageflip
+    // sees the full children count up front (it caches children on mount).
     useEffect(() => {
         let cancelled = false
         async function renderPdf() {
@@ -165,12 +166,12 @@ export function LookbookViewer({
                     if (!ctx) throw new Error('could not get 2d context')
                     await page.render({ canvasContext: ctx, viewport, canvas }).promise
                     out.push({ pageNumber: n, canvas })
-                    if (n === 1) {
-                        setRenderedPages([...out])
-                        setLoading(false)
-                    }
                 }
-                if (!cancelled) setRenderedPages(out)
+                if (!cancelled) {
+                    setRenderedPages(out)
+                    setLoading(false)
+                    setFlipKey(k => k + 1)
+                }
             } catch (err) {
                 if (!cancelled) {
                     console.error('[LookbookViewer] render failed', err)
