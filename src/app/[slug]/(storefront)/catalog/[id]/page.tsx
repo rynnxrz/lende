@@ -1,5 +1,4 @@
 import { createServiceClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { ItemDetailClient } from './ItemDetailClient'
 import { RelatedItems } from './RelatedItems'
@@ -7,21 +6,17 @@ import { RelatedItemsSkeleton } from '@/components/skeletons/RelatedItemsSkeleto
 import { Suspense } from 'react'
 
 interface Props {
-    params: Promise<{ id: string }>
+    params: Promise<{ slug: string; id: string }>
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-// Force dynamic rendering — orgSlug comes from per-request header.
+// Force dynamic rendering — orgSlug comes from route params at request time.
 export const dynamic = 'force-dynamic'
 
-const DEFAULT_ORG_SLUG = 'ivyjstudio'
-
 export default async function ItemDetailPage({ params, searchParams }: Props) {
-    const { id } = await params
+    const { slug, id } = await params
     const { context } = await searchParams
-
-    const headerList = await headers()
-    const orgSlug = (headerList.get('x-org-slug') ?? DEFAULT_ORG_SLUG).toLowerCase()
+    const orgSlug = slug.toLowerCase()
 
     const supabase = createServiceClient()
     const { data: org } = await supabase

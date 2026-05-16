@@ -1,12 +1,10 @@
 import { Suspense } from 'react'
-import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
-import { CatalogClient } from '../CatalogClient'
+import { CatalogClient } from './CatalogClient'
 
-// Force dynamic rendering so we always resolve the per-request org from
-// the x-org-slug header (middleware sets it on rewrites from /{slug}/catalog).
+// Force dynamic rendering so the per-org cache key resolves on every request.
 export const dynamic = 'force-dynamic'
 
 // Per-org cached data fetcher. Cache key includes orgId so different
@@ -41,14 +39,13 @@ const buildCachedCatalogFetcher = (orgId: string) =>
         { revalidate: 60, tags: [`catalog-${orgId}`] }
     )
 
-const DEFAULT_ORG_SLUG = 'ivyjstudio'
-
-export default async function CatalogPage() {
-    // Resolve org from middleware-injected header; fall back to default
-    // tenant for legacy /catalog requests (which middleware 301-redirects
-    // to /ivyjstudio/catalog then rewrites back here in Phase A).
-    const headerList = await headers()
-    const orgSlug = (headerList.get('x-org-slug') ?? DEFAULT_ORG_SLUG).toLowerCase()
+export default async function CatalogPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>
+}) {
+    const { slug } = await params
+    const orgSlug = slug.toLowerCase()
 
     const supabase = createServiceClient()
     const { data: org } = await supabase

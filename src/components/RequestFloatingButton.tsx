@@ -28,11 +28,30 @@ import {
     normalizeBillableDays,
 } from "@/lib/invoice/pricing"
 
+// Default fallback org for legacy `/catalog` / `/wholesale` URLs that
+// haven't been org-prefixed yet. After Phase B move every storefront URL
+// carries the slug as first segment, so this fallback rarely fires.
+const DEFAULT_ORG_SLUG = 'ivyjstudio'
+
+function deriveOrgSlug(pathname: string | null): string {
+    if (!pathname) return DEFAULT_ORG_SLUG
+    const segments = pathname.split('/').filter(Boolean)
+    const first = segments[0]
+    if (!first) return DEFAULT_ORG_SLUG
+    // If first segment looks like a tenant route name, we're on a legacy
+    // single-tenant URL like /catalog or /wholesale — fall back to default.
+    if (['catalog', 'wholesale', 'admin', 'archive', 'request', 'payment', 'payment-confirmation'].includes(first)) {
+        return DEFAULT_ORG_SLUG
+    }
+    return first
+}
+
 export function RequestFloatingButton() {
     const pathname = usePathname()
     const { items, dateRange, removeItem } = useRequestStore()
     const [open, setOpen] = React.useState(false)
     const [isMounted, setIsMounted] = React.useState(false)
+    const orgSlug = deriveOrgSlug(pathname)
 
     React.useEffect(() => {
         setIsMounted(true)
@@ -44,10 +63,15 @@ export function RequestFloatingButton() {
         if (pathname === '/') return false
         if (pathname.startsWith('/admin')) return false
         if (pathname.startsWith('/archive')) return false
+        if (/^\/[^/]+\/admin\b/.test(pathname)) return false
+        if (/^\/[^/]+\/archive\b/.test(pathname)) return false
 
-        // Show on catalog and wholesale routes
+        // Show on legacy single-tenant /catalog, /wholesale and on the
+        // migrated /{slug}/catalog, /{slug}/wholesale storefront routes.
         if (pathname.startsWith('/catalog')) return true
         if (pathname.startsWith('/wholesale')) return true
+        if (/^\/[^/]+\/catalog\b/.test(pathname)) return true
+        if (/^\/[^/]+\/wholesale\b/.test(pathname)) return true
 
         // Default: hide
         return false
@@ -223,7 +247,7 @@ export function RequestFloatingButton() {
                     )}
 
                     <SheetFooter>
-                        <Link href="/request/summary" className="w-full" onClick={() => setOpen(false)}>
+                        <Link href={`/${orgSlug}/request/summary`} className="w-full" onClick={() => setOpen(false)}>
                             <Button className="w-full h-12 text-base gap-2" disabled={items.length === 0}>
                                 Confirm Request
                                 <ArrowRight className="h-4 w-4" />

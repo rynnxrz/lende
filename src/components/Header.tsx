@@ -6,18 +6,23 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 /**
- * Tenant admin/catalog header (legacy single-tenant deployment).
+ * Tenant admin/internal header (legacy single-tenant deployment).
  *
- * Only renders on known tenant routes (admin, catalog, etc.) so the
- * (marketing) layout's MarketingHeader handles everything else — including
- * 404 pages via root not-found.tsx.
+ * Only renders on legacy tenant routes that have not yet been migrated
+ * to the new `[slug]/(storefront)/...` route group. Storefront pages
+ * (catalog, wholesale, org home) get their own StorefrontHeader from
+ * `[slug]/(storefront)/layout.tsx` and must NOT match here, or the page
+ * would render two stacked headers.
+ *
+ * Marketing routes have their own MarketingHeader from
+ * `(marketing)/layout.tsx`.
  */
 const TENANT_PREFIXES = [
-    "/admin", "/catalog", "/archive", "/wholesale",
+    "/admin", "/archive",
     "/request", "/payment", "/payment-confirmation", "/legacy",
     "/system-admin",
 ]
-const ORG_TENANT_RE = /^\/[^/]+\/(admin|catalog|archive|wholesale|request|payment|payment-confirmation)\b/
+const ORG_TENANT_RE = /^\/[^/]+\/(admin|archive|request|payment|payment-confirmation)\b/
 
 export function Header() {
     const pathname = usePathname() ?? ""
