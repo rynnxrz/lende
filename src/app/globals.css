@@ -210,6 +210,48 @@
   }
 }
 
+@keyframes hotzone-pulse {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: rgba(255, 255, 255, 0.15); }
+}
+
+@utility animate-hotzone-pulse {
+  animation: hotzone-pulse 1.5s ease-in-out 2 forwards;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Book view page slide transitions */
+@keyframes book-slide-in-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes book-slide-out-to-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+@keyframes book-slide-in-from-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes book-slide-out-to-right {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+@utility animate-book-in-right {
+  animation: book-slide-in-from-right 400ms ease-out forwards;
+}
+@utility animate-book-out-left {
+  animation: book-slide-out-to-left 400ms ease-out forwards;
+}
+@utility animate-book-in-left {
+  animation: book-slide-in-from-left 400ms ease-out forwards;
+}
+@utility animate-book-out-right {
+  animation: book-slide-out-to-right 400ms ease-out forwards;
+}
+
 .skip-link {
   position: absolute;
   left: -999px;
