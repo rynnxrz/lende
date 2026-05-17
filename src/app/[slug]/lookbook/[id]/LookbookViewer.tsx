@@ -334,38 +334,6 @@ export function LookbookViewer({
     const isFirstPage = currentPage === 0
     const isLastPage = currentPage >= totalPages - 1
 
-    // Product detail overlay
-    if (showProduct) {
-        return (
-            <div className="relative">
-                <header className="mb-4 flex items-center justify-between">
-                    <div className="min-w-0">
-                        <p className="text-xs uppercase tracking-widest text-slate-500">
-                            {orgName}
-                        </p>
-                        <h1 className="truncate text-lg font-semibold">{lookbookTitle}</h1>
-                    </div>
-                </header>
-                <div
-                    className="overflow-hidden rounded-lg bg-white"
-                    style={{ aspectRatio: isMobile ? '3 / 4' : '3 / 2' }}
-                >
-                    <ProductDetailPage
-                        item={showProduct}
-                        onBack={goBackFromProduct}
-                        isMobile={isMobile}
-                    />
-                </div>
-                <LookbookCartDrawer
-                    open={cartOpen}
-                    onOpenChange={setCartOpen}
-                    organizationId={organizationId}
-                    lookbookId={lookbookId}
-                />
-            </div>
-        )
-    }
-
     return (
         <div className="relative h-[100dvh] w-full overflow-hidden bg-slate-950">
             {/* Floating top-left: org + title */}
@@ -403,88 +371,98 @@ export function LookbookViewer({
                         height: `${containerSize.height}px`,
                     }}
                 >
-                    {loading && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
-                        </div>
-                    )}
-                    {error && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <p className="text-center text-rose-300">
-                                Failed to load lookbook ({error})
-                            </p>
-                        </div>
-                    )}
-
-                    {!loading && !error && renderedPages.length > 0 && (
-                        /* @ts-expect-error react-pageflip types are incomplete */
-                        <HTMLFlipBook
-                            key={flipKey}
-                            ref={flipBookRef}
-                            width={containerSize.width}
-                            height={containerSize.height}
-                            size="fixed"
-                            minWidth={280}
-                            maxWidth={2400}
-                            minHeight={370}
-                            maxHeight={2400}
-                            drawShadow={true}
-                            flippingTime={800}
-                            usePortrait={true}
-                            maxShadowOpacity={0.5}
-                            showCover={false}
-                            mobileScrollSupport={true}
-                            onFlip={(e: { data: number }) => setCurrentPage(e.data)}
-                            className="book-shadow"
-                            startPage={0}
-                            clickEventForward={true}
-                            swipeDistance={30}
-                        >
-                            {renderedPages.map((rp) => (
-                                <FlipPage key={rp.pageNumber}>
-                                    <PageWithHotZones
-                                        pageNumber={rp.pageNumber}
-                                        canvas={rp.canvas}
-                                        items={itemsForRenderedPage(rp)}
-                                        pulsed={pulsed}
-                                        onItemClick={handleItemClick}
-                                    />
-                                </FlipPage>
-                            ))}
-                        </HTMLFlipBook>
-                    )}
-
-                    {/* Navigation arrows */}
-                    {!loading && !error && renderedPages.length > 1 && (
+                    {showProduct ? (
+                        <ProductDetailPage
+                            item={showProduct}
+                            onBack={goBackFromProduct}
+                            isMobile={isMobile}
+                        />
+                    ) : (
                         <>
-                            {!isFirstPage && (
-                                <button
-                                    type="button"
-                                    onClick={flipPrev}
-                                    className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                    aria-label="Previous page"
-                                >
-                                    <ChevronLeft className="size-5" />
-                                </button>
+                            {loading && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
+                                </div>
                             )}
-                            {!isLastPage && (
-                                <button
-                                    type="button"
-                                    onClick={flipNext}
-                                    className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                    aria-label="Next page"
+                            {error && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <p className="text-center text-rose-300">
+                                        Failed to load lookbook ({error})
+                                    </p>
+                                </div>
+                            )}
+
+                            {!loading && !error && renderedPages.length > 0 && (
+                                /* @ts-expect-error react-pageflip types are incomplete */
+                                <HTMLFlipBook
+                                    key={flipKey}
+                                    ref={flipBookRef}
+                                    width={containerSize.width}
+                                    height={containerSize.height}
+                                    size="fixed"
+                                    minWidth={280}
+                                    maxWidth={2400}
+                                    minHeight={370}
+                                    maxHeight={2400}
+                                    drawShadow={true}
+                                    flippingTime={800}
+                                    usePortrait={true}
+                                    maxShadowOpacity={0.5}
+                                    showCover={false}
+                                    mobileScrollSupport={true}
+                                    onFlip={(e: { data: number }) => setCurrentPage(e.data)}
+                                    className="book-shadow"
+                                    startPage={0}
+                                    clickEventForward={true}
+                                    swipeDistance={30}
                                 >
-                                    <ChevronRight className="size-5" />
-                                </button>
+                                    {renderedPages.map((rp) => (
+                                        <FlipPage key={rp.pageNumber}>
+                                            <PageWithHotZones
+                                                pageNumber={rp.pageNumber}
+                                                canvas={rp.canvas}
+                                                items={itemsForRenderedPage(rp)}
+                                                pulsed={pulsed}
+                                                onItemClick={handleItemClick}
+                                            />
+                                        </FlipPage>
+                                    ))}
+                                </HTMLFlipBook>
+                            )}
+
+                            {/* Navigation arrows */}
+                            {!loading && !error && renderedPages.length > 1 && (
+                                <>
+                                    {!isFirstPage && (
+                                        <button
+                                            type="button"
+                                            onClick={flipPrev}
+                                            className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            aria-label="Previous page"
+                                        >
+                                            <ChevronLeft className="size-5" />
+                                        </button>
+                                    )}
+                                    {!isLastPage && (
+                                        <button
+                                            type="button"
+                                            onClick={flipNext}
+                                            className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            aria-label="Next page"
+                                        >
+                                            <ChevronRight className="size-5" />
+                                        </button>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Page indicator */}
+                            {!loading && !error && totalPages > 1 && (
+                                <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs tabular-nums text-white/80 backdrop-blur-sm">
+                                    {currentPage + 1} / {totalPages}
+                                </div>
                             )}
                         </>
-                    )}
-
-                    {/* Page indicator */}
-                    {!loading && !error && totalPages > 1 && (
-                        <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs tabular-nums text-white/80 backdrop-blur-sm">
-                            {currentPage + 1} / {totalPages}
-                        </div>
                     )}
                 </div>
             </div>

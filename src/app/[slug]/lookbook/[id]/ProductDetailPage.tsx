@@ -57,9 +57,11 @@ export function ProductDetailPage({ item, onBack, isMobile }: Props) {
         }
     }
 
-    if (isMobile) {
-        return (
-            <div className="flex h-full flex-col bg-white text-slate-900">
+    // Always use the portrait single-column layout so the detail view sits
+    // inside the same portrait page container as the flipbook. (isMobile is
+    // kept in the Props for backward-compatibility but no longer branches.)
+    return (
+        <div className="flex h-full flex-col bg-white text-slate-900">
                 {/* Back button */}
                 <div className="flex items-center px-3 py-2">
                     <button
@@ -145,94 +147,4 @@ export function ProductDetailPage({ item, onBack, isMobile }: Props) {
                 </div>
             </div>
         )
-    }
-
-    // Desktop: two-column spread layout
-    return (
-        <div className="flex h-full bg-white text-slate-900">
-            {/* Left: hero image */}
-            <div className="flex w-1/2 items-center justify-center bg-slate-50">
-                {heroImage ? (
-                    <img
-                        src={heroImage}
-                        alt={detail.name ?? 'Product'}
-                        className="h-full w-full object-contain"
-                    />
-                ) : (
-                    <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">
-                        No image
-                    </div>
-                )}
-            </div>
-
-            {/* Right: details */}
-            <div className="flex w-1/2 flex-col overflow-y-auto">
-                {/* Back */}
-                <div className="px-6 pt-5">
-                    <button
-                        type="button"
-                        onClick={onBack}
-                        className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-slate-500 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                    >
-                        <ChevronLeft className="size-4" />
-                        <span>Back</span>
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="flex flex-1 flex-col justify-center space-y-5 px-8 py-6">
-                    {detail.category && (
-                        <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
-                            {detail.category}
-                        </p>
-                    )}
-                    <h2 className="text-2xl font-semibold leading-tight">
-                        {detail.name ?? 'Item'}
-                    </h2>
-                    {detail.sku && (
-                        <p className="font-mono text-xs text-slate-500">{detail.sku}</p>
-                    )}
-                    {priceText && (
-                        <p className="text-xl font-semibold tabular-nums">{priceText}</p>
-                    )}
-                    {detail.description && (
-                        <p className="max-w-sm text-sm leading-relaxed text-slate-600">
-                            {detail.description}
-                        </p>
-                    )}
-
-                    {/* Specs */}
-                    {specs.length > 0 && (
-                        <dl className="grid max-w-sm grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-t border-slate-100 pt-5">
-                            {specs.map((s) => (
-                                <div key={s.label} className="contents">
-                                    <dt className="text-xs font-medium text-slate-400">
-                                        {s.label}
-                                    </dt>
-                                    <dd className="text-sm text-slate-700">{s.value}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    )}
-
-                    {/* CTA */}
-                    <div className="pt-2">
-                        {inCart ? (
-                            <p className="text-sm font-medium text-emerald-700">
-                                Added to request
-                            </p>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleAdd}
-                                className="rounded-lg bg-emerald-700 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                            >
-                                Add to Request
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
 }
