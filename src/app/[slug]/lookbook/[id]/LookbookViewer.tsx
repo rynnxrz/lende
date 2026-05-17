@@ -141,7 +141,9 @@ export function LookbookViewer({
         [itemsByOriginalPage],
     )
 
-    // Measure viewport for single-page flip book (portrait, height-driven)
+    // Measure viewport for single-page flip book. Use the real aspect ratio of
+    // the first rendered page (after landscape splitting) so the container
+    // exactly matches the page shape — no over-crop, no letterboxing.
     useEffect(() => {
         if (typeof window === 'undefined') return
 
@@ -149,7 +151,10 @@ export function LookbookViewer({
             const padding = 32 // 16px on each side
             const viewportW = window.innerWidth - padding
             const viewportH = window.innerHeight - padding
-            const aspectRatio = 3 / 4 // single portrait page
+            const firstCanvas = renderedPages[0]?.canvas
+            const aspectRatio = firstCanvas
+                ? firstCanvas.width / firstCanvas.height
+                : 3 / 4 // portrait fallback before PDF is rendered
 
             let h = viewportH
             let w = h * aspectRatio
@@ -170,7 +175,7 @@ export function LookbookViewer({
         measure()
         window.addEventListener('resize', measure)
         return () => window.removeEventListener('resize', measure)
-    }, [])
+    }, [renderedPages])
 
     // PDF rendering — render page 1 fast for instant feedback, then render
     // the rest in parallel. Mount flipbook only when ALL pages are ready so
