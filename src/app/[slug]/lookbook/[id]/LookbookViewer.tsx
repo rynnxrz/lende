@@ -400,10 +400,10 @@ export function LookbookViewer({
                         <div
                             key={`detail-${(showProduct ?? closingProduct)!.id}`}
                             className={
-                                'absolute inset-0 z-20 duration-300 ' +
+                                'absolute inset-0 z-20 ' +
                                 (showProduct
-                                    ? 'animate-in fade-in zoom-in-95'
-                                    : 'animate-out fade-out zoom-out-95 fill-mode-forwards pointer-events-none')
+                                    ? 'lookbook-page-flip-in'
+                                    : 'lookbook-page-flip-out pointer-events-none')
                             }
                         >
                             <ProductDetailPage
@@ -447,6 +447,7 @@ export function LookbookViewer({
                                     usePortrait={true}
                                     maxShadowOpacity={0.5}
                                     showCover={false}
+                                    showPageCorners={false}
                                     mobileScrollSupport={true}
                                     onFlip={(e: { data: number }) => setCurrentPage(e.data)}
                                     className="book-shadow"

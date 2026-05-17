@@ -226,6 +226,55 @@
   filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.4));
 }
 
+/* Page-flip-style transitions for the product detail overlay so opening a
+   product feels like a new page being turned over, matching react-pageflip's
+   curl animation in look and timing. */
+@keyframes lookbook-page-flip-in {
+  0% {
+    transform: perspective(1400px) rotateY(105deg);
+    transform-origin: left center;
+    opacity: 0;
+    box-shadow: -20px 0 30px rgba(0, 0, 0, 0.35);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(1400px) rotateY(0deg);
+    transform-origin: left center;
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes lookbook-page-flip-out {
+  0% {
+    transform: perspective(1400px) rotateY(0deg);
+    transform-origin: left center;
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(1400px) rotateY(105deg);
+    transform-origin: left center;
+    opacity: 0;
+    box-shadow: -20px 0 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.lookbook-page-flip-in {
+  animation: lookbook-page-flip-in 550ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  backface-visibility: hidden;
+}
+
+.lookbook-page-flip-out {
+  animation: lookbook-page-flip-out 550ms cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  backface-visibility: hidden;
+}
+
 .skip-link {
   position: absolute;
   left: -999px;
