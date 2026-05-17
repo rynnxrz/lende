@@ -92,6 +92,10 @@ export function LookbookViewer({
     const [pulsed, setPulsed] = useState(false)
     const [currentPage, setCurrentPage] = useState(0)
     const [showProduct, setShowProduct] = useState<LookbookItemRow | null>(null)
+    // Holds the product being faded out so the back-animation has something
+    // to render after showProduct has been cleared. ~300ms after Back is
+    // pressed, this resets to null and the detail overlay unmounts.
+    const [closingProduct, setClosingProduct] = useState<LookbookItemRow | null>(null)
     const [containerSize, setContainerSize] = useState({ width: 600, height: 800 })
     const [flipKey, setFlipKey] = useState(0)
 
@@ -292,6 +296,22 @@ export function LookbookViewer({
         return () => clearTimeout(t)
     }, [])
 
+    // Pre-warm product hero images so the detail view appears instantly when
+    // a hot zone is clicked. Uses the HTMLImageElement cache — no DOM nodes
+    // attached, browser caches the bytes for later reuse.
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const seen = new Set<string>()
+        for (const it of items) {
+            const url = it.item?.images?.[0]
+            if (!url || seen.has(url)) continue
+            seen.add(url)
+            const img = new window.Image()
+            img.decoding = 'async'
+            img.src = url
+        }
+    }, [items])
+
     // Navigation
     const flipNext = useCallback(() => {
         flipBookRef.current?.pageFlip()?.flipNext()
@@ -302,11 +322,16 @@ export function LookbookViewer({
     }, [])
 
     const goBackFromProduct = useCallback(() => {
-        setShowProduct(null)
+        setShowProduct(prev => {
+            if (prev) setClosingProduct(prev)
+            return null
+        })
+        window.setTimeout(() => setClosingProduct(null), 300)
     }, [])
 
     const handleItemClick = useCallback((item: LookbookItemRow) => {
         if (!item.item) return
+        setClosingProduct(null) // cancel any in-flight close animation
         setShowProduct(item)
     }, [])
 
@@ -371,14 +396,27 @@ export function LookbookViewer({
                         height: `${containerSize.height}px`,
                     }}
                 >
-                    {showProduct ? (
-                        <ProductDetailPage
-                            item={showProduct}
-                            onBack={goBackFromProduct}
-                            isMobile={isMobile}
-                        />
-                    ) : (
-                        <>
+                    {(showProduct || closingProduct) && (
+                        <div
+                            key={`detail-${(showProduct ?? closingProduct)!.id}`}
+                            className={
+                                'absolute inset-0 z-20 duration-300 ' +
+                                (showProduct
+                                    ? 'animate-in fade-in zoom-in-95'
+                                    : 'animate-out fade-out zoom-out-95 fill-mode-forwards pointer-events-none')
+                            }
+                        >
+                            <ProductDetailPage
+                                item={(showProduct ?? closingProduct)!}
+                                onBack={goBackFromProduct}
+                                isMobile={isMobile}
+                            />
+                        </div>
+                    )}
+                    {/* Book stays mounted underneath the detail overlay so the
+                        flipbook does not re-mount on close, and the fade-out
+                        animation reveals the book smoothly. */}
+                    <>
                             {loading && (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
@@ -431,7 +469,6 @@ export function LookbookViewer({
                             )}
 
                         </>
-                    )}
                 </div>
             </div>
 
