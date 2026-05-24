@@ -33,13 +33,16 @@ import {
     type ReservationAssessmentRow,
     type ReservationGroupAssessment,
 } from '@/lib/reservations/assessment'
+import { fetchPrestigeAssessments } from '@/lib/reservations/prestige-store'
+import { PrestigeBadge } from './PrestigeBadge'
+import type { PersistedPrestige } from '@/lib/reservations/prestige-agent'
 import type { BillingProfile } from '@/types'
 import { computeRentalChargeFromRetail } from '@/lib/invoice/pricing'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-    searchParams: Promise<{ filter?: string; customer?: string }>
+    searchParams: Promise<{ filter?: string; customer?: string; sort?: string }>
 }
 
 const STATUS_FILTERS = {
@@ -53,6 +56,7 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
     const resolvedSearchParams = await searchParams
     const filter = resolvedSearchParams.filter || 'pending_request'
     const customerEmail = resolvedSearchParams.customer
+    const sortMode = resolvedSearchParams.sort === 'prestige' ? 'prestige' : 'default'
 
     const supabase = await createClient()
 
@@ -141,7 +145,10 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
     })
 
     const groupKeys = baseSortedGroups.map(group => buildReservationGroupKey(group[0]))
-    const assessments = await fetchReservationGroupAssessments(groupKeys)
+    const [assessments, prestigeMap] = await Promise.all([
+        fetchReservationGroupAssessments(groupKeys),
+        fetchPrestigeAssessments(groupKeys),
+    ])
 
     if (filter === 'pending_request') {
         await Promise.all(baseSortedGroups.map(async (group) => {
@@ -163,13 +170,26 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
             return 0
         }
 
-        const leftAssessment = assessments.get(buildReservationGroupKey(left[0]))
-        const rightAssessment = assessments.get(buildReservationGroupKey(right[0]))
-        const leftScore = leftAssessment?.priorityScore || 0
-        const rightScore = rightAssessment?.priorityScore || 0
+        if (sortMode === 'prestige') {
+            const leftPrestige = prestigeMap.get(buildReservationGroupKey(left[0]))
+            const rightPrestige = prestigeMap.get(buildReservationGroupKey(right[0]))
+            // nulls last
+            if (!leftPrestige && rightPrestige) return 1
+            if (leftPrestige && !rightPrestige) return -1
+            const leftScore = leftPrestige?.prestige_score ?? -1
+            const rightScore = rightPrestige?.prestige_score ?? -1
+            if (rightScore !== leftScore) {
+                return rightScore - leftScore
+            }
+        } else {
+            const leftAssessment = assessments.get(buildReservationGroupKey(left[0]))
+            const rightAssessment = assessments.get(buildReservationGroupKey(right[0]))
+            const leftScore = leftAssessment?.priorityScore || 0
+            const rightScore = rightAssessment?.priorityScore || 0
 
-        if (rightScore !== leftScore) {
-            return rightScore - leftScore
+            if (rightScore !== leftScore) {
+                return rightScore - leftScore
+            }
         }
 
         const latestLeft = Math.max(...left.map(item => new Date(item.created_at).getTime()))
@@ -192,11 +212,11 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <div className="flex items-center gap-4">
-                        <h1 className="text-3xl font-semibold text-slate-900">Reservations</h1>
+                        <h1 className="text-3xl font-semibold text-foreground">Reservations</h1>
                         <ImportRequestButton />
                     </div>
                     {customerEmail && (
-                        <p className="text-sm text-slate-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             Filtered by: <span className="font-medium">{customerEmail}</span>
                             <Link href="/admin/reservations" className="ml-2 text-blue-600 hover:underline">
                                 Clear filter
@@ -205,7 +225,7 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
                     )}
                 </div>
 
-                <div className="flex p-1 bg-slate-100 rounded-lg">
+                <div className="flex p-1 bg-muted rounded-lg">
                     <FilterTab
                         label="Pending Request"
                         active={filter === 'pending_request'}
@@ -234,8 +254,39 @@ export default async function AdminReservationsPage({ searchParams }: PageProps)
                 </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-                <ReservationsTable groups={sortedGroups} billingProfiles={billingProfiles || []} assessments={assessments} />
+            {filter === 'pending_request' && (
+                <div className="flex items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">Sort:</span>
+                    <Link
+                        href="/admin/reservations?filter=pending_request"
+                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                            sortMode !== 'prestige'
+                                ? 'bg-primary text-white'
+                                : 'bg-muted text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        Priority score
+                    </Link>
+                    <Link
+                        href="/admin/reservations?filter=pending_request&sort=prestige"
+                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                            sortMode === 'prestige'
+                                ? 'bg-primary text-white'
+                                : 'bg-muted text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        Prestige
+                    </Link>
+                </div>
+            )}
+
+            <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+                <ReservationsTable
+                    groups={sortedGroups}
+                    billingProfiles={billingProfiles || []}
+                    assessments={assessments}
+                    prestigeMap={prestigeMap}
+                />
             </div>
         </div>
     )
@@ -248,8 +299,8 @@ function FilterTab({ label, active, href }: { label: string, active: boolean, hr
             className={`
                 px-4 py-2 text-sm font-medium rounded-md transition-all
                 ${active
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }
             `}
         >
@@ -287,14 +338,16 @@ function ReservationsTable({
     groups,
     billingProfiles,
     assessments,
+    prestigeMap,
 }: {
     groups: ReservationGroup[]
     billingProfiles: BillingProfile[]
     assessments: Map<string, ReservationGroupAssessment>
+    prestigeMap: Map<string, PersistedPrestige | null>
 }) {
     if (groups.length === 0) {
         return (
-            <div className="p-12 text-center text-slate-400">
+            <div className="p-12 text-center text-muted-foreground/70">
                 No reservations found.
             </div>
         )
@@ -303,13 +356,14 @@ function ReservationsTable({
     return (
         <Table>
             <TableHeader>
-                <TableRow className="bg-slate-50">
+                <TableRow className="bg-muted/50">
                     <TableHead className="w-32">Status</TableHead>
                     <TableHead>Items</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Dates</TableHead>
                     <TableHead>AI Intake</TableHead>
+                    <TableHead>Prestige</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -322,8 +376,10 @@ function ReservationsTable({
                     const status = isArchivedReservation(primary)
                         ? ARCHIVED_STATUS
                         : normalizeLegacyReservationStatus(primary.status)
-                    const assessment = assessments.get(buildReservationGroupKey(primary))
-                    // For status: simplified assumption that group shares status. 
+                    const groupKey = buildReservationGroupKey(primary)
+                    const assessment = assessments.get(groupKey)
+                    const prestige = prestigeMap.get(groupKey) ?? null
+                    // For status: simplified assumption that group shares status.
                     // Make sure to display something reasonable if mixed, though normally they should sync.
 
                     const start = new Date(primary.start_date)
@@ -356,7 +412,7 @@ function ReservationsTable({
                         <TableRow key={primary.id} className="group">
                             <TableCell className="align-top">
                                 <StatusBadge status={status} />
-                                <div className="text-xs text-slate-400 mt-2 font-mono">
+                                <div className="text-xs text-muted-foreground/70 mt-2 font-mono">
                                     {format(new Date(primary.created_at), 'MMM dd')}
                                 </div>
                                 {isGroup && (
@@ -368,7 +424,7 @@ function ReservationsTable({
                                 )}
                             </TableCell>
                             <TableCell className="align-top">
-                                <Link href={`/admin/reservations/${primary.id}`} className="block hover:bg-slate-50 -m-2 p-2 rounded transition-colors">
+                                <Link href={`/admin/reservations/${primary.id}`} className="block hover:bg-muted/50 -m-2 p-2 rounded transition-colors">
                                     {isGroup ? (
                                         <div className="flex flex-wrap gap-2">
                                             {group.map((item) => (
@@ -378,25 +434,25 @@ function ReservationsTable({
                                                         <img
                                                             src={item.items.image_paths[0]}
                                                             alt={item.items.name}
-                                                            className="w-10 h-10 object-cover rounded border border-slate-200"
+                                                            className="w-10 h-10 object-cover rounded border border-border"
                                                         />
                                                     ) : (
-                                                        <div className="w-10 h-10 bg-slate-100 rounded border border-slate-200 flex items-center justify-center text-[10px] text-slate-400">
+                                                        <div className="w-10 h-10 bg-muted rounded border border-border flex items-center justify-center text-[10px] text-muted-foreground/70">
                                                             N/A
                                                         </div>
                                                     )}
                                                 </div>
                                             ))}
-                                            <div className="w-full text-xs font-medium text-slate-700 mt-1">
-                                                {primary.items?.name} <span className="text-slate-400 font-normal">+ {group.length - 1} more</span>
+                                            <div className="w-full text-xs font-medium text-foreground mt-1">
+                                                {primary.items?.name} <span className="text-muted-foreground/70 font-normal">+ {group.length - 1} more</span>
                                             </div>
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="font-medium text-slate-900 hover:text-blue-600 transition-colors">
+                                            <div className="font-medium text-foreground hover:text-blue-600 transition-colors">
                                                 {primary.items?.name || 'Unknown Item'}
                                             </div>
-                                            <div className="text-xs text-slate-500 mt-1 font-mono tracking-wide">
+                                            <div className="text-xs text-muted-foreground mt-1 font-mono tracking-wide">
                                                 {primary.items?.sku}
                                             </div>
                                         </>
@@ -404,7 +460,7 @@ function ReservationsTable({
                                 </Link>
                             </TableCell>
                             <TableCell className="align-top">
-                                <div className="text-slate-900 font-medium text-sm">
+                                <div className="text-foreground font-medium text-sm">
                                     {primary.profiles?.full_name || primary.profiles?.email || 'Guest'}
                                 </div>
                                 {primary.profiles?.company_name && (
@@ -412,30 +468,30 @@ function ReservationsTable({
                                         {primary.profiles.company_name}
                                     </div>
                                 )}
-                                <div className="text-xs text-slate-400 mt-1">
+                                <div className="text-xs text-muted-foreground/70 mt-1">
                                     {primary.profiles?.email}
                                 </div>
                             </TableCell>
                             <TableCell className="align-top">
-                                <div className="text-slate-900 text-sm">
+                                <div className="text-foreground text-sm">
                                     {primary.city_region && primary.country ? (
                                         <span>{primary.city_region}, {primary.country}</span>
                                     ) : (
-                                        <span className="text-slate-400 italic">No Location</span>
+                                        <span className="text-muted-foreground/70 italic">No Location</span>
                                     )}
                                 </div>
                             </TableCell>
                             <TableCell className="align-top">
                                 <div className="flex flex-col gap-1 text-xs">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-slate-400 w-8">OUT</span>
-                                        <span className="font-medium bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                        <span className="text-muted-foreground/70 w-8">OUT</span>
+                                        <span className="font-medium bg-muted px-1.5 py-0.5 rounded text-foreground">
                                             {format(start, 'MMM dd')}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-slate-400 w-8">IN</span>
-                                        <span className="font-medium bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                        <span className="text-muted-foreground/70 w-8">IN</span>
+                                        <span className="font-medium bg-muted px-1.5 py-0.5 rounded text-foreground">
                                             {format(end, 'MMM dd')}
                                         </span>
                                     </div>
@@ -455,17 +511,24 @@ function ReservationsTable({
                                                 {assessment.feasibilityStatus.replace('_', ' ')}
                                             </Badge>
                                         </div>
-                                        <div className="space-y-1 text-slate-600">
+                                        <div className="space-y-1 text-muted-foreground">
                                             {assessment.reasons.slice(0, 2).map((reason, index) => (
                                                 <p key={`${assessment.groupKey}-reason-${index}`}>{reason}</p>
                                             ))}
                                         </div>
                                     </div>
                                 ) : (
-                                    <span className="text-xs text-slate-400">Assessment pending</span>
+                                    <span className="text-xs text-muted-foreground/70">Assessment pending</span>
                                 )}
                             </TableCell>
-                            <TableCell className="align-top text-right font-medium text-slate-900 text-sm">
+                            <TableCell className="align-top">
+                                <PrestigeBadge
+                                    prestige={prestige}
+                                    groupKey={groupKey}
+                                    primaryReservationId={primary.id}
+                                />
+                            </TableCell>
+                            <TableCell className="align-top text-right font-medium text-foreground text-sm">
                                 £{groupTotal.toFixed(2)}
                             </TableCell>
                             <TableCell className="align-top text-right">
@@ -556,7 +619,7 @@ function priorityBadgeClass(priorityBand: ReservationGroupAssessment['priorityBa
         case 'standard':
             return 'border-sky-200 bg-sky-50 text-sky-700'
         default:
-            return 'border-slate-200 bg-slate-50 text-slate-600'
+            return 'border-border bg-muted/50 text-muted-foreground'
     }
 }
 
@@ -569,7 +632,7 @@ function valueTierBadgeClass(valueTier: ReservationGroupAssessment['valueTier'])
         case 'standard':
             return 'border-emerald-200 bg-emerald-50 text-emerald-700'
         default:
-            return 'border-slate-200 bg-slate-50 text-slate-600'
+            return 'border-border bg-muted/50 text-muted-foreground'
     }
 }
 
@@ -589,7 +652,7 @@ function StatusBadge({ status }: { status: string }) {
         [RESERVATION_STATUSES.PENDING_REQUEST]: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         [RESERVATION_STATUSES.UPCOMING]: 'bg-blue-100 text-blue-800 border-blue-200',
         [RESERVATION_STATUSES.ONGOING]: 'bg-green-100 text-green-800 border-green-200',
-        [RESERVATION_STATUSES.PAST_LOAN]: 'bg-slate-100 text-slate-800 border-slate-200',
+        [RESERVATION_STATUSES.PAST_LOAN]: 'bg-muted text-foreground border-border',
         [ARCHIVED_STATUS]: 'bg-purple-100 text-purple-800 border-purple-200',
     }
 
@@ -601,7 +664,7 @@ function StatusBadge({ status }: { status: string }) {
         [ARCHIVED_STATUS]: 'Archived',
     }
 
-    const style = styles[status] || 'bg-slate-100 text-slate-800 border-slate-200'
+    const style = styles[status] || 'bg-muted text-foreground border-border'
     const label = labels[status] || status
 
     return (

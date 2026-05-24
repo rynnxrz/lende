@@ -103,7 +103,7 @@ const getConfidenceBadgeClassName = (confidence: string | null | undefined) => {
         return 'border-amber-200 bg-amber-50 text-amber-700'
     }
 
-    return 'border-slate-200 bg-slate-100 text-slate-700'
+    return 'border-border bg-muted text-foreground'
 }
 
 export function LookbookImportPanel({
@@ -340,7 +340,7 @@ export function LookbookImportPanel({
                 </Button>
                 <div>
                     <h2 className="flex items-center gap-2 text-xl font-semibold">
-                        <Sparkles className="h-5 w-5 text-slate-700" />
+                        <Sparkles className="h-5 w-5 text-foreground" />
                         Lookbook Import
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -350,11 +350,11 @@ export function LookbookImportPanel({
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-                <aside className="space-y-4 rounded-2xl border bg-white p-4 shadow-sm">
+                <aside className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-sm font-semibold text-slate-900">Import Sessions</h3>
-                            <p className="text-xs text-slate-500">Current and recent PDF imports.</p>
+                            <h3 className="text-sm font-semibold text-foreground">Import Sessions</h3>
+                            <p className="text-xs text-muted-foreground">Current and recent PDF imports.</p>
                         </div>
                         <Button
                             variant="outline"
@@ -372,7 +372,7 @@ export function LookbookImportPanel({
 
                     <div className="space-y-2">
                         {localSessions.length === 0 && (
-                            <div className="rounded-xl border border-dashed p-4 text-sm text-slate-500">
+                            <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
                                 No lookbook sessions yet.
                             </div>
                         )}
@@ -384,8 +384,8 @@ export function LookbookImportPanel({
                                 onClick={() => setSelectedSessionId(entry.id)}
                                 className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
                                     selectedSessionId === entry.id
-                                        ? 'border-slate-900 bg-slate-900 text-white'
-                                        : 'border-slate-200 bg-white text-slate-700'
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-border bg-card text-foreground'
                                 }`}
                             >
                                 <div className="truncate font-medium">{entry.source_label || 'Imported PDF'}</div>
@@ -399,13 +399,13 @@ export function LookbookImportPanel({
                 </aside>
 
                 <section className="space-y-6">
-                    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                    <div className="rounded-2xl border bg-card p-6 shadow-sm">
                         <div className="flex flex-wrap items-center gap-3">
-                            <Badge variant="outline" className="border-slate-200 text-slate-700">
+                            <Badge variant="outline" className="border-border text-foreground">
                                 {currentStepLabel}
                             </Badge>
                             {session && (
-                                <Badge variant="outline" className="border-slate-200 text-slate-700">
+                                <Badge variant="outline" className="border-border text-foreground">
                                     {session.source_label || 'Imported PDF'}
                                 </Badge>
                             )}
@@ -414,7 +414,7 @@ export function LookbookImportPanel({
 
                     {!session && (
                         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-                            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                            <div className="rounded-2xl border bg-card p-6 shadow-sm">
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="lookbook-file">Lookbook PDF</Label>
@@ -448,9 +448,9 @@ export function LookbookImportPanel({
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border bg-slate-50 p-6 shadow-sm">
-                                <h3 className="text-sm font-semibold text-slate-900">New Flow</h3>
-                                <div className="mt-3 space-y-3 text-sm text-slate-600">
+                            <div className="rounded-2xl border bg-muted/50 p-6 shadow-sm">
+                                <h3 className="text-sm font-semibold text-foreground">New Flow</h3>
+                                <div className="mt-3 space-y-3 text-sm text-muted-foreground">
                                     <p>1. Upload the lookbook PDF.</p>
                                     <p>2. Confirm or correct the structure map.</p>
                                     <p>3. Review extracted items and corrections.</p>
@@ -462,12 +462,12 @@ export function LookbookImportPanel({
 
                     {session && session.overall_status === 'awaiting_structure_confirmation' && editableStructure && (
                         <div className="space-y-6">
-                            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                            <div className="rounded-2xl border bg-card p-6 shadow-sm">
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div className="space-y-3">
                                         <div>
-                                            <h3 className="text-base font-semibold text-slate-900">Structure Confirmation</h3>
-                                            <p className="mt-1 text-sm text-slate-600">
+                                            <h3 className="text-base font-semibold text-foreground">Structure Confirmation</h3>
+                                            <p className="mt-1 text-sm text-muted-foreground">
                                                 Confirm the series layout before draft extraction begins.
                                             </p>
                                         </div>
@@ -477,7 +477,7 @@ export function LookbookImportPanel({
                                                 className={`max-w-2xl rounded-xl border px-4 py-3 text-sm ${
                                                     structureReviewState.tone === 'warning'
                                                         ? 'border-amber-200 bg-amber-50 text-amber-900'
-                                                        : 'border-slate-200 bg-slate-50 text-slate-700'
+                                                        : 'border-border bg-muted/50 text-foreground'
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2 font-medium">
@@ -512,11 +512,11 @@ export function LookbookImportPanel({
 
                                         <div className="space-y-4">
                                             {editableStructure.series_sections.map((section, index) => (
-                                                <div key={section.id} className="rounded-2xl border border-slate-200 p-4">
+                                                <div key={section.id} className="rounded-2xl border border-border p-4">
                                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                                         <div>
-                                                            <div className="text-sm font-semibold text-slate-900">Series {index + 1}</div>
-                                                            <div className="mt-1 text-sm text-slate-600">
+                                                            <div className="text-sm font-semibold text-foreground">Series {index + 1}</div>
+                                                            <div className="mt-1 text-sm text-muted-foreground">
                                                                 Pages {section.start_page}-{section.end_page} • Estimated {section.estimated_item_count} item{section.estimated_item_count === 1 ? '' : 's'}
                                                             </div>
                                                         </div>
@@ -609,7 +609,7 @@ export function LookbookImportPanel({
                                                         </div>
                                                     </div>
 
-                                                    <div className="mt-4 rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600">
+                                                    <div className="mt-4 rounded-xl bg-muted/50 px-3 py-3 text-sm text-muted-foreground">
                                                         {section.reasoning_summary || 'No reasoning summary was recorded for this section.'}
                                                     </div>
                                                 </div>
@@ -643,32 +643,32 @@ export function LookbookImportPanel({
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                            <h4 className="text-sm font-semibold text-slate-900">What To Review</h4>
-                                            <div className="mt-3 space-y-2 text-sm text-slate-600">
+                                        <div className="rounded-2xl border border-border bg-muted/50 p-4">
+                                            <h4 className="text-sm font-semibold text-foreground">What To Review</h4>
+                                            <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                                                 <p>Confirm the cover and appendix pages so extraction skips non-product content.</p>
                                                 <p>Adjust each series page range if a divider page or weak heading was grouped incorrectly.</p>
                                                 <p>Map each detected series to an existing collection or enter a new collection name.</p>
                                             </div>
                                         </div>
 
-                                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                            <h4 className="text-sm font-semibold text-slate-900">Current Structure</h4>
-                                            <div className="mt-3 space-y-3 text-sm text-slate-600">
-                                                <div className="rounded-xl bg-slate-50 px-3 py-3">
-                                                    <div className="font-medium text-slate-900">Cover Pages</div>
+                                        <div className="rounded-2xl border border-border bg-card p-4">
+                                            <h4 className="text-sm font-semibold text-foreground">Current Structure</h4>
+                                            <div className="mt-3 space-y-3 text-sm text-muted-foreground">
+                                                <div className="rounded-xl bg-muted/50 px-3 py-3">
+                                                    <div className="font-medium text-foreground">Cover Pages</div>
                                                     <div className="mt-1">
                                                         {parsePageList(coverPagesInput).length > 0 ? stringifyPageList(parsePageList(coverPagesInput)) : 'None selected'}
                                                     </div>
                                                 </div>
-                                                <div className="rounded-xl bg-slate-50 px-3 py-3">
-                                                    <div className="font-medium text-slate-900">Appendix Pages</div>
+                                                <div className="rounded-xl bg-muted/50 px-3 py-3">
+                                                    <div className="font-medium text-foreground">Appendix Pages</div>
                                                     <div className="mt-1">
                                                         {parsePageList(appendixPagesInput).length > 0 ? stringifyPageList(parsePageList(appendixPagesInput)) : 'None selected'}
                                                     </div>
                                                 </div>
-                                                <div className="rounded-xl bg-slate-50 px-3 py-3">
-                                                    <div className="font-medium text-slate-900">Series Sections</div>
+                                                <div className="rounded-xl bg-muted/50 px-3 py-3">
+                                                    <div className="font-medium text-foreground">Series Sections</div>
                                                     <div className="mt-1">
                                                         {editableStructure.series_sections.length} section{editableStructure.series_sections.length === 1 ? '' : 's'}
                                                     </div>
@@ -682,19 +682,19 @@ export function LookbookImportPanel({
                     )}
 
                     {session && session.overall_status === 'processing_drafts' && (
-                        <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-slate-500" />
-                            <p className="mt-4 text-sm text-slate-600">Draft extraction is running. Refresh in a moment if this takes longer than expected.</p>
+                        <div className="rounded-2xl border bg-card p-8 text-center shadow-sm">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                            <p className="mt-4 text-sm text-muted-foreground">Draft extraction is running. Refresh in a moment if this takes longer than expected.</p>
                         </div>
                     )}
 
                     {session && ['awaiting_item_confirmation', 'confirmed_ready_to_import', 'imported'].includes(session.overall_status) && (
                         <div className="space-y-6">
-                            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                            <div className="rounded-2xl border bg-card p-6 shadow-sm">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
-                                        <h3 className="text-base font-semibold text-slate-900">Draft Review</h3>
-                                        <p className="mt-1 text-sm text-slate-600">
+                                        <h3 className="text-base font-semibold text-foreground">Draft Review</h3>
+                                        <p className="mt-1 text-sm text-muted-foreground">
                                             Review extracted items, make corrections, skip anything you do not want to import, then confirm.
                                         </p>
                                     </div>
@@ -705,7 +705,7 @@ export function LookbookImportPanel({
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                            <div className="rounded-2xl border bg-card p-6 shadow-sm">
                                 <div className="space-y-3">
                                     {sectionErrors.length > 0 && (
                                         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -715,9 +715,9 @@ export function LookbookImportPanel({
                                             </div>
                                             <div className="mt-3 space-y-2">
                                                 {sectionErrors.map((entry) => (
-                                                    <div key={entry.section_id} className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                                    <div key={entry.section_id} className="rounded-lg border border-amber-200 bg-card px-3 py-2 text-sm text-foreground">
                                                         <div className="font-medium">{entry.section_id}</div>
-                                                        <div className="mt-1 text-slate-600">{entry.message}</div>
+                                                        <div className="mt-1 text-muted-foreground">{entry.message}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -725,7 +725,7 @@ export function LookbookImportPanel({
                                     )}
 
                                     {visibleItems.length === 0 && (
-                                        <div className="rounded-xl border border-dashed p-6 text-sm text-slate-500">
+                                        <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
                                             No active draft items remain in this session.
                                         </div>
                                     )}
@@ -733,24 +733,24 @@ export function LookbookImportPanel({
                                     {visibleItems.map(item => {
                                         const issues = Array.isArray(item.import_metadata?.issues) ? item.import_metadata.issues : []
                                         return (
-                                            <div key={item.id} className="rounded-xl border border-slate-200 p-4">
+                                            <div key={item.id} className="rounded-xl border border-border p-4">
                                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                                     <div className="flex gap-4">
                                                         {item.image_urls?.[0] ? (
                                                             <img
                                                                 src={item.image_urls[0]}
                                                                 alt={item.name}
-                                                                className="h-16 w-16 rounded-lg object-cover border border-slate-200 bg-slate-50"
+                                                                className="h-16 w-16 rounded-lg object-cover border border-border bg-muted/50"
                                                             />
                                                         ) : (
-                                                            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-200 text-slate-400">
+                                                            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground/70">
                                                                 <AlertCircle className="h-4 w-4" />
                                                             </div>
                                                         )}
 
                                                         <div>
-                                                            <div className="font-medium text-slate-900">{item.name}</div>
-                                                            <div className="mt-1 text-sm text-slate-600">
+                                                            <div className="font-medium text-foreground">{item.name}</div>
+                                                            <div className="mt-1 text-sm text-muted-foreground">
                                                                 SKU {item.sku || 'missing'} • Page {item.source_page || '-'} • {item.collection_id ? 'Series mapped' : 'Series missing'}
                                                             </div>
                                                             <div className="mt-2 flex flex-wrap gap-2">
@@ -781,13 +781,13 @@ export function LookbookImportPanel({
 
                                 {rejectedItems.length > 0 && (
                                     <div className="mt-6 border-t pt-6">
-                                        <h4 className="text-sm font-semibold text-slate-900">Skipped Items</h4>
+                                        <h4 className="text-sm font-semibold text-foreground">Skipped Items</h4>
                                         <div className="mt-3 space-y-2">
                                             {rejectedItems.map(item => (
-                                                <div key={item.id} className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
+                                                <div key={item.id} className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
                                                     <div>
-                                                        <div className="font-medium text-slate-800">{item.name}</div>
-                                                        <div className="text-xs text-slate-500">{item.sku || 'No SKU'}</div>
+                                                        <div className="font-medium text-foreground">{item.name}</div>
+                                                        <div className="text-xs text-muted-foreground">{item.sku || 'No SKU'}</div>
                                                     </div>
                                                     <Button variant="outline" onClick={() => handleToggleItemStatus(item)}>
                                                         <RotateCcw className="mr-2 h-4 w-4" />
@@ -801,37 +801,37 @@ export function LookbookImportPanel({
                             </div>
 
                             <div className="grid gap-6 xl:grid-cols-2">
-                                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                                    <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+                                <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                                    <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
                                         <ClipboardList className="h-4 w-4" />
                                         Correction Summary
                                     </h3>
                                     <div className="mt-4 space-y-2">
                                         {session.correction_summary?.length ? session.correction_summary.map((entry: { scope: string; field_name: string; count: number }) => (
-                                            <div key={`${entry.scope}:${entry.field_name}`} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                                            <div key={`${entry.scope}:${entry.field_name}`} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
                                                 <span>{entry.scope} / {entry.field_name}</span>
                                                 <Badge variant="outline">{entry.count}</Badge>
                                             </div>
                                         )) : (
-                                            <p className="text-sm text-slate-500">No manual corrections recorded yet.</p>
+                                            <p className="text-sm text-muted-foreground">No manual corrections recorded yet.</p>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                                    <h3 className="text-base font-semibold text-slate-900">Event Log</h3>
+                                <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                                    <h3 className="text-base font-semibold text-foreground">Event Log</h3>
                                     <div className="mt-4 space-y-2">
                                         {session.events?.map(event => {
                                             const reasoningSummary = getEventReasoningSummary(event.payload)
                                             return (
-                                                <div key={event.id} className="rounded-lg border border-slate-200 px-3 py-2">
-                                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                <div key={event.id} className="rounded-lg border border-border px-3 py-2">
+                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                         <Badge variant="outline">{event.step}</Badge>
                                                         <span>{event.level}</span>
                                                     </div>
-                                                    <div className="mt-1 text-sm text-slate-700">{event.message}</div>
+                                                    <div className="mt-1 text-sm text-foreground">{event.message}</div>
                                                     {reasoningSummary && (
-                                                        <div className="mt-2 text-xs text-slate-500">
+                                                        <div className="mt-2 text-xs text-muted-foreground">
                                                             {reasoningSummary}
                                                         </div>
                                                     )}
@@ -845,11 +845,11 @@ export function LookbookImportPanel({
                     )}
 
                     {session && session.overall_status === 'parse_failed' && (
-                        <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                            <div className="flex items-start gap-3 text-sm text-slate-600">
+                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                            <div className="flex items-start gap-3 text-sm text-muted-foreground">
                                 <AlertCircle className="mt-0.5 h-4 w-4 text-red-500" />
                                 <div>
-                                    <div className="font-medium text-slate-900">Parsing failed for this session.</div>
+                                    <div className="font-medium text-foreground">Parsing failed for this session.</div>
                                     <div className="mt-1">Start a new import session with another PDF or retry the current file.</div>
                                 </div>
                             </div>

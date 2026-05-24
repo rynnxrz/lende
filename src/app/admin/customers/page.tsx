@@ -88,7 +88,7 @@ export default async function CustomersPage() {
                                                     {customer.organization_domain}
                                                 </Badge>
                                             ) : (
-                                                <span className="text-slate-400">—</span>
+                                                <span className="text-muted-foreground/70">—</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -96,8 +96,8 @@ export default async function CustomersPage() {
                             </TableBody>
                         </Table>
                     ) : (
-                        <div className="text-center py-12 text-slate-500">
-                            <Users className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                        <div className="text-center py-12 text-muted-foreground">
+                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                             <p>No customers yet</p>
                             <p className="text-sm mt-1">Customers will appear here when they submit booking requests.</p>
                         </div>

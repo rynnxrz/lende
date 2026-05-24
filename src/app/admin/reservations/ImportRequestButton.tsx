@@ -58,7 +58,7 @@ export function ImportRequestButton() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2 border-dashed border-gray-300">
+                <Button variant="outline" className="gap-2 border-dashed border-input">
                     <Upload className="h-4 w-4" />
                     Import from Code
                 </Button>
@@ -81,7 +81,7 @@ export function ImportRequestButton() {
                         <input
                             type="checkbox"
                             id="force-import"
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 rounded border-input text-indigo-600 focus:ring-indigo-500"
                             checked={forceImport}
                             onChange={(e) => setForceImport(e.target.checked)}
                         />

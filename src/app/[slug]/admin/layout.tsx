@@ -76,7 +76,7 @@ export default async function OrgAdminLayout({
     const isEmailVerified = user.email_confirmed_at != null
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-muted">
             {!isEmailVerified && user.email && (
                 <EmailVerificationBanner email={user.email} />
             )}

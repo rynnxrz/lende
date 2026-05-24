@@ -40,7 +40,7 @@ export default async function LookbooksIndexPage() {
             <header className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold">Lookbooks</h1>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted-foreground">
                         Digitised PDF catalogues — paste hot-zones over each product so customers can tap
                         to view &amp; reserve.
                     </p>
@@ -48,21 +48,21 @@ export default async function LookbooksIndexPage() {
             </header>
 
             {(!lookbooks || lookbooks.length === 0) && (
-                <div className="rounded-md border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+                <div className="rounded-md border border-border bg-muted/50 p-6 text-sm text-muted-foreground">
                     No lookbooks yet. Run{' '}
-                    <code className="rounded bg-slate-200 px-1 py-0.5 text-xs">
+                    <code className="rounded bg-muted px-1 py-0.5 text-xs">
                         npx tsx scripts/lookbook-ingest.ts
                     </code>{' '}
                     to ingest your first PDF.
                 </div>
             )}
 
-            <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
+            <ul className="divide-y divide-border rounded-md border border-border bg-card">
                 {(lookbooks ?? []).map(lb => (
                     <li key={lb.id} className="flex items-center justify-between gap-4 p-4">
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-slate-900">{lb.title}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="truncate text-sm font-medium text-foreground">{lb.title}</p>
+                            <p className="text-xs text-muted-foreground">
                                 {lb.page_count ?? 0} pages · {STATUS_LABEL[lb.editor_status] ?? lb.editor_status}
                                 {lb.published ? ' · Live' : ''}
                             </p>
@@ -71,7 +71,7 @@ export default async function LookbooksIndexPage() {
                             {lb.published && (
                                 <Link
                                     href={`/${orgSlug}/lookbook/${lb.slug}`}
-                                    className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                                    className="rounded-md border border-input px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                                     target="_blank"
                                 >
                                     View Live

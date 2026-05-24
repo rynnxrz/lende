@@ -30,10 +30,10 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
 
     return (
         <form action={handleSubmit}>
-            <Card className="border-gray-200 shadow-sm">
+            <Card className="border-border shadow-sm">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-lg font-light flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-gray-500" />
+                        <Settings className="h-4 w-4 text-muted-foreground" />
                         System Configuration
                     </CardTitle>
                     <CardDescription>
@@ -44,7 +44,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Turnaround Buffer */}
                         <div className="space-y-2">
-                            <Label htmlFor="turnaround_buffer" className="font-normal text-gray-600">
+                            <Label htmlFor="turnaround_buffer" className="font-normal text-muted-foreground">
                                 Turnaround Buffer
                             </Label>
                             <div className="flex items-center gap-2">
@@ -54,19 +54,19 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                                     type="number"
                                     min="0"
                                     defaultValue={initialSettings.turnaround_buffer}
-                                    className="w-24 bg-gray-50 border-gray-200 focus:bg-white"
+                                    className="w-24 bg-muted/50 border-border focus:bg-background"
                                     required
                                 />
-                                <span className="text-sm text-gray-400">days</span>
+                                <span className="text-sm text-muted-foreground/70">days</span>
                             </div>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-muted-foreground/70">
                                 Minimum gap between reservations for the same item.
                             </p>
                         </div>
 
                         {/* Booking Password */}
                         <div className="space-y-2">
-                            <Label htmlFor="booking_password" className="font-normal text-gray-600">
+                            <Label htmlFor="booking_password" className="font-normal text-muted-foreground">
                                 Booking Password
                             </Label>
                             <Input
@@ -75,16 +75,16 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                                 type="text"
                                 defaultValue={initialSettings.booking_password ?? ''}
                                 placeholder="Leave empty for open access"
-                                className="bg-gray-50 border-gray-200 focus:bg-white"
+                                className="bg-muted/50 border-border focus:bg-background"
                             />
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-muted-foreground/70">
                                 Required password for customers to access booking form.
                             </p>
                         </div>
 
                         {/* Contact Email */}
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="contact_email" className="font-normal text-gray-600">
+                            <Label htmlFor="contact_email" className="font-normal text-muted-foreground">
                                 Reply-To Email Address
                             </Label>
                             <Input
@@ -93,15 +93,15 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                                 type="email"
                                 defaultValue={initialSettings.contact_email ?? ''}
                                 placeholder="ivy@example.com"
-                                className="bg-gray-50 border-gray-200 focus:bg-white max-w-md"
+                                className="bg-muted/50 border-border focus:bg-background max-w-md"
                             />
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-muted-foreground/70">
                                 Replies to automated emails will be sent to this address.
                             </p>
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-200">
+                    <div className="pt-4 border-t border-border">
                         <SaveButton />
                     </div>
                 </CardContent>
@@ -117,7 +117,7 @@ function SaveButton() {
         <Button
             type="submit"
             disabled={pending}
-            className="bg-gray-900 hover:bg-gray-800 text-white font-normal"
+            className="bg-primary hover:bg-primary text-white font-normal"
         >
             {pending && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
             Save Changes

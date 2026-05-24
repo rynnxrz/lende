@@ -91,7 +91,7 @@ export default function ProfileList({ profiles }: ProfileListProps) {
             </CardHeader>
             <CardContent className="space-y-4">
                 {profiles.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                         No billing profiles yet. Create one to get started.
                     </div>
                 ) : (
@@ -99,12 +99,12 @@ export default function ProfileList({ profiles }: ProfileListProps) {
                         {profiles.map((profile) => (
                             <div
                                 key={profile.id}
-                                className={`border rounded-lg p-4 ${profile.is_default ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'}`}
+                                className={`border rounded-lg p-4 ${profile.is_default ? 'border-blue-300 bg-blue-50/50' : 'border-border'}`}
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-medium text-gray-900">{profile.profile_name}</h3>
+                                            <h3 className="font-medium text-foreground">{profile.profile_name}</h3>
                                             {profile.is_default && (
                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                     <Star className="h-3 w-3" />
@@ -112,8 +112,8 @@ export default function ProfileList({ profiles }: ProfileListProps) {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-gray-600 mt-1 line-clamp-1">{profile.company_header}</p>
-                                        <p className="text-xs text-gray-400 mt-1">{profile.contact_email}</p>
+                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{profile.company_header}</p>
+                                        <p className="text-xs text-muted-foreground/70 mt-1">{profile.contact_email}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {!profile.is_default && (
@@ -263,7 +263,7 @@ function ProfileEditor({ profile, open, onClose, mode, isFirstProfile = false }:
                             placeholder="e.g., US Rental (Chase Bank)"
                             required
                         />
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                             A short identifier for this billing option.
                         </p>
                     </div>
@@ -278,7 +278,7 @@ function ProfileEditor({ profile, open, onClose, mode, isFirstProfile = false }:
                             rows={3}
                             required
                         />
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                             Company name and address that will appear on invoices.
                         </p>
                     </div>
@@ -293,7 +293,7 @@ function ProfileEditor({ profile, open, onClose, mode, isFirstProfile = false }:
                             rows={4}
                             required
                         />
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                             Payment instructions shown in the invoice.
                         </p>
                     </div>

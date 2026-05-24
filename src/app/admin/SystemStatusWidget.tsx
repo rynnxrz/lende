@@ -56,7 +56,7 @@ export function SystemStatusWidget() {
             "fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full shadow-lg border transition-all duration-300 backdrop-blur-sm cursor-pointer",
             errorCount > 0
                 ? "bg-red-50/90 border-red-200 text-red-700 hover:bg-red-100"
-                : "bg-white/90 border-gray-200 text-gray-500 hover:bg-gray-50"
+                : "bg-background/90 border-border text-muted-foreground hover:bg-muted/50"
         )}>
             {errorCount > 0 ? (
                 <>
@@ -71,7 +71,7 @@ export function SystemStatusWidget() {
             ) : (
                 <>
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-medium text-gray-600">System Healthy</span>
+                    <span className="text-sm font-medium text-muted-foreground">System Healthy</span>
                 </>
             )}
         </Link>

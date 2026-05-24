@@ -32,6 +32,7 @@ const toJsonValue = (value: unknown): Json => {
 export async function createAiDecision(input: {
     feature: string
     operation: string
+    organizationId?: string | null
     provider?: string | null
     model?: string | null
     entityType?: string | null
@@ -45,6 +46,7 @@ export async function createAiDecision(input: {
         .insert({
             feature: input.feature,
             operation: input.operation,
+            organization_id: input.organizationId || null,
             provider: input.provider || null,
             model: input.model || null,
             entity_type: input.entityType || null,
@@ -70,10 +72,21 @@ export async function logAiDecisionEvent(input: {
     payload?: Record<string, unknown>
 }) {
     const supabase = createServiceClient()
+    const { data: parent, error: parentError } = await supabase
+        .from('ai_decisions')
+        .select('organization_id')
+        .eq('id', input.decisionId)
+        .single()
+
+    if (parentError || !parent) {
+        throw new Error(parentError?.message || 'Decision not found for event')
+    }
+
     const { error } = await supabase
         .from('ai_decision_events')
         .insert({
             decision_id: input.decisionId,
+            organization_id: parent.organization_id,
             stage: input.stage,
             level: input.level || 'info',
             message: input.message,

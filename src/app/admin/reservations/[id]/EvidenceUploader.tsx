@@ -114,14 +114,14 @@ export default function EvidenceUploader({
     }
 
     return (
-        <div className={`border rounded-xl p-6 bg-white ${type === 'return' ? 'border-orange-100 bg-orange-50/30' : 'border-blue-100 bg-blue-50/30'}`}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
-            <p className="text-sm text-gray-500 mb-4">{description}</p>
+        <div className={`border rounded-xl p-6 bg-card ${type === 'return' ? 'border-orange-100 bg-orange-50/30' : 'border-blue-100 bg-blue-50/30'}`}>
+            <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{description}</p>
 
             {/* Gallery */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {images.map((path, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border">
+                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-muted border">
                         {getImageUrl(path) ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -130,7 +130,7 @@ export default function EvidenceUploader({
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-xs">
+                            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
                                 Invalid image URL
                             </div>
                         )}
@@ -142,7 +142,7 @@ export default function EvidenceUploader({
             {!readOnly && (
                 <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                        <label className="cursor-pointer bg-white border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-gray-700 shadow-sm">
+                        <label className="cursor-pointer bg-card border border-input rounded-md px-4 py-2 hover:bg-muted/50 transition-colors flex items-center gap-2 text-sm font-medium text-foreground shadow-sm">
                             <UploadIcon />
                             <span>Add Photos</span>
                             <input
@@ -154,13 +154,13 @@ export default function EvidenceUploader({
                                 disabled={uploading}
                             />
                         </label>
-                        {uploading && <span className="text-sm text-gray-400">Uploading...</span>}
+                        {uploading && <span className="text-sm text-muted-foreground/70">Uploading...</span>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
                         <textarea
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="w-full rounded-md border-input shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                             rows={3}
                             placeholder="Describe any pre-existing damage or condition..."
                             value={noteText}
@@ -177,7 +177,7 @@ export default function EvidenceUploader({
                             disabled={uploading || isSaving}
                             className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-medium transition-colors ${isSaved
                                 ? 'bg-green-600 hover:bg-green-700'
-                                : 'bg-gray-900 hover:bg-gray-800'
+                                : 'bg-primary hover:bg-primary'
                                 }`}
                         >
                             {isSaved ? (
@@ -194,8 +194,8 @@ export default function EvidenceUploader({
             )}
 
             {readOnly && notes && (
-                <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-700">
-                    <span className="font-semibold block text-xs text-gray-400 uppercase tracking-wider mb-1">Notes</span>
+                <div className="mt-4 p-3 bg-muted/50 rounded text-sm text-foreground">
+                    <span className="font-semibold block text-xs text-muted-foreground/70 uppercase tracking-wider mb-1">Notes</span>
                     <p className="whitespace-pre-wrap break-words">{notes}</p>
                 </div>
             )}

@@ -136,13 +136,13 @@ export default async function OrgRequestDetailPage(props: Props) {
         <div className="max-w-5xl mx-auto py-10 px-4">
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <Link href={`${basePath}/reservations`} className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-2">
+                    <Link href={`${basePath}/reservations`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2">
                         ← Back to Requests
                     </Link>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold text-gray-900">Request #{(reservation.group_id ?? reservation.id).slice(0, 8).toUpperCase()}</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Request #{(reservation.group_id ?? reservation.id).slice(0, 8).toUpperCase()}</h1>
                         {groupItems.length > 0 && (
-                            <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full font-medium">Group Order ({groupItems.length + 1} items)</span>
+                            <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full font-medium">Group Order ({groupItems.length + 1} items)</span>
                         )}
                     </div>
                     <div className="flex items-center gap-4 mt-2">
@@ -152,7 +152,7 @@ export default async function OrgRequestDetailPage(props: Props) {
                                     status === RESERVATION_STATUSES.ONGOING ? 'bg-green-100 text-green-800' :
                                         isRemovedAtReview ? 'bg-amber-100 text-amber-800' :
                                             status === ARCHIVED_STATUS ? 'bg-purple-100 text-purple-800' :
-                                                'bg-gray-100 text-gray-800'}`}>
+                                                'bg-muted text-foreground'}`}>
                             {statusLabel}
                         </span>
                         {status === RESERVATION_STATUSES.PENDING_REQUEST && (
@@ -171,17 +171,17 @@ export default async function OrgRequestDetailPage(props: Props) {
                         {status === RESERVATION_STATUSES.PAST_LOAN && (
                             <ArchiveButton reservationId={reservation.id} groupId={reservation.group_id ?? undefined} itemCount={allGroupItems.length} />
                         )}
-                        <span className="text-gray-400 text-sm">Created {format(new Date(reservation.created_at), 'PPP')}</span>
+                        <span className="text-muted-foreground/70 text-sm">Created {format(new Date(reservation.created_at), 'PPP')}</span>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+                        <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                             Items in this Request
-                            <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-medium">{allGroupItems.length}</span>
+                            <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">{allGroupItems.length}</span>
                         </h2>
                         <div className="space-y-3">
                             {allGroupItems.map((item, idx) => {
@@ -196,35 +196,35 @@ export default async function OrgRequestDetailPage(props: Props) {
                                     : normalizedItemStatus === RESERVATION_STATUSES.ONGOING ? 'bg-green-50 text-green-700'
                                     : normalizedItemStatus === RESERVATION_STATUSES.PENDING_REQUEST ? 'bg-yellow-50 text-yellow-700'
                                     : normalizedItemStatus === ARCHIVED_STATUS ? 'bg-purple-50 text-purple-700'
-                                    : 'bg-gray-50 text-gray-600'
+                                    : 'bg-muted/50 text-muted-foreground'
 
                                 return (
-                                    <Link key={original.id} href={`${basePath}/reservations/${original.id}`} className={`flex items-start gap-4 p-3 rounded-lg border transition-all ${original.id === reservation.id ? 'bg-blue-50/50 border-blue-100 ring-1 ring-blue-100' : 'hover:bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                                    <Link key={original.id} href={`${basePath}/reservations/${original.id}`} className={`flex items-start gap-4 p-3 rounded-lg border transition-all ${original.id === reservation.id ? 'bg-blue-50/50 border-blue-100 ring-1 ring-blue-100' : 'hover:bg-muted/50 border-transparent hover:border-border'}`}>
+                                        <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0 border border-border">
                                             {itemData?.image_paths?.[0] ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={itemData.image_paths[0]} alt={itemData.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No Img</div>
+                                                <div className="w-full h-full flex items-center justify-center text-muted-foreground/50 text-xs">No Img</div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <div className="font-medium text-slate-900 truncate pr-2">{itemData?.name || 'Unknown Item'}</div>
-                                                    <div className="text-xs text-slate-500 font-mono mt-0.5">{itemData?.sku}</div>
+                                                    <div className="font-medium text-foreground truncate pr-2">{itemData?.name || 'Unknown Item'}</div>
+                                                    <div className="text-xs text-muted-foreground font-mono mt-0.5">{itemData?.sku}</div>
                                                     {itemRemovedAtReview && <div className="mt-1 text-xs text-amber-700">Removed during invoice review because it was unavailable.</div>}
                                                 </div>
                                                 <div className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide font-medium flex-shrink-0 ${itemStatusClass}`}>{itemStatusLabel}</div>
                                             </div>
                                             <div className="flex items-center gap-4 mt-2 text-sm">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">Dates</span>
-                                                    <div className="text-gray-700 text-xs">{format(new Date(original.start_date), 'MMM dd')} - {format(new Date(original.end_date), 'MMM dd')}</div>
+                                                    <span className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">Dates</span>
+                                                    <div className="text-foreground text-xs">{format(new Date(original.start_date), 'MMM dd')} - {format(new Date(original.end_date), 'MMM dd')}</div>
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">Price</span>
-                                                    <div className="text-gray-700 text-xs font-medium">
+                                                    <span className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">Price</span>
+                                                    <div className="text-foreground text-xs font-medium">
                                                         {typeof itemData?.rental_price === 'number' ? `£${itemData.rental_price.toFixed(2)}/day` : '£0.00/day'}
                                                     </div>
                                                 </div>
@@ -244,7 +244,7 @@ export default async function OrgRequestDetailPage(props: Props) {
                         <div className="space-y-4">
                             <EvidenceUploader reservationId={reservation.id} type="return" existingImages={reservation.return_image_paths} notes={reservation.return_notes} readOnly={!isReturnEditable} />
                             {status === RESERVATION_STATUSES.ONGOING && (
-                                <div className="flex justify-end pt-4 border-t border-gray-100">
+                                <div className="flex justify-end pt-4 border-t border-border">
                                     <FinalizeReturnButton reservationId={reservation.id} />
                                 </div>
                             )}
@@ -254,11 +254,11 @@ export default async function OrgRequestDetailPage(props: Props) {
 
                 <div className="space-y-6">
                     {assessment && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <h2 className="font-semibold text-gray-900">Intake Assessment</h2>
-                                    <p className="text-xs text-gray-500 mt-1">Snapshot generated {format(new Date(assessment.generatedAt), 'PPP p')}</p>
+                                    <h2 className="font-semibold text-foreground">Intake Assessment</h2>
+                                    <p className="text-xs text-muted-foreground mt-1">Snapshot generated {format(new Date(assessment.generatedAt), 'PPP p')}</p>
                                 </div>
                                 <div className="flex flex-wrap justify-end gap-2">
                                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wide ${priorityPillClass(assessment.priorityBand)}`}>{assessment.priorityBand} · {assessment.priorityScore}</span>
@@ -268,50 +268,50 @@ export default async function OrgRequestDetailPage(props: Props) {
                             </div>
                             <div className="mt-5 space-y-5 text-sm">
                                 <section>
-                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Risk Assessment</h3>
-                                    <div className="mt-2 space-y-2 text-gray-700">{assessment.snapshot.riskAssessment.map((line, i) => <p key={`risk-${i}`}>{line}</p>)}</div>
+                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Risk Assessment</h3>
+                                    <div className="mt-2 space-y-2 text-foreground">{assessment.snapshot.riskAssessment.map((line, i) => <p key={`risk-${i}`}>{line}</p>)}</div>
                                 </section>
                                 <section>
-                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Feasibility Check</h3>
-                                    <div className="mt-2 space-y-2 text-gray-700">{assessment.snapshot.feasibilityCheck.map((line, i) => <p key={`feas-${i}`}>{line}</p>)}</div>
+                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Feasibility Check</h3>
+                                    <div className="mt-2 space-y-2 text-foreground">{assessment.snapshot.feasibilityCheck.map((line, i) => <p key={`feas-${i}`}>{line}</p>)}</div>
                                 </section>
                                 <section>
-                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Value Tier</h3>
-                                    <p className="mt-2 text-gray-700">{assessment.snapshot.customerSummary || 'Request overview pending.'}</p>
+                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Value Tier</h3>
+                                    <p className="mt-2 text-foreground">{assessment.snapshot.customerSummary || 'Request overview pending.'}</p>
                                 </section>
                                 <section>
-                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Recommended Next Step</h3>
-                                    <p className="mt-2 text-gray-700">{assessment.recommendedNextStep}</p>
+                                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recommended Next Step</h3>
+                                    <p className="mt-2 text-foreground">{assessment.recommendedNextStep}</p>
                                 </section>
                             </div>
                         </div>
                     )}
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h2 className="font-semibold text-gray-900 mb-4">Customer Info</h2>
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+                        <h2 className="font-semibold text-foreground mb-4">Customer Info</h2>
                         <div className="space-y-3 text-sm">
-                            <div><label className="block text-gray-500 text-xs uppercase tracking-wide">Name</label><div className="font-medium">{customer?.full_name || 'N/A'}</div></div>
-                            <div><label className="block text-gray-500 text-xs uppercase tracking-wide">Company</label><div className="font-medium">{customer?.company_name || 'N/A'}</div></div>
+                            <div><label className="block text-muted-foreground text-xs uppercase tracking-wide">Name</label><div className="font-medium">{customer?.full_name || 'N/A'}</div></div>
+                            <div><label className="block text-muted-foreground text-xs uppercase tracking-wide">Company</label><div className="font-medium">{customer?.company_name || 'N/A'}</div></div>
                             <div>
-                                <label className="block text-gray-500 text-xs uppercase tracking-wide">Address</label>
-                                <div className="font-medium text-gray-900 mt-1">
+                                <label className="block text-muted-foreground text-xs uppercase tracking-wide">Address</label>
+                                <div className="font-medium text-foreground mt-1">
                                     {(reservation.address_line1 || reservation.city_region) ? (
                                         <><p>{reservation.address_line1}{reservation.address_line2 ? `, ${reservation.address_line2}` : ''}</p><p>{reservation.city_region}{reservation.postcode ? `, ${reservation.postcode}` : ''}</p><p>{reservation.country}</p></>
-                                    ) : (<p className="text-gray-400 italic">No address provided</p>)}
+                                    ) : (<p className="text-muted-foreground/70 italic">No address provided</p>)}
                                 </div>
                             </div>
-                            <div><label className="block text-gray-500 text-xs uppercase tracking-wide">Email</label><a href={`mailto:${customer?.email}`} className="text-blue-600 hover:underline">{customer?.email}</a></div>
+                            <div><label className="block text-muted-foreground text-xs uppercase tracking-wide">Email</label><a href={`mailto:${customer?.email}`} className="text-blue-600 hover:underline">{customer?.email}</a></div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h2 className="font-semibold text-gray-900 mb-4">Timeline</h2>
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+                        <h2 className="font-semibold text-foreground mb-4">Timeline</h2>
                         <div className="space-y-4">
                             <div className="flex gap-4">
-                                <div className="flex-1"><label className="block text-gray-500 text-xs uppercase tracking-wide mb-1">Start</label><div className="font-medium bg-gray-50 p-2 rounded">{format(new Date(reservation.start_date), 'MMM dd')}</div></div>
-                                <div className="flex-1"><label className="block text-gray-500 text-xs uppercase tracking-wide mb-1">End</label><div className="font-medium bg-gray-50 p-2 rounded">{format(new Date(reservation.end_date), 'MMM dd, yyyy')}</div></div>
+                                <div className="flex-1"><label className="block text-muted-foreground text-xs uppercase tracking-wide mb-1">Start</label><div className="font-medium bg-muted/50 p-2 rounded">{format(new Date(reservation.start_date), 'MMM dd')}</div></div>
+                                <div className="flex-1"><label className="block text-muted-foreground text-xs uppercase tracking-wide mb-1">End</label><div className="font-medium bg-muted/50 p-2 rounded">{format(new Date(reservation.end_date), 'MMM dd, yyyy')}</div></div>
                             </div>
-                            <div className="pt-2"><label className="block text-gray-500 text-xs uppercase tracking-wide mb-1">Notes</label><p className="text-sm text-gray-600 italic">{reservation.notes || 'No notes provided.'}</p></div>
+                            <div className="pt-2"><label className="block text-muted-foreground text-xs uppercase tracking-wide mb-1">Notes</label><p className="text-sm text-muted-foreground italic">{reservation.notes || 'No notes provided.'}</p></div>
                         </div>
                     </div>
                 </div>
@@ -345,10 +345,10 @@ function toAssessmentRow(row: Record<string, unknown>): ReservationAssessmentRow
 }
 
 function priorityPillClass(band: ReservationGroupAssessment['priorityBand']) {
-    return band === 'urgent' ? 'bg-rose-100 text-rose-700' : band === 'high' ? 'bg-amber-100 text-amber-700' : band === 'standard' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-600'
+    return band === 'urgent' ? 'bg-rose-100 text-rose-700' : band === 'high' ? 'bg-amber-100 text-amber-700' : band === 'standard' ? 'bg-sky-100 text-sky-700' : 'bg-muted text-muted-foreground'
 }
 function valueTierPillClass(tier: ReservationGroupAssessment['valueTier']) {
-    return tier === 'vip' ? 'bg-fuchsia-100 text-fuchsia-700' : tier === 'high' ? 'bg-violet-100 text-violet-700' : tier === 'standard' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+    return tier === 'vip' ? 'bg-fuchsia-100 text-fuchsia-700' : tier === 'high' ? 'bg-violet-100 text-violet-700' : tier === 'standard' ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'
 }
 function feasibilityPillClass(fs: ReservationGroupAssessment['feasibilityStatus']) {
     return fs === 'high_risk' ? 'bg-rose-100 text-rose-700' : fs === 'watch' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'

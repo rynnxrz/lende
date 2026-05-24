@@ -20,9 +20,9 @@ export function AdminLoading({ title, description, showAction = true }: AdminLoa
             {/* Header - matches AdminPageHeader structure */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold text-slate-900">{title}</h1>
+                    <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
                     {description && (
-                        <p className="text-slate-500 mt-1">{description}</p>
+                        <p className="text-muted-foreground mt-1">{description}</p>
                     )}
                 </div>
                 {showAction && <Skeleton className="h-10 w-[120px]" />}
@@ -32,7 +32,7 @@ export function AdminLoading({ title, description, showAction = true }: AdminLoa
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-slate-50">
+                        <TableRow className="bg-muted/50">
                             <TableHead className="w-[50px]"><Skeleton className="h-4 w-4" /></TableHead>
                             <TableHead className="w-[200px]"><Skeleton className="h-4 w-24" /></TableHead>
                             <TableHead><Skeleton className="h-4 w-20" /></TableHead>

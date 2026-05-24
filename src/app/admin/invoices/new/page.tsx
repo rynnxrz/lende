@@ -95,8 +95,8 @@ export default function NewInvoicePage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-semibold text-slate-900">New Invoice</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="text-3xl font-semibold text-foreground">New Invoice</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
                         Create a manual invoice for services or custom one-off charges
                     </p>
                 </div>
@@ -157,7 +157,7 @@ export default function NewInvoicePage() {
                     <CardContent>
                         <div className="space-y-4">
                             {/* Header */}
-                            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-slate-500 uppercase border-b pb-2">
+                            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground uppercase border-b pb-2">
                                 <div className="col-span-4">Item</div>
                                 <div className="col-span-3">Description</div>
                                 <div className="col-span-1 text-center">Qty</div>
@@ -211,7 +211,7 @@ export default function NewInvoicePage() {
                                                 placeholder="0.00"
                                             />
                                         </div>
-                                        <div className="col-span-1 text-right font-medium text-slate-700">
+                                        <div className="col-span-1 text-right font-medium text-foreground">
                                             £{lineTotal.toFixed(2)}
                                         </div>
                                         <div className="col-span-1 flex justify-end">
@@ -220,7 +220,7 @@ export default function NewInvoicePage() {
                                                     type="button"
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-slate-400 hover:text-red-500"
+                                                    className="h-8 w-8 text-muted-foreground/70 hover:text-red-500"
                                                     onClick={() => remove(index)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -236,7 +236,7 @@ export default function NewInvoicePage() {
                                 <div className="flex justify-end">
                                     <div className="w-64 space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-slate-500">Subtotal</span>
+                                            <span className="text-muted-foreground">Subtotal</span>
                                             <span className="font-medium">£{subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-lg font-bold border-t pt-2">

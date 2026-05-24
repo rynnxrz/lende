@@ -317,7 +317,7 @@ export function ApproveButton({
                 <div className="space-y-6 py-4">
                     {/* BILLING PROFILE SELECTOR */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
-                        <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                        <Label className="text-sm font-medium text-foreground mb-2 block">
                             Select Billing Profile
                         </Label>
                         {billingProfiles.length === 0 ? (
@@ -326,7 +326,7 @@ export function ApproveButton({
                             </div>
                         ) : (
                             <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
-                                <SelectTrigger className="w-full bg-white">
+                                <SelectTrigger className="w-full bg-card">
                                     <SelectValue placeholder="Select a billing profile" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -341,63 +341,63 @@ export function ApproveButton({
                                 </SelectContent>
                             </Select>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-muted-foreground mt-2">
                             Switch profiles to see different payment info in the preview below.
                         </p>
                     </div>
 
                     {/* INVOICE PREVIEW CONTAINER */}
-                    <div className="bg-white border border-gray-200 shadow-sm p-8 text-sm text-gray-800 font-sans">
+                    <div className="bg-card border border-border shadow-sm p-8 text-sm text-foreground font-sans">
 
                         {/* Header Section */}
                         <div className="flex justify-between items-start mb-8">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 mb-2">INVOICE</h1>
-                                <div className="text-gray-500 space-y-0.5">
-                                    <p className="font-medium text-gray-900 whitespace-pre-wrap">{companyHeader}</p>
+                                <h1 className="text-2xl font-bold text-foreground mb-2">INVOICE</h1>
+                                <div className="text-muted-foreground space-y-0.5">
+                                    <p className="font-medium text-foreground whitespace-pre-wrap">{companyHeader}</p>
                                     <p>{contactEmail}</p>
                                 </div>
                             </div>
-                            <div className="text-right text-gray-500">
+                            <div className="text-right text-muted-foreground">
                                 <p>Invoice #: {invoiceIdDisplay}</p>
                                 <p>Date: {today}</p>
                             </div>
                         </div>
 
                         {/* Bill To */}
-                        <div className="mb-8 border-b border-gray-100 pb-4">
-                            <h3 className="font-bold text-gray-900 mb-2 uppercase text-xs tracking-wider">Bill To</h3>
+                        <div className="mb-8 border-b border-border pb-4">
+                            <h3 className="font-bold text-foreground mb-2 uppercase text-xs tracking-wider">Bill To</h3>
                             <p className="font-medium">{customerName}</p>
                             {customerCompany && <p className="text-indigo-600 text-xs">{customerCompany}</p>}
                             {customerAddress && customerAddress.map((line, i) => (
-                                <p key={i} className="text-gray-600">{line}</p>
+                                <p key={i} className="text-muted-foreground">{line}</p>
                             ))}
-                            <p className="text-gray-600">{customerEmail}</p>
+                            <p className="text-muted-foreground">{customerEmail}</p>
                         </div>
 
-                        <div className="mb-8 rounded border border-gray-200 bg-gray-50 p-4">
-                            <h3 className="font-bold text-gray-900 mb-2 uppercase text-xs tracking-wider">
+                        <div className="mb-8 rounded border border-border bg-muted/50 p-4">
+                            <h3 className="font-bold text-foreground mb-2 uppercase text-xs tracking-wider">
                                 Confirmed Loan Details
                             </h3>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
-                                    <p className="text-[11px] uppercase tracking-wider text-gray-500">Call-in / Start Date</p>
-                                    <p className="font-medium text-gray-900">{formatConfirmedDate(confirmedStartDateInput)}</p>
+                                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Call-in / Start Date</p>
+                                    <p className="font-medium text-foreground">{formatConfirmedDate(confirmedStartDateInput)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[11px] uppercase tracking-wider text-gray-500">Return Date</p>
-                                    <p className="font-medium text-gray-900">{formatConfirmedDate(confirmedEndDateInput)}</p>
+                                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Return Date</p>
+                                    <p className="font-medium text-foreground">{formatConfirmedDate(confirmedEndDateInput)}</p>
                                 </div>
                                 <div className="sm:col-span-2">
-                                    <p className="text-[11px] uppercase tracking-wider text-gray-500">Shoot / Event Location</p>
-                                    <p className="font-medium text-gray-900">{eventLocation || 'Not provided'}</p>
+                                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Shoot / Event Location</p>
+                                    <p className="font-medium text-foreground">{eventLocation || 'Not provided'}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Line Items */}
                         <div className="mb-8">
-                            <h3 className="font-bold text-gray-900 mb-2 uppercase text-xs tracking-wider border-b border-gray-200 pb-1">Reservation Details</h3>
+                            <h3 className="font-bold text-foreground mb-2 uppercase text-xs tracking-wider border-b border-border pb-1">Reservation Details</h3>
 
                             {previewItems.length === 0 ? (
                                 <div className="rounded border border-dashed border-amber-200 bg-amber-50 px-3 py-4 text-sm text-amber-800">
@@ -405,24 +405,24 @@ export function ApproveButton({
                                 </div>
                             ) : (
                                 previewItems.map((item, idx) => (
-                                    <div key={idx} className="flex gap-3 py-2 border-b border-gray-50">
+                                    <div key={idx} className="flex gap-3 py-2 border-b border-border">
                                         {item.imageUrl ? (
                                             <Image
                                                 src={item.imageUrl}
                                                 alt={item.name}
                                                 width={48}
                                                 height={48}
-                                                className="w-12 h-12 object-cover rounded border border-gray-200"
+                                                className="w-12 h-12 object-cover rounded border border-border"
                                             />
                                         ) : (
-                                            <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-gray-400 text-xs">
+                                            <div className="w-12 h-12 bg-muted rounded border border-border flex items-center justify-center text-muted-foreground/70 text-xs">
                                                 No img
                                             </div>
                                         )}
                                         <div className="flex-1 flex justify-between">
                                             <div>
-                                                <span className="font-medium text-gray-900">{item.name}</span>
-                                                <div className="text-xs text-gray-500">{item.tierDescription}</div>
+                                                <span className="font-medium text-foreground">{item.name}</span>
+                                                <div className="text-xs text-muted-foreground">{item.tierDescription}</div>
                                             </div>
                                             <div className="text-right">
                                                 <span>£{item.lineTotal.toFixed(2)}</span>
@@ -440,48 +440,48 @@ export function ApproveButton({
 
                         {/* Charges */}
                         <div className="mb-8">
-                            <h3 className="font-bold text-gray-900 mb-2 uppercase text-xs tracking-wider border-b border-gray-200 pb-1">Charges</h3>
-                            <div className="flex justify-between py-2 border-b border-gray-50">
-                                <span className="text-gray-600">Subtotal</span>
+                            <h3 className="font-bold text-foreground mb-2 uppercase text-xs tracking-wider border-b border-border pb-1">Charges</h3>
+                            <div className="flex justify-between py-2 border-b border-border">
+                                <span className="text-muted-foreground">Subtotal</span>
                                 <span className="font-medium">£{pricing.subtotal.toFixed(2)}</span>
                             </div>
                             {pricing.discountAmount > 0 && (
-                                <div className="flex justify-between py-2 border-b border-gray-50">
-                                    <span className="text-gray-600">Discount ({pricing.discountPercentage.toFixed(2)}%)</span>
+                                <div className="flex justify-between py-2 border-b border-border">
+                                    <span className="text-muted-foreground">Discount ({pricing.discountPercentage.toFixed(2)}%)</span>
                                     <span className="font-medium text-red-600">- £{pricing.discountAmount.toFixed(2)}</span>
                                 </div>
                             )}
                             {!hasManualDeposit && (
-                                <div className="flex justify-between py-2 border-b border-gray-50">
-                                    <span className="text-gray-600">Deposit (50% Retail)</span>
+                                <div className="flex justify-between py-2 border-b border-border">
+                                    <span className="text-muted-foreground">Deposit (50% Retail)</span>
                                     <span className="font-medium">£{pricing.defaultDepositAmount.toFixed(2)}</span>
                                 </div>
                             )}
                             {hasManualDeposit && (
-                                <div className="flex justify-between py-2 border-b border-gray-50">
-                                    <span className="text-gray-600">Default Deposit (50% Retail)</span>
+                                <div className="flex justify-between py-2 border-b border-border">
+                                    <span className="text-muted-foreground">Default Deposit (50% Retail)</span>
                                     <span className="font-medium">£{pricing.defaultDepositAmount.toFixed(2)}</span>
                                 </div>
                             )}
-                            <div className="flex justify-between py-2 border-b border-gray-50">
-                                <span className="text-gray-600">{hasManualDeposit ? 'Deposit (Manual)' : 'Deposit'}</span>
+                            <div className="flex justify-between py-2 border-b border-border">
+                                <span className="text-muted-foreground">{hasManualDeposit ? 'Deposit (Manual)' : 'Deposit'}</span>
                                 <span className="font-medium">£{pricing.depositAmount.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between py-3 border-t-2 border-gray-800 mt-2">
+                            <div className="flex justify-between py-3 border-t-2 border-foreground mt-2">
                                 <span className="font-bold text-lg">Total Due</span>
                                 <span className="font-bold text-lg text-green-700">£{pricing.totalDue.toFixed(2)}</span>
                             </div>
                         </div>
 
                         {/* Payment Info */}
-                        <div className="mb-8 bg-gray-50 p-4 rounded text-xs text-gray-600">
-                            <h3 className="font-bold text-gray-900 mb-2 uppercase tracking-wider">Payment Instructions</h3>
+                        <div className="mb-8 bg-muted/50 p-4 rounded text-xs text-muted-foreground">
+                            <h3 className="font-bold text-foreground mb-2 uppercase tracking-wider">Payment Instructions</h3>
                             <p className="whitespace-pre-wrap">{bankInfo}</p>
-                            <p className="mt-2 text-gray-400 italic">Please include Invoice #{invoiceIdDisplay} in the memo.</p>
+                            <p className="mt-2 text-muted-foreground/70 italic">Please include Invoice #{invoiceIdDisplay} in the memo.</p>
                         </div>
 
                         {/* Terms / Notes Preview */}
-                        <div className="mb-4 bg-yellow-50 p-4 rounded text-xs text-gray-700 border border-yellow-100">
+                        <div className="mb-4 bg-yellow-50 p-4 rounded text-xs text-foreground border border-yellow-100">
                             <h3 className="font-bold text-yellow-800 mb-1 uppercase tracking-wider">Terms / Notes</h3>
                             {notes && (
                                 <p className="whitespace-pre-wrap mb-2">{notes}</p>
@@ -490,16 +490,16 @@ export function ApproveButton({
                         </div>
 
                         {/* Footer */}
-                        <div className="text-center text-gray-400 text-xs mt-8 pt-4 border-t border-gray-100">
+                        <div className="text-center text-muted-foreground/70 text-xs mt-8 pt-4 border-t border-border">
                             Thank you for your business!
                         </div>
                     </div>
 
                     {/* EDITABLE FIELDS (Outside the preview visual) */}
-                    <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div className="space-y-2 bg-muted/50 p-4 rounded-lg border border-border">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="confirmed-start-date" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="confirmed-start-date" className="text-sm font-medium text-foreground">
                                     Confirmed Call-in Date
                                 </Label>
                                 <Input
@@ -507,11 +507,11 @@ export function ApproveButton({
                                     type="date"
                                     value={confirmedStartDateInput}
                                     onChange={(e) => setConfirmedStartDateInput(e.target.value)}
-                                    className="bg-white"
+                                    className="bg-card"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="confirmed-end-date" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="confirmed-end-date" className="text-sm font-medium text-foreground">
                                     Confirmed Return Date
                                 </Label>
                                 <Input
@@ -519,7 +519,7 @@ export function ApproveButton({
                                     type="date"
                                     value={confirmedEndDateInput}
                                     onChange={(e) => setConfirmedEndDateInput(e.target.value)}
-                                    className="bg-white"
+                                    className="bg-card"
                                 />
                             </div>
                         </div>
@@ -533,7 +533,7 @@ export function ApproveButton({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    className="bg-white"
+                                    className="bg-card"
                                     onClick={() => {
                                         setConfirmedStartDateInput(requestedStartDate)
                                         setConfirmedEndDateInput(requestedEndDate)
@@ -545,15 +545,15 @@ export function ApproveButton({
                                 </Button>
                             </div>
                         </div>
-                        <div className="rounded border border-gray-200 bg-white px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-wider text-gray-500">Shoot / Event Location</p>
-                            <p className="mt-1 text-sm text-gray-900">{eventLocation || 'Not provided'}</p>
-                            <p className="mt-1 text-xs text-gray-500">Location stays read-only in this step.</p>
+                        <div className="rounded border border-border bg-card px-3 py-2">
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Shoot / Event Location</p>
+                            <p className="mt-1 text-sm text-foreground">{eventLocation || 'Not provided'}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">Location stays read-only in this step.</p>
                         </div>
-                        <div className="space-y-3 rounded border border-gray-200 bg-white px-3 py-3">
+                        <div className="space-y-3 rounded border border-border bg-card px-3 py-3">
                             <div>
-                                <p className="text-[11px] uppercase tracking-wider text-gray-500">Items Included In Invoice</p>
-                                <p className="mt-1 text-xs text-gray-500">Remove unavailable items here. Pricing updates immediately.</p>
+                                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Items Included In Invoice</p>
+                                <p className="mt-1 text-xs text-muted-foreground">Remove unavailable items here. Pricing updates immediately.</p>
                             </div>
                             {keptItems.length === 0 ? (
                                 <p className="rounded border border-dashed border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
@@ -561,10 +561,10 @@ export function ApproveButton({
                                 </p>
                             ) : (
                                 keptItems.map((item) => (
-                                    <div key={item.reservationId} className="flex items-center justify-between gap-3 rounded border border-gray-100 px-3 py-2">
+                                    <div key={item.reservationId} className="flex items-center justify-between gap-3 rounded border border-border px-3 py-2">
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
-                                            <p className="text-xs text-gray-500">Retail value: £{item.retailPrice.toFixed(2)}</p>
+                                            <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+                                            <p className="text-xs text-muted-foreground">Retail value: £{item.retailPrice.toFixed(2)}</p>
                                         </div>
                                         <Button
                                             type="button"
@@ -586,16 +586,16 @@ export function ApproveButton({
                                         <p className="mt-1 text-xs text-amber-800">These stay visible for history but will not be invoiced.</p>
                                     </div>
                                     {removedItems.map((item) => (
-                                        <div key={item.reservationId} className="flex items-center justify-between gap-3 rounded border border-amber-100 bg-white px-3 py-2">
+                                        <div key={item.reservationId} className="flex items-center justify-between gap-3 rounded border border-amber-100 bg-card px-3 py-2">
                                             <div className="min-w-0">
-                                                <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                                                <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
                                                 <p className="text-xs text-amber-700">Marked unavailable for this approval.</p>
                                             </div>
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                className="shrink-0 bg-white"
+                                                className="shrink-0 bg-card"
                                                 onClick={() => handleRestoreItem(item.reservationId)}
                                             >
                                                 <Undo2 className="mr-2 h-4 w-4" />
@@ -618,14 +618,14 @@ export function ApproveButton({
                         )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700">
+                                <Label className="text-sm font-medium text-foreground">
                                     Discount Percentage
                                 </Label>
                                 <Select
                                     value={discountPercentageInput}
                                     onValueChange={setDiscountPercentageInput}
                                 >
-                                    <SelectTrigger className="w-full bg-white">
+                                    <SelectTrigger className="w-full bg-card">
                                         <SelectValue placeholder="Select discount" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -638,7 +638,7 @@ export function ApproveButton({
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="deposit-override" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="deposit-override" className="text-sm font-medium text-foreground">
                                     Deposit
                                 </Label>
                                 <Input
@@ -649,12 +649,12 @@ export function ApproveButton({
                                     value={depositAmountOverrideInput}
                                     onChange={(e) => setDepositAmountOverrideInput(e.target.value)}
                                     placeholder="0 to waive or custom"
-                                    className="bg-white"
+                                    className="bg-card"
                                 />
-                                <p className="text-xs text-gray-500">Blank = default (50% of retail value).</p>
+                                <p className="text-xs text-muted-foreground">Blank = default (50% of retail value).</p>
                             </div>
                         </div>
-                        <Label htmlFor="invoice-notes" className="text-sm font-medium text-gray-700">
+                        <Label htmlFor="invoice-notes" className="text-sm font-medium text-foreground">
                             Add Note to Invoice
                         </Label>
                         <Textarea
@@ -662,7 +662,7 @@ export function ApproveButton({
                             placeholder="Type here to see it update in the preview above..."
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            className="resize-none bg-white"
+                            className="resize-none bg-card"
                             rows={2}
                         />
                     </div>

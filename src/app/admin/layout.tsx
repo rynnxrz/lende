@@ -123,7 +123,7 @@ export default async function AdminLayout({
     const isEmailVerified = user.email_confirmed_at != null
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-muted/30">
             {!isEmailVerified && user.email && (
                 <EmailVerificationBanner email={user.email} />
             )}

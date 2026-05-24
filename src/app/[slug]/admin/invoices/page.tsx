@@ -75,7 +75,7 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
         return (
             <div className="text-red-500">
                 <h3 className="font-bold">Error loading invoices</h3>
-                <pre className="bg-slate-100 p-2 rounded text-xs mt-2 overflow-auto">
+                <pre className="bg-muted p-2 rounded text-xs mt-2 overflow-auto">
                     {JSON.stringify(error, null, 2)}
                 </pre>
             </div>
@@ -86,8 +86,8 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-semibold text-slate-900">Invoices</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="text-3xl font-semibold text-foreground">Invoices</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
                         Manage invoices for rentals, wholesale, and services
                     </p>
                 </div>
@@ -100,13 +100,13 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
                 </Link>
             </div>
 
-            <div className="flex p-1 bg-slate-100 rounded-lg w-fit">
+            <div className="flex p-1 bg-muted rounded-lg w-fit">
                 <FilterTab label="All Invoices" active={filter === 'all'} href={`${basePath}/invoices?filter=all`} />
                 <FilterTab label="Unpaid" active={filter === 'unpaid'} href={`${basePath}/invoices?filter=unpaid`} />
                 <FilterTab label="Paid" active={filter === 'paid'} href={`${basePath}/invoices?filter=paid`} />
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
                 <InvoicesTable invoices={(invoices as Invoice[]) || []} basePath={basePath} />
             </div>
         </div>
@@ -120,8 +120,8 @@ function FilterTab({ label, active, href }: { label: string; active: boolean; hr
             className={`
                 px-4 py-2 text-sm font-medium rounded-md transition-all
                 ${active
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }
             `}
         >
@@ -133,7 +133,7 @@ function FilterTab({ label, active, href }: { label: string; active: boolean; hr
 function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: string }) {
     if (invoices.length === 0) {
         return (
-            <div className="p-12 text-center text-slate-400">
+            <div className="p-12 text-center text-muted-foreground/70">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No invoices found.</p>
                 <Link href={`${basePath}/invoices/new`} className="text-blue-600 hover:underline mt-2 inline-block">
@@ -146,7 +146,7 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
     return (
         <Table>
             <TableHeader>
-                <TableRow className="bg-slate-50">
+                <TableRow className="bg-muted/50">
                     <TableHead className="w-48">Invoice #</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Customer</TableHead>
@@ -166,7 +166,7 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
                             >
                                 {invoice.invoice_number}
                             </Link>
-                            <div className="text-xs text-slate-400 mt-1">
+                            <div className="text-xs text-muted-foreground/70 mt-1">
                                 {getCategoryLabel(invoice.category)}
                             </div>
                         </TableCell>
@@ -174,11 +174,11 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
                             <StatusBadge status={invoice.status} />
                         </TableCell>
                         <TableCell>
-                            <div className="font-medium text-slate-900 text-sm">
+                            <div className="font-medium text-foreground text-sm">
                                 {invoice.customer_name}
                             </div>
                             {invoice.customer_email && (
-                                <div className="text-xs text-slate-400">
+                                <div className="text-xs text-muted-foreground/70">
                                     {invoice.customer_email}
                                 </div>
                             )}
@@ -186,15 +186,15 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
                         <TableCell>
                             <ItemsSummary items={invoice.invoice_items || []} />
                         </TableCell>
-                        <TableCell className="text-right font-medium text-slate-900">
+                        <TableCell className="text-right font-medium text-foreground">
                             £{invoice.total_amount.toFixed(2)}
                         </TableCell>
                         <TableCell>
-                            <div className="text-sm text-slate-700">
+                            <div className="text-sm text-foreground">
                                 {format(new Date(invoice.issue_date), 'MMM dd, yyyy')}
                             </div>
                             {invoice.due_date && (
-                                <div className="text-xs text-slate-400">
+                                <div className="text-xs text-muted-foreground/70">
                                     Due: {format(new Date(invoice.due_date), 'MMM dd')}
                                 </div>
                             )}
@@ -220,7 +220,7 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
     const styles: Record<InvoiceStatus, string> = {
-        DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
+        DRAFT: 'bg-muted text-foreground border-border',
         SENT: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         PAID: 'bg-green-100 text-green-800 border-green-200',
         VOID: 'bg-purple-100 text-purple-700 border-purple-200',
@@ -253,7 +253,7 @@ function getCategoryLabel(category: string): string {
 
 function ItemsSummary({ items }: { items: { id: string; name: string; quantity: number }[] }) {
     if (items.length === 0) {
-        return <span className="text-slate-400 text-sm">No items</span>
+        return <span className="text-muted-foreground/70 text-sm">No items</span>
     }
 
     const firstItem = items[0]
@@ -261,9 +261,9 @@ function ItemsSummary({ items }: { items: { id: string; name: string; quantity: 
 
     return (
         <div className="text-sm">
-            <span className="text-slate-700">{firstItem.name}</span>
+            <span className="text-foreground">{firstItem.name}</span>
             {remaining > 0 && (
-                <span className="text-slate-400"> + {remaining} more</span>
+                <span className="text-muted-foreground/70"> + {remaining} more</span>
             )}
         </div>
     )

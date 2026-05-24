@@ -24,16 +24,16 @@ export default async function ErrorLogsPage() {
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-gray-900">System Error Logs</h1>
-                <p className="mt-2 text-sm text-gray-500">
+                <h1 className="text-2xl font-semibold text-foreground">System Error Logs</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
                     Review and audit backend failures involving email delivery, data sync, or other critical processes.
                 </p>
             </div>
 
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-                <ul role="list" className="divide-y divide-gray-100">
+            <div className="bg-card shadow-sm rounded-lg border border-border overflow-hidden">
+                <ul role="list" className="divide-y divide-border">
                     {errors?.map((err) => (
-                        <li key={err.id} className="p-6 hover:bg-gray-50 transition-colors">
+                        <li key={err.id} className="p-6 hover:bg-muted/50 transition-colors">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
@@ -42,17 +42,17 @@ export default async function ErrorLogsPage() {
                                         ) : (
                                             <AlertTriangle className="h-4 w-4 text-red-500" />
                                         )}
-                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                        <p className="text-sm font-medium text-foreground truncate">
                                             {err.error_type}
                                         </p>
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground">
                                             {err.id.slice(0, 8)}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-gray-500 font-mono bg-gray-50 p-3 rounded border border-gray-100 overflow-x-auto">
+                                    <div className="text-xs text-muted-foreground font-mono bg-muted/50 p-3 rounded border border-border overflow-x-auto">
                                         {JSON.stringify(err.payload, null, 2)}
                                     </div>
-                                    <div className="mt-2 flex items-center justify-between gap-4 text-xs text-gray-400">
+                                    <div className="mt-2 flex items-center justify-between gap-4 text-xs text-muted-foreground/70">
                                         <div className="flex items-center gap-4">
                                             <span className="flex items-center gap-1">
                                                 <Clock className="h-3 w-3" />
@@ -75,7 +75,7 @@ export default async function ErrorLogsPage() {
                         </li>
                     ))}
                     {(!errors || errors.length === 0) && (
-                        <li className="p-12 text-center text-gray-500">
+                        <li className="p-12 text-center text-muted-foreground">
                             No system errors recorded.
                         </li>
                     )}

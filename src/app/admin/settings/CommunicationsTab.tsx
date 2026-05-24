@@ -241,7 +241,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
     return (
         <div className="space-y-6">
             {/* Sub-tab Navigation */}
-            <div className="flex gap-2 border-b border-gray-200 pb-3">
+            <div className="flex gap-2 border-b border-border pb-3">
                 {[
                     { key: 'approval', label: 'Approval Email', icon: Mail },
                     { key: 'shipping', label: 'Shipping Email', icon: Send },
@@ -251,8 +251,8 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                         key={tab.key}
                         onClick={() => setActiveSubTab(tab.key as SubTab)}
                         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeSubTab === tab.key
-                            ? 'bg-gray-900 text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-primary text-white'
+                            : 'text-muted-foreground hover:bg-muted'
                             }`}
                     >
                         <tab.icon className="h-4 w-4" />
@@ -266,7 +266,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Editor */}
                     <div className="space-y-5">
-                        <Card className="border-gray-200 shadow-sm">
+                        <Card className="border-border shadow-sm">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-lg font-light">Approval Email Template</CardTitle>
                                 <CardDescription>
@@ -276,7 +276,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <CardContent className="space-y-5">
                                 {/* Variable Buttons */}
                                 <div className="space-y-2">
-                                    <Label className="font-normal text-gray-600">Magic Tags</Label>
+                                    <Label className="font-normal text-muted-foreground">Magic Tags</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {APPROVAL_VARIABLES.map((v) => (
                                             <Button
@@ -284,7 +284,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-8 text-xs gap-1.5 text-gray-600 border-gray-200 hover:bg-gray-50"
+                                                className="h-8 text-xs gap-1.5 text-muted-foreground border-border hover:bg-muted/50"
                                                 onClick={() => insertVariable(v.placeholder, approvalBodyRef, setApprovalBody, approvalBody)}
                                             >
                                                 <v.icon className="h-3 w-3" />
@@ -296,7 +296,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
 
                                 {/* Body */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="approval-body" className="font-normal text-gray-600">Email Message</Label>
+                                    <Label htmlFor="approval-body" className="font-normal text-muted-foreground">Email Message</Label>
                                     <Textarea
                                         id="approval-body"
                                         name="approval-body"
@@ -305,13 +305,13 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         onChange={(e) => setApprovalBody(e.target.value)}
                                         placeholder={DEFAULTS.approvalBody}
                                         rows={8}
-                                        className="font-mono text-sm resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="font-mono text-sm resize-none bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
 
                                 {/* Footer */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="approval-footer" className="font-normal text-gray-600">Signature / Footer</Label>
+                                    <Label htmlFor="approval-footer" className="font-normal text-muted-foreground">Signature / Footer</Label>
                                     <Textarea
                                         id="approval-footer"
                                         name="approval-footer"
@@ -320,7 +320,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         onChange={(e) => setApprovalFooter(e.target.value)}
                                         placeholder={DEFAULTS.approvalFooter}
                                         rows={4}
-                                        className="font-mono text-sm resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="font-mono text-sm resize-none bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
                             </CardContent>
@@ -340,7 +340,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                                className="w-full border-border text-muted-foreground hover:bg-muted/50"
                                 onClick={() => {
                                     setTestEmailType('approval')
                                     setTestEmailOpen(true)
@@ -359,7 +359,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Editor */}
                     <div className="space-y-5">
-                        <Card className="border-gray-200 shadow-sm">
+                        <Card className="border-border shadow-sm">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-lg font-light">Shipping Email Template</CardTitle>
                                 <CardDescription>
@@ -369,7 +369,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <CardContent className="space-y-5">
                                 {/* Variable Buttons */}
                                 <div className="space-y-2">
-                                    <Label className="font-normal text-gray-600">Magic Tags</Label>
+                                    <Label className="font-normal text-muted-foreground">Magic Tags</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {SHIPPING_VARIABLES.map((v) => (
                                             <Button
@@ -377,7 +377,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-8 text-xs gap-1.5 text-gray-600 border-gray-200 hover:bg-gray-50"
+                                                className="h-8 text-xs gap-1.5 text-muted-foreground border-border hover:bg-muted/50"
                                                 onClick={() => insertVariable(v.placeholder, shippingBodyRef, setShippingBody, shippingBody)}
                                             >
                                                 <v.icon className="h-3 w-3" />
@@ -389,7 +389,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
 
                                 {/* Subject */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="shipping-subject" className="font-normal text-gray-600">Subject Line</Label>
+                                    <Label htmlFor="shipping-subject" className="font-normal text-muted-foreground">Subject Line</Label>
                                     <Input
                                         id="shipping-subject"
                                         name="shipping-subject"
@@ -397,13 +397,13 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         value={shippingSubject}
                                         onChange={(e) => setShippingSubject(e.target.value)}
                                         placeholder={DEFAULTS.shippingSubject}
-                                        className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
 
                                 {/* Body */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="shipping-body" className="font-normal text-gray-600">Email Message</Label>
+                                    <Label htmlFor="shipping-body" className="font-normal text-muted-foreground">Email Message</Label>
                                     <Textarea
                                         id="shipping-body"
                                         name="shipping-body"
@@ -412,13 +412,13 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         onChange={(e) => setShippingBody(e.target.value)}
                                         placeholder={DEFAULTS.shippingBody}
                                         rows={8}
-                                        className="font-mono text-sm resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="font-mono text-sm resize-none bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
 
                                 {/* Footer */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="shipping-footer" className="font-normal text-gray-600">Signature / Footer</Label>
+                                    <Label htmlFor="shipping-footer" className="font-normal text-muted-foreground">Signature / Footer</Label>
                                     <Textarea
                                         id="shipping-footer"
                                         name="shipping-footer"
@@ -427,7 +427,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         onChange={(e) => setShippingFooter(e.target.value)}
                                         placeholder={DEFAULTS.shippingFooter}
                                         rows={4}
-                                        className="font-mono text-sm resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="font-mono text-sm resize-none bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
                             </CardContent>
@@ -449,7 +449,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                                className="w-full border-border text-muted-foreground hover:bg-muted/50"
                                 onClick={() => {
                                     setTestEmailType('shipping')
                                     setTestEmailOpen(true)
@@ -468,7 +468,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Editor */}
                     <div className="space-y-5">
-                        <Card className="border-gray-200 shadow-sm">
+                        <Card className="border-border shadow-sm">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-lg font-light">Invoice PDF Settings</CardTitle>
                                 <CardDescription>
@@ -478,26 +478,26 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <CardContent className="space-y-5">
                                 {/* Magic Tags Info */}
                                 <div className="space-y-2">
-                                    <Label className="font-normal text-gray-600">Available Variables</Label>
+                                    <Label className="font-normal text-muted-foreground">Available Variables</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {INVOICE_VARIABLES.map((v) => (
                                             <span
                                                 key={v.placeholder}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 border border-border rounded"
                                             >
                                                 <v.icon className="h-3 w-3" />
                                                 {v.placeholder}
                                             </span>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-muted-foreground/70">
                                         These are auto-filled from your billing profile selection at approval time.
                                     </p>
                                 </div>
 
                                 {/* Default Notes */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="invoice-notes" className="font-normal text-gray-600">Default Notes</Label>
+                                    <Label htmlFor="invoice-notes" className="font-normal text-muted-foreground">Default Notes</Label>
                                     <Textarea
                                         id="invoice-notes"
                                         name="invoice-notes"
@@ -506,16 +506,16 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         onChange={(e) => setInvoiceNotes(e.target.value)}
                                         placeholder="Optional notes to include on every invoice..."
                                         rows={4}
-                                        className="font-mono text-sm resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="font-mono text-sm resize-none bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-muted-foreground/70">
                                         Can be overridden per-reservation during approval.
                                     </p>
                                 </div>
 
                                 {/* Footer Text */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="invoice-footer" className="font-normal text-gray-600">Footer Text</Label>
+                                    <Label htmlFor="invoice-footer" className="font-normal text-muted-foreground">Footer Text</Label>
                                     <Input
                                         id="invoice-footer"
                                         name="invoice-footer"
@@ -523,7 +523,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                                         value={invoiceFooter}
                                         onChange={(e) => setInvoiceFooter(e.target.value)}
                                         placeholder={DEFAULTS.invoiceFooter}
-                                        className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                        className="bg-muted/50 border-border focus:bg-background transition-colors"
                                     />
                                 </div>
                             </CardContent>
@@ -544,7 +544,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                                className="w-full border-border text-muted-foreground hover:bg-muted/50"
                                 onClick={() => {
                                     setTestEmailType('invoice')
                                     setTestEmailOpen(true)
@@ -559,11 +559,11 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
             )}
 
             {/* Save Button */}
-            <div className="flex justify-end pt-4 border-t border-gray-200">
+            <div className="flex justify-end pt-4 border-t border-border">
                 <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-gray-900 hover:bg-gray-800 text-white font-normal px-8"
+                    className="bg-primary hover:bg-primary text-white font-normal px-8"
                 >
                     {isSaving && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
                     Save All Changes
@@ -600,7 +600,7 @@ export default function CommunicationsTab({ initialSettings, billingProfiles, on
                         <Button
                             onClick={handleSendTestEmail}
                             disabled={isSendingTest || !testEmailAddress}
-                            className="bg-gray-900 hover:bg-gray-800"
+                            className="bg-primary hover:bg-primary"
                         >
                             {isSendingTest && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
                             Send Test
@@ -625,24 +625,24 @@ interface EmailPreviewProps {
 
 function EmailPreview({ type, subject, body, footer, onClickSubject, onClickBody, onClickFooter }: EmailPreviewProps) {
     return (
-        <Card className="border-gray-200 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-light">Live Preview</CardTitle>
                 <CardDescription className="text-xs text-blue-600">Click any field to edit</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-w-md mx-auto font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]">
+                <div className="bg-card rounded-lg border border-border overflow-hidden max-w-md mx-auto font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]">
                     {/* Email Header */}
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center text-white font-serif italic text-sm">
+                    <div className="px-6 py-4 border-b border-border flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-serif italic text-sm">
                             I
                         </div>
                         <div>
-                            <div className="text-sm font-medium text-gray-900">Ivy&#39;s Rental</div>
+                            <div className="text-sm font-medium text-foreground">Ivy&#39;s Rental</div>
                             {subject && (
                                 <div
                                     onClick={onClickSubject}
-                                    className={onClickSubject ? "text-xs text-gray-500 cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-200 rounded px-1 -mx-1 transition-all" : "text-xs text-gray-500"}
+                                    className={onClickSubject ? "text-xs text-muted-foreground cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-200 rounded px-1 -mx-1 transition-all" : "text-xs text-muted-foreground"}
                                 >
                                     {replaceWithPreviewData(subject)}
                                 </div>
@@ -651,7 +651,7 @@ function EmailPreview({ type, subject, body, footer, onClickSubject, onClickBody
                     </div>
 
                     {/* Email Body */}
-                    <div className="px-6 py-6 space-y-4 text-sm text-gray-600 leading-relaxed font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]">
+                    <div className="px-6 py-6 space-y-4 text-sm text-muted-foreground leading-relaxed font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]">
                         <div
                             onClick={onClickBody}
                             className={onClickBody ? "whitespace-pre-wrap cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-200 rounded p-2 -m-2 transition-all" : "whitespace-pre-wrap"}
@@ -662,33 +662,33 @@ function EmailPreview({ type, subject, body, footer, onClickSubject, onClickBody
 
                         {/* Reservation Details Box (only for approval) */}
                         {type === 'approval' && (
-                            <div className="bg-gray-50 rounded p-4 border border-gray-100">
-                                <div className="space-y-2 text-xs text-gray-500">
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                            <div className="bg-muted/50 rounded p-4 border border-border">
+                                <div className="space-y-2 text-xs text-muted-foreground">
+                                    <div className="flex justify-between border-b border-border pb-2">
                                         <span>Item</span>
-                                        <span className="font-medium text-gray-900">{PREVIEW_DATA.itemName}</span>
+                                        <span className="font-medium text-foreground">{PREVIEW_DATA.itemName}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-200 pb-2">
+                                    <div className="flex justify-between border-b border-border pb-2">
                                         <span>Dates</span>
-                                        <span className="font-medium text-gray-900">{PREVIEW_DATA.startDate} - {PREVIEW_DATA.endDate}</span>
+                                        <span className="font-medium text-foreground">{PREVIEW_DATA.startDate} - {PREVIEW_DATA.endDate}</span>
                                     </div>
                                     <div className="flex justify-between pt-1">
                                         <span>Total Amount</span>
-                                        <span className="font-medium text-gray-900">{PREVIEW_DATA.totalAmount}</span>
+                                        <span className="font-medium text-foreground">{PREVIEW_DATA.totalAmount}</span>
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {type === 'approval' && (
-                            <div className="text-xs text-gray-400 italic border-l-2 border-gray-200 pl-3">
+                            <div className="text-xs text-muted-foreground/70 italic border-l-2 border-border pl-3">
                                 * An invoice PDF will be attached to this email.
                             </div>
                         )}
 
                         {type === 'shipping' && (
-                            <div className="bg-gray-50 rounded p-3 border border-gray-200">
-                                <p className="text-xs text-gray-500">
+                            <div className="bg-muted/50 rounded p-3 border border-border">
+                                <p className="text-xs text-muted-foreground">
                                     <strong>📎 Pre-Shipment Documentation:</strong><br />
                                     Dispatch photos will be attached to this email.
                                 </p>
@@ -699,9 +699,9 @@ function EmailPreview({ type, subject, body, footer, onClickSubject, onClickBody
                     {/* Email Footer */}
                     <div
                         onClick={onClickFooter}
-                        className={onClickFooter ? "px-6 py-4 bg-gray-50 border-t border-gray-100 cursor-pointer hover:bg-blue-50 transition-all" : "px-6 py-4 bg-gray-50 border-t border-gray-100"}
+                        className={onClickFooter ? "px-6 py-4 bg-muted/50 border-t border-border cursor-pointer hover:bg-blue-50 transition-all" : "px-6 py-4 bg-muted/50 border-t border-border"}
                     >
-                        <div className="whitespace-pre-wrap text-xs text-gray-500">
+                        <div className="whitespace-pre-wrap text-xs text-muted-foreground">
                             {replaceWithPreviewData(footer)}
                         </div>
                     </div>
@@ -731,7 +731,7 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
     const bankInfo = billingProfile?.bank_info || "Chase Bank\nAccount: 1234567890\nRouting: 098765432"
 
     return (
-        <Card className="border-gray-200 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-light">Invoice Preview</CardTitle>
                 <CardDescription className="text-xs text-blue-600">
@@ -740,33 +740,33 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
             </CardHeader>
             <CardContent>
                 {/* PDF-like container */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]" style={{ aspectRatio: '8.5/11' }}>
+                <div className="bg-card rounded-lg border border-border overflow-hidden shadow-sm font-[-apple-system,BlinkMacSystemFont,Segoe_UI,Roboto,Helvetica_Neue,Arial,sans-serif]" style={{ aspectRatio: '8.5/11' }}>
                     <div className="p-6 h-full flex flex-col text-xs">
                         {/* Header */}
-                        <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-200">
+                        <div className="flex justify-between items-start mb-6 pb-4 border-b border-border">
                             <div>
-                                <h1 className="text-lg font-bold text-gray-900 mb-2">INVOICE</h1>
+                                <h1 className="text-lg font-bold text-foreground mb-2">INVOICE</h1>
                                 <div
-                                    className="text-gray-500 whitespace-pre-line text-[10px] cursor-pointer hover:border-dashed hover:border-gray-400 border border-transparent p-1 -m-1 rounded transition-all group relative"
+                                    className="text-muted-foreground whitespace-pre-line text-[10px] cursor-pointer hover:border-dashed hover:border-muted-foreground border border-transparent p-1 -m-1 rounded transition-all group relative"
                                     onClick={onSwitchToBilling}
                                     title="Click to edit in Billing Profiles"
                                 >
                                     {companyHeader}
-                                    <div className="absolute top-0 right-0 hidden group-hover:block bg-gray-800 text-white text-[9px] px-1 rounded shadow-sm whitespace-nowrap z-10 pointer-events-none">
+                                    <div className="absolute top-0 right-0 hidden group-hover:block bg-primary text-white text-[9px] px-1 rounded shadow-sm whitespace-nowrap z-10 pointer-events-none">
                                         Edit in Billing Profiles →
                                     </div>
                                 </div>
                             </div>
-                            <div className="text-right text-gray-600">
+                            <div className="text-right text-muted-foreground">
                                 <div className="group relative cursor-help">
                                     Invoice #: {PREVIEW_DATA.invoiceId}
-                                    <div className="hidden group-hover:block absolute right-0 bg-gray-800 text-white text-[9px] p-2 rounded shadow-lg z-10 w-40 text-left pointer-events-none">
+                                    <div className="hidden group-hover:block absolute right-0 bg-primary text-white text-[9px] p-2 rounded shadow-lg z-10 w-40 text-left pointer-events-none">
                                         Invoice numbers are generated automatically based on reservation ID.
                                     </div>
                                 </div>
                                 <div className="group relative cursor-help mt-1">
                                     Date: Dec 20, 2024
-                                    <div className="hidden group-hover:block absolute right-0 bg-gray-800 text-white text-[9px] p-2 rounded shadow-lg z-10 w-40 text-left pointer-events-none">
+                                    <div className="hidden group-hover:block absolute right-0 bg-primary text-white text-[9px] p-2 rounded shadow-lg z-10 w-40 text-left pointer-events-none">
                                         Date is generated automatically when invoice is created.
                                     </div>
                                 </div>
@@ -775,8 +775,8 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
 
                         {/* Bill To */}
                         <div className="mb-4">
-                            <h2 className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Bill To</h2>
-                            <div className="text-gray-600">
+                            <h2 className="text-[10px] font-semibold text-foreground mb-1 uppercase tracking-wider">Bill To</h2>
+                            <div className="text-muted-foreground">
                                 <div>{PREVIEW_DATA.customerName}</div>
                                 <div>jane.doe@example.com</div>
                             </div>
@@ -784,26 +784,26 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
 
                         {/* Item Details */}
                         <div className="mb-4">
-                            <h2 className="text-[10px] font-semibold text-gray-700 mb-2 uppercase tracking-wider">Reservation Details</h2>
+                            <h2 className="text-[10px] font-semibold text-foreground mb-2 uppercase tracking-wider">Reservation Details</h2>
                             <div className="flex gap-3">
-                                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400">
+                                <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-muted-foreground/70">
                                     <Gem className="h-5 w-5" />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="flex justify-between border-b border-gray-100 py-1">
-                                        <span className="text-gray-500">Item</span>
-                                        <span className="text-gray-900">{PREVIEW_DATA.itemName}</span>
+                                    <div className="flex justify-between border-b border-border py-1">
+                                        <span className="text-muted-foreground">Item</span>
+                                        <span className="text-foreground">{PREVIEW_DATA.itemName}</span>
                                     </div>
                                     <div className="flex justify-between py-1">
-                                        <span className="text-gray-500">Period</span>
-                                        <span className="text-gray-900">{PREVIEW_DATA.startDate} - {PREVIEW_DATA.endDate}</span>
+                                        <span className="text-muted-foreground">Period</span>
+                                        <span className="text-foreground">{PREVIEW_DATA.startDate} - {PREVIEW_DATA.endDate}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Total */}
-                        <div className="mb-4 py-2 border-t-2 border-gray-900">
+                        <div className="mb-4 py-2 border-t-2 border-primary">
                             <div className="flex justify-between font-semibold">
                                 <span>Total Due</span>
                                 <span>{PREVIEW_DATA.totalAmount}</span>
@@ -812,14 +812,14 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
 
                         {/* Payment Info */}
                         <div className="mb-4">
-                            <h2 className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Payment Instructions</h2>
+                            <h2 className="text-[10px] font-semibold text-foreground mb-1 uppercase tracking-wider">Payment Instructions</h2>
                             <div
-                                className="text-gray-500 text-[10px] whitespace-pre-line cursor-pointer hover:border-dashed hover:border-gray-400 border border-transparent p-1 -m-1 rounded transition-all group relative"
+                                className="text-muted-foreground text-[10px] whitespace-pre-line cursor-pointer hover:border-dashed hover:border-muted-foreground border border-transparent p-1 -m-1 rounded transition-all group relative"
                                 onClick={onSwitchToBilling}
                                 title="Click to edit in Billing Profiles"
                             >
                                 {bankInfo}
-                                <div className="absolute top-0 right-0 hidden group-hover:block bg-gray-800 text-white text-[9px] px-1 rounded shadow-sm whitespace-nowrap z-10 pointer-events-none">
+                                <div className="absolute top-0 right-0 hidden group-hover:block bg-primary text-white text-[9px] px-1 rounded shadow-sm whitespace-nowrap z-10 pointer-events-none">
                                     Edit in Billing Profiles →
                                 </div>
                             </div>
@@ -830,16 +830,16 @@ function InvoicePdfPreview({ billingProfile, footerText, notes, onClickNotes, on
                             onClick={onClickNotes}
                             className={onClickNotes ? "mb-4 cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-200 rounded p-1 -m-1 transition-all" : "mb-4"}
                         >
-                            <h2 className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Notes</h2>
-                            <div className="text-gray-500 text-[10px]">{notes || '(click to add notes)'}</div>
+                            <h2 className="text-[10px] font-semibold text-foreground mb-1 uppercase tracking-wider">Notes</h2>
+                            <div className="text-muted-foreground text-[10px]">{notes || '(click to add notes)'}</div>
                         </div>
 
                         {/* Footer */}
                         <div
                             onClick={onClickFooter}
-                            className={onClickFooter ? "mt-auto pt-4 text-center text-gray-400 text-[10px] cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-300 rounded p-1 transition-all border border-transparent" : "mt-auto pt-4 text-center text-gray-400 text-[10px]"}
+                            className={onClickFooter ? "mt-auto pt-4 text-center text-muted-foreground/70 text-[10px] cursor-pointer hover:bg-blue-50 hover:outline hover:outline-2 hover:outline-blue-300 rounded p-1 transition-all border border-transparent" : "mt-auto pt-4 text-center text-muted-foreground/70 text-[10px]"}
                         >
-                            {footerText || <span className="text-gray-300 italic">(click to add footer text)</span>}
+                            {footerText || <span className="text-muted-foreground/50 italic">(click to add footer text)</span>}
                         </div>
                     </div>
                 </div>

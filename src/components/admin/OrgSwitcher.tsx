@@ -68,9 +68,9 @@ function roleBadgeClasses(role: string): string {
         case 'admin':
             return 'bg-blue-50 text-blue-700 border-blue-200'
         case 'staff':
-            return 'bg-slate-100 text-slate-700 border-slate-200'
+            return 'bg-muted text-foreground border-border'
         default:
-            return 'bg-slate-100 text-slate-700 border-slate-200'
+            return 'bg-muted text-foreground border-border'
     }
 }
 
@@ -122,12 +122,12 @@ export function OrgSwitcher({
                             data-testid="org-switcher-single"
                             aria-label={`Workspace: ${currentOrg.name}`}
                             className={cn(
-                                'flex w-full items-center rounded-lg py-2 text-sm font-medium text-slate-900 transition-colors',
-                                'hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
+                                'flex w-full items-center rounded-lg py-2 text-sm font-medium text-foreground transition-colors',
+                                'hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                                 expanded ? 'gap-2 px-3' : 'justify-center px-2',
                             )}
                         >
-                            <Building2 className="h-5 w-5 flex-shrink-0 text-slate-700" />
+                            <Building2 className="h-5 w-5 flex-shrink-0 text-foreground" />
                             {expanded && (
                                 <>
                                     <span className="min-w-0 flex-1 truncate text-left">
@@ -141,7 +141,7 @@ export function OrgSwitcher({
                                     >
                                         {currentRole}
                                     </span>
-                                    <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                                    <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                                 </>
                             )}
                         </button>
@@ -152,17 +152,17 @@ export function OrgSwitcher({
                         sideOffset={6}
                         className="w-64"
                     >
-                        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
+                        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
                             Workspace
                         </DropdownMenuLabel>
                         <DropdownMenuItem
                             disabled
                             aria-current="true"
-                            className="flex items-start gap-2 px-2 py-2 bg-slate-100 cursor-default"
+                            className="flex items-start gap-2 px-2 py-2 bg-muted cursor-default"
                         >
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="truncate text-sm font-medium text-slate-900">
+                                    <span className="truncate text-sm font-medium text-foreground">
                                         {currentOrg.name}
                                     </span>
                                     <span
@@ -174,7 +174,7 @@ export function OrgSwitcher({
                                         {currentRole}
                                     </span>
                                 </div>
-                                <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                                <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                                     /{currentOrg.slug}
                                 </p>
                             </div>
@@ -184,7 +184,7 @@ export function OrgSwitcher({
                         <DropdownMenuItem asChild>
                             <Link
                                 href="/signup"
-                                className="flex items-center gap-2 px-2 py-2 text-sm text-slate-700"
+                                className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
                             >
                                 <Plus className="h-4 w-4" />
                                 <span>Add workspace</span>
@@ -207,12 +207,12 @@ export function OrgSwitcher({
                         data-testid="org-switcher-trigger"
                         aria-label={`Switch workspace (current: ${currentOrg.name}, ${currentRole})`}
                         className={cn(
-                            'flex w-full items-center rounded-lg py-2 text-sm font-medium text-slate-900 transition-colors',
-                            'hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
+                            'flex w-full items-center rounded-lg py-2 text-sm font-medium text-foreground transition-colors',
+                            'hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             expanded ? 'gap-2 px-3' : 'justify-center px-2',
                         )}
                     >
-                        <Building2 className="h-5 w-5 flex-shrink-0 text-slate-700" />
+                        <Building2 className="h-5 w-5 flex-shrink-0 text-foreground" />
                         {expanded && (
                             <>
                                 <span className="min-w-0 flex-1 truncate text-left">
@@ -226,7 +226,7 @@ export function OrgSwitcher({
                                 >
                                     {currentRole}
                                 </span>
-                                <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                                <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                             </>
                         )}
                     </button>
@@ -238,7 +238,7 @@ export function OrgSwitcher({
                     className="w-64"
                     data-testid="org-switcher-menu"
                 >
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         Workspaces
                     </DropdownMenuLabel>
                     {memberships.map((m) => {
@@ -268,12 +268,12 @@ export function OrgSwitcher({
                                 }
                                 className={cn(
                                     'flex items-start gap-2 px-2 py-2',
-                                    isCurrent && 'bg-slate-100 cursor-default',
+                                    isCurrent && 'bg-muted cursor-default',
                                 )}
                             >
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="truncate text-sm font-medium text-slate-900">
+                                        <span className="truncate text-sm font-medium text-foreground">
                                             {orgName}
                                         </span>
                                         <span
@@ -285,7 +285,7 @@ export function OrgSwitcher({
                                             {m.role}
                                         </span>
                                     </div>
-                                    <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                                         /{orgSlug}
                                     </p>
                                 </div>
@@ -294,7 +294,7 @@ export function OrgSwitcher({
                                 ) : isLoading ? (
                                     <span
                                         aria-hidden="true"
-                                        className="mt-1 h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700"
+                                        className="mt-1 h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-input border-t-foreground"
                                     />
                                 ) : null}
                             </DropdownMenuItem>
@@ -304,7 +304,7 @@ export function OrgSwitcher({
                     <DropdownMenuItem asChild data-testid="org-switcher-all">
                         <Link
                             href="/select-workspace"
-                            className="flex items-center gap-2 px-2 py-2 text-sm text-slate-700"
+                            className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
                         >
                             <ArrowLeftRight className="h-4 w-4" />
                             <span>All workspaces</span>
@@ -313,7 +313,7 @@ export function OrgSwitcher({
                     <DropdownMenuItem asChild data-testid="org-switcher-add">
                         <Link
                             href="/signup"
-                            className="flex items-center gap-2 px-2 py-2 text-sm text-slate-700"
+                            className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
                         >
                             <Plus className="h-4 w-4" />
                             <span>Add workspace</span>

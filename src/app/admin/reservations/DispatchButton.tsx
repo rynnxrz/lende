@@ -99,10 +99,10 @@ export function DispatchButton({ reservationId, invoiceId }: { reservationId: st
 
                     <div className="py-4 space-y-4">
                         {invoiceId && (
-                            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg border border-border">
                                 <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-slate-500" />
-                                    <span className="text-sm font-medium text-slate-700">Invoice Review</span>
+                                    <FileText className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium text-foreground">Invoice Review</span>
                                 </div>
                                 <Button
                                     variant="outline"
@@ -125,7 +125,7 @@ export function DispatchButton({ reservationId, invoiceId }: { reservationId: st
                                 id="attachInvoice"
                                 checked={attachInvoice}
                                 onChange={(e) => setAttachInvoice(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                                className="h-4 w-4 rounded border-input text-blue-600 focus:ring-blue-600"
                             />
                             <label
                                 htmlFor="attachInvoice"

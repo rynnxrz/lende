@@ -93,7 +93,7 @@ function SelectionCheckbox({ checked, indeterminate = false, onChange, ariaLabel
             checked={checked}
             onChange={event => onChange(event.target.checked)}
             aria-label={ariaLabel}
-            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+            className="h-4 w-4 rounded border-input text-foreground focus:ring-ring accent-foreground"
         />
     )
 }
@@ -385,7 +385,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-slate-200 pb-3">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-border pb-3">
                 <div className="space-y-3">
                     <nav className="flex flex-wrap gap-2">
                         {LINE_TABS.map(tab => (
@@ -394,8 +394,8 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                 onClick={() => setLineFilter(tab)}
                                 className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                                     lineFilter === tab
-                                        ? 'border-slate-900 bg-slate-900 text-white'
-                                        : 'border-slate-300 text-slate-700 hover:border-slate-500'
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-input text-foreground hover:border-ring'
                                 }`}
                             >
                                 {tab}
@@ -403,16 +403,16 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                             </button>
                         ))}
                     </nav>
-                    <p className="text-xs text-slate-500">Grouped by Character and Side Character in the selected line.</p>
+                    <p className="text-xs text-muted-foreground">Grouped by Character and Side Character in the selected line.</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-2 rounded-md border px-2 py-1">
-                        <Filter className="h-4 w-4 text-slate-500" />
+                    <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
+                        <Filter className="h-4 w-4 text-muted-foreground" />
                         <select
                             value={statusFilter}
                             onChange={event => setStatusFilter(event.target.value as StatusFilter)}
-                            className="bg-transparent text-sm focus:outline-none"
+                            className="bg-transparent text-sm text-foreground focus:outline-none"
                         >
                             <option value="all">All statuses</option>
                             <option value="active">Active</option>
@@ -435,13 +435,13 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
             </div>
 
             {isAdmin && selectedCount > 0 && (
-                <div className="rounded-md border border-slate-300 bg-slate-50 p-4">
-                    <div className="mb-3 text-sm font-medium text-slate-900">
+                <div className="rounded-md border border-border bg-muted/50 p-4">
+                    <div className="mb-3 text-sm font-medium text-foreground">
                         Bulk Edit ({selectedCount} selected)
                     </div>
                     <div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
                         <div className="space-y-1">
-                            <label htmlFor="bulk-rrp" className="text-xs text-slate-600">RRP (£)</label>
+                            <label htmlFor="bulk-rrp" className="text-xs text-muted-foreground">RRP (£)</label>
                             <input
                                 id="bulk-rrp"
                                 type="number"
@@ -450,16 +450,16 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                 value={bulkReplacementCost}
                                 onChange={event => setBulkReplacementCost(event.target.value)}
                                 placeholder="e.g. 200"
-                                className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label htmlFor="bulk-character" className="text-xs text-slate-600">Character</label>
+                            <label htmlFor="bulk-character" className="text-xs text-muted-foreground">Character</label>
                             <select
                                 id="bulk-character"
                                 value={bulkCharacterFamily}
                                 onChange={event => setBulkCharacterFamily(event.target.value)}
-                                className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             >
                                 <option value="">No change</option>
                                 {OFFICIAL_CHARACTERS.map(character => (
@@ -470,14 +470,14 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                             </select>
                         </div>
                         <div className="space-y-1">
-                            <label htmlFor="bulk-side-character" className="text-xs text-slate-600">Side Character</label>
+                            <label htmlFor="bulk-side-character" className="text-xs text-muted-foreground">Side Character</label>
                             <input
                                 id="bulk-side-character"
                                 type="text"
                                 value={bulkSideCharacter}
                                 onChange={event => setBulkSideCharacter(event.target.value)}
                                 placeholder="No change"
-                                className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                         </div>
                         <Button
@@ -488,22 +488,22 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                             {isBulkEditPending ? 'Saving...' : 'Apply & Save'}
                         </Button>
                     </div>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-muted-foreground">
                         Only filled fields will be updated. RRP updates will auto-recalculate daily rental price.
                     </p>
                 </div>
             )}
 
             {groupedCharacters.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500 bg-slate-50/50 rounded-lg border border-dashed">
-                    <Package className="h-10 w-10 text-slate-300" />
-                    <h3 className="mt-4 text-base font-medium text-slate-900">No items found in this view.</h3>
+                <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground bg-muted/30 rounded-lg border border-dashed">
+                    <Package className="h-10 w-10 text-muted-foreground/60" />
+                    <h3 className="mt-4 text-base font-medium text-foreground">No items found in this view.</h3>
                 </div>
             ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border border-border">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-slate-50">
+                            <TableRow className="bg-muted/50">
                                 <TableHead className="w-[40px]">
                                     {isAdmin && (
                                         <SelectionCheckbox
@@ -537,7 +537,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
 
                                 return (
                                     <Fragment key={group.key}>
-                                        <TableRow className="hover:bg-slate-50/60">
+                                        <TableRow className="hover:bg-muted/40">
                                             <TableCell>
                                                 {isAdmin && (
                                                     <SelectionCheckbox
@@ -577,7 +577,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                         <Badge key={`${group.key}-${category}`} variant="outline" className="font-normal">
                                                             {category}
                                                         </Badge>
-                                                    )) : <span className="text-slate-400 text-sm">-</span>}
+                                                    )) : <span className="text-muted-foreground/70 text-sm">-</span>}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -608,10 +608,10 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                             <TableRow className="border-0 p-0 hover:bg-transparent">
                                                 <TableCell colSpan={7} className="p-0">
                                                     <CollapsibleContent>
-                                                        <div className="border-b bg-slate-50/50 p-4 pl-12">
+                                                        <div className="border-b border-border bg-muted/30 p-4 pl-12">
                                                             <Table>
                                                                 <TableHeader>
-                                                                    <TableRow className="border-b-white/50 hover:bg-transparent">
+                                                                    <TableRow className="border-b-border/50 hover:bg-transparent">
                                                                         <TableHead className="h-8 w-10 text-xs"></TableHead>
                                                                         <TableHead className="h-8 w-12 text-xs">Image</TableHead>
                                                                         <TableHead className="h-8 text-xs">SKU</TableHead>
@@ -629,7 +629,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                 </TableHeader>
                                                                 <TableBody>
                                                                     {group.items.map(item => (
-                                                                        <TableRow key={item.id} className="border-b-white/50 hover:bg-white">
+                                                                        <TableRow key={item.id} className="border-b-border/50 hover:bg-background">
                                                                             <TableCell className="py-2">
                                                                                 {isAdmin && (
                                                                                     <SelectionCheckbox
@@ -646,16 +646,16 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                                         alt={item.name}
                                                                                         width={32}
                                                                                         height={32}
-                                                                                        className={`rounded object-cover shadow-sm ${item.status === 'retired' ? 'bg-slate-200 grayscale' : 'bg-white'}`}
+                                                                                        className={`rounded object-cover shadow-sm ${item.status === 'retired' ? 'bg-muted grayscale' : 'bg-background'}`}
                                                                                         unoptimized
                                                                                     />
                                                                                 ) : (
-                                                                                    <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-100">
-                                                                                        <Package className="h-3 w-3 text-slate-400" />
+                                                                                    <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
+                                                                                        <Package className="h-3 w-3 text-muted-foreground" />
                                                                                     </div>
                                                                                 )}
                                                                             </TableCell>
-                                                                            <TableCell className="py-2 font-mono text-xs text-slate-600">{item.sku || '-'}</TableCell>
+                                                                            <TableCell className="py-2 font-mono text-xs text-muted-foreground">{item.sku || '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm font-medium">{item.description || item.name || '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm">{item.side_character || '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm">{item.category_id ? categoryMap.get(item.category_id) || '-' : '-'}</TableCell>

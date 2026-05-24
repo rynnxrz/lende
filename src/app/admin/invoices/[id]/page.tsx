@@ -113,12 +113,12 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                     </Link>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-semibold text-slate-900 font-mono">
+                            <h1 className="text-2xl font-semibold text-foreground font-mono">
                                 {typedInvoice.invoice_number}
                             </h1>
                             <StatusBadge status={typedInvoice.status} />
                         </div>
-                        <p className="text-sm text-slate-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             Created {format(new Date(typedInvoice.created_at), 'MMM dd, yyyy')}
                         </p>
                     </div>
@@ -134,16 +134,16 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             <div className="grid grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-slate-500">Bill To</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Bill To</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-1">
                             <p className="font-semibold text-lg">{typedInvoice.customer_name}</p>
                             {typedInvoice.customer_email && (
-                                <p className="text-slate-500">{typedInvoice.customer_email}</p>
+                                <p className="text-muted-foreground">{typedInvoice.customer_email}</p>
                             )}
                             {typedInvoice.billing_address && (
-                                <div className="text-sm text-slate-600 mt-2">
+                                <div className="text-sm text-muted-foreground mt-2">
                                     {typedInvoice.billing_address.line1 && <p>{typedInvoice.billing_address.line1}</p>}
                                     {typedInvoice.billing_address.line2 && <p>{typedInvoice.billing_address.line2}</p>}
                                     {typedInvoice.billing_address.city && typedInvoice.billing_address.country && (
@@ -157,31 +157,31 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-slate-500">Invoice Details</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Invoice Details</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-slate-500">Issue Date</span>
+                                <span className="text-muted-foreground">Issue Date</span>
                                 <span className="font-medium">
                                     {format(new Date(typedInvoice.issue_date), 'MMM dd, yyyy')}
                                 </span>
                             </div>
                             {typedInvoice.due_date && (
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Due Date</span>
+                                    <span className="text-muted-foreground">Due Date</span>
                                     <span className="font-medium">
                                         {format(new Date(typedInvoice.due_date), 'MMM dd, yyyy')}
                                     </span>
                                 </div>
                             )}
                             <div className="flex justify-between">
-                                <span className="text-slate-500">Category</span>
+                                <span className="text-muted-foreground">Category</span>
                                 <span className="font-medium capitalize">{typedInvoice.category.toLowerCase()}</span>
                             </div>
                             {typedInvoice.reservation_id && (
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Reservation</span>
+                                    <span className="text-muted-foreground">Reservation</span>
                                     <Link
                                         href={`/admin/reservations/${typedInvoice.reservation_id}`}
                                         className="text-blue-600 hover:underline"
@@ -203,7 +203,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                 <CardContent>
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-slate-50">
+                            <TableRow className="bg-muted/50">
                                 <TableHead className="w-1/2">Description</TableHead>
                                 <TableHead className="text-center">Qty</TableHead>
                                 <TableHead className="text-right">Unit Price</TableHead>
@@ -216,7 +216,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                                     <TableCell>
                                         <div className="font-medium">{item.name}</div>
                                         {item.description && (
-                                            <div className="text-sm text-slate-500">{item.description}</div>
+                                            <div className="text-sm text-muted-foreground">{item.description}</div>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">{item.quantity}</TableCell>
@@ -232,19 +232,19 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                         <div className="flex justify-end">
                             <div className="w-64 space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-slate-500">Subtotal</span>
+                                    <span className="text-muted-foreground">Subtotal</span>
                                     <span>£{subtotalAmount.toFixed(2)}</span>
                                 </div>
                                 {discountAmount > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">
+                                        <span className="text-muted-foreground">
                                             Discount ({discountPercentage.toFixed(2)}%)
                                         </span>
                                         <span className="text-red-600">- £{discountAmount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-slate-500">Deposit</span>
+                                    <span className="text-muted-foreground">Deposit</span>
                                     <span>£{depositAmount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-lg font-bold border-t pt-2">
@@ -261,23 +261,23 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             {typedInvoice.notes && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-slate-500">Notes</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Notes</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-slate-700 whitespace-pre-wrap">{typedInvoice.notes}</p>
+                        <p className="text-foreground whitespace-pre-wrap">{typedInvoice.notes}</p>
                     </CardContent>
                 </Card>
             )}
 
             {/* Payment Info */}
             {typedInvoice.billing_profiles && (
-                <Card className="bg-slate-50">
+                <Card className="bg-muted/50">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-slate-500">Payment Instructions</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Payment Instructions</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-slate-700 whitespace-pre-wrap">{typedInvoice.billing_profiles.bank_info}</p>
-                        <p className="text-slate-500 text-sm mt-2">
+                        <p className="text-foreground whitespace-pre-wrap">{typedInvoice.billing_profiles.bank_info}</p>
+                        <p className="text-muted-foreground text-sm mt-2">
                             Please include Invoice #{typedInvoice.invoice_number} in payment reference.
                         </p>
                     </CardContent>
@@ -289,7 +289,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
     const styles: Record<InvoiceStatus, string> = {
-        DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
+        DRAFT: 'bg-muted text-foreground border-border',
         SENT: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         PAID: 'bg-green-100 text-green-800 border-green-200',
         VOID: 'bg-purple-100 text-purple-700 border-purple-200',

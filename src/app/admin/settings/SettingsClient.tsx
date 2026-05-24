@@ -39,13 +39,13 @@ export default function SettingsClient({ initialTab, settings, billingProfiles, 
             <AdminPageHeader title="Settings" />
 
             {/* Main Tab Navigation - Client-side switching */}
-            <div className="border-b border-slate-200">
+            <div className="border-b border-border">
                 <nav className="flex gap-6">
                     <button
                         onClick={() => setActiveTab('billing')}
                         className={`pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'billing'
-                            ? 'border-slate-900 text-slate-900'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-input'
                             }`}
                     >
                         Billing Profiles
@@ -53,8 +53,8 @@ export default function SettingsClient({ initialTab, settings, billingProfiles, 
                     <button
                         onClick={() => setActiveTab('communications')}
                         className={`pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'communications'
-                            ? 'border-slate-900 text-slate-900'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-input'
                             }`}
                     >
                         Communications
@@ -62,8 +62,8 @@ export default function SettingsClient({ initialTab, settings, billingProfiles, 
                     <button
                         onClick={() => setActiveTab('catalog')}
                         className={`pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'catalog'
-                            ? 'border-slate-900 text-slate-900'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-input'
                             }`}
                     >
                         Catalog Setup
@@ -71,8 +71,8 @@ export default function SettingsClient({ initialTab, settings, billingProfiles, 
                     <button
                         onClick={() => setActiveTab('system')}
                         className={`pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'system'
-                            ? 'border-slate-900 text-slate-900'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                            ? 'border-primary text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-input'
                             }`}
                     >
                         System

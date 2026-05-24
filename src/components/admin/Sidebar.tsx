@@ -112,7 +112,7 @@ export const Sidebar = ({
             >
                 <span
                     className={cn(
-                        'text-lg font-semibold text-slate-900 whitespace-nowrap transition-opacity',
+                        'text-lg font-semibold text-foreground whitespace-nowrap transition-opacity',
                         expanded ? 'opacity-100 delay-200' : 'opacity-0',
                     )}
                 >
@@ -140,8 +140,8 @@ export const Sidebar = ({
                             'flex items-center rounded-lg py-2 text-sm font-medium transition-colors whitespace-nowrap',
                             !expanded ? 'justify-center px-2' : 'gap-3 px-3',
                             isActive
-                                ? 'bg-slate-200 text-slate-900 shadow-sm'
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                ? 'bg-muted text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                     >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -165,25 +165,25 @@ export const Sidebar = ({
                         <Button
                             variant="outline"
                             size="icon"
-                            className="fixed top-4 right-4 z-50 bg-white shadow-md border-slate-200"
+                            className="fixed top-4 right-4 z-50 bg-card shadow-md border-border"
                         >
-                            <Menu className="h-5 w-5 text-slate-700" />
+                            <Menu className="h-5 w-5 text-foreground" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-64 p-0 bg-slate-50 border-r-slate-200">
+                    <SheetContent side="left" className="w-64 p-0 bg-muted/50 border-r-border">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         <div className="flex h-full flex-col">
-                            <div className="border-b border-slate-200 bg-white py-3">
+                            <div className="border-b border-border bg-card py-3">
                                 {renderTopSlot(true)}
                             </div>
 
                             {renderNavItems(true, closeMobileMenu)}
 
-                            <div className="p-4 border-t border-slate-200 bg-white space-y-1">
+                            <div className="p-4 border-t border-border bg-card space-y-1">
                                 <Link
                                     href={settingsHref}
                                     onClick={closeMobileMenu}
-                                    className="flex w-full items-center rounded-lg py-2 px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 mb-1 gap-3"
+                                    className="flex w-full items-center rounded-lg py-2 px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground mb-1 gap-3"
                                 >
                                     <Settings className="h-5 w-5" />
                                     <span>Settings</span>
@@ -192,7 +192,7 @@ export const Sidebar = ({
                                 <Button
                                     onClick={handleSignOut}
                                     variant="ghost"
-                                    className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-3"
+                                    className="w-full justify-start gap-3 text-muted-foreground hover:text-red-600 hover:bg-red-50 px-3"
                                 >
                                     <LogOut className="h-5 w-5" />
                                     <span>Sign Out</span>
@@ -206,7 +206,7 @@ export const Sidebar = ({
             {/* --- DESKTOP SIDEBAR (Drawer Animation) --- */}
             <aside
                 className={cn(
-                    'hidden md:flex fixed left-0 top-0 h-screen flex-col border-r border-slate-100 bg-slate-50/95 backdrop-blur-sm z-40 overflow-hidden',
+                    'hidden md:flex fixed left-0 top-0 h-screen flex-col border-r border-border bg-muted/50/95 backdrop-blur-sm z-40 overflow-hidden',
                     'transition-[width] duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
                     isHovered ? 'w-60' : 'w-16'
                 )}
@@ -218,7 +218,7 @@ export const Sidebar = ({
                     {renderTopSlot(isHovered)}
                 </div>
 
-                <Separator className="bg-slate-200/50" />
+                <Separator className="bg-muted/50" />
 
                 {/* Nav */}
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -236,8 +236,8 @@ export const Sidebar = ({
                                     className={cn(
                                         'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
                                         isActive
-                                            ? 'bg-slate-200 text-slate-900'
-                                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                            ? 'bg-muted text-foreground'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                     )}
                                 >
                                     <div className="flex items-center justify-center w-12 flex-shrink-0">
@@ -257,7 +257,7 @@ export const Sidebar = ({
                     </nav>
                 </div>
 
-                <Separator className="bg-slate-200/50" />
+                <Separator className="bg-muted/50" />
 
                 {/* Footer Controls */}
                 <div className="py-2" style={{ width: '240px' }}>
@@ -268,8 +268,8 @@ export const Sidebar = ({
                         className={cn(
                             'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
                             pathname === settingsHref
-                                ? 'bg-slate-200 text-slate-900'
-                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                                ? 'bg-muted text-foreground'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                     >
                         <div className="flex items-center justify-center w-12 flex-shrink-0">
@@ -287,7 +287,7 @@ export const Sidebar = ({
 
                     <button
                         title={!isHovered ? 'Sign Out' : undefined}
-                        className="flex items-center mx-2 rounded-lg py-2 text-sm font-medium text-slate-500 transition-colors hover:text-red-600 hover:bg-red-50 w-[calc(100%-16px)]"
+                        className="flex items-center mx-2 rounded-lg py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-red-600 hover:bg-red-50 w-[calc(100%-16px)]"
                         onClick={handleSignOut}
                     >
                         <div className="flex items-center justify-center w-12 flex-shrink-0">

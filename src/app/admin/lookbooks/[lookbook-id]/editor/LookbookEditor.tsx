@@ -52,8 +52,8 @@ const STATUS_COLORS: Record<MatchStatus, { border: string; fill: string; label: 
         label: 'Confirmed',
     },
     needs_review: {
-        border: 'border-slate-400 border-dashed',
-        fill: 'bg-slate-300/20',
+        border: 'border-muted-foreground/40 border-dashed',
+        fill: 'bg-muted/40',
         label: 'Needs review',
     },
     rejected_no_match: {
@@ -336,26 +336,26 @@ export function LookbookEditor({
     }
 
     return (
-        <div className="flex h-screen flex-col bg-slate-50">
+        <div className="flex h-screen flex-col bg-muted/50">
             {showOnboarding && (
                 <OnboardingTooltip onDismiss={() => setShowOnboarding(false)} />
             )}
 
-            <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
+            <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
                 <div className="min-w-0">
-                    <h1 className="truncate text-lg font-semibold text-slate-900">{title}</h1>
-                    <p className="text-xs text-slate-500">
+                    <h1 className="truncate text-lg font-semibold text-foreground">{title}</h1>
+                    <p className="text-xs text-muted-foreground">
                         {processedPages.size} of {totalPages} pages processed · {counts.total} item slots
                         ({counts.auto_matched} auto, {counts.confirmed} confirmed, {counts.needs_review} needs review)
                     </p>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                    {saveStatus && <span className="text-slate-500">{saveStatus}</span>}
+                    {saveStatus && <span className="text-muted-foreground">{saveStatus}</span>}
                     <button
                         type="button"
                         onClick={handleSave}
                         disabled={saving || (dirtyIds.size === 0 && deletedIds.size === 0)}
-                        className="rounded-md border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-md border border-input px-3 py-1.5 font-medium text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
                         data-testid="lookbook-editor-save"
                     >
                         Save
@@ -392,7 +392,7 @@ export function LookbookEditor({
                             <button
                                 type="button"
                                 onClick={handleAddBlank}
-                                className="rounded-md border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                                className="rounded-md border border-input px-3 py-1.5 font-medium text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                                 data-testid="lookbook-editor-add-bbox"
                             >
                                 + Add hot-zone on this page
@@ -413,7 +413,7 @@ export function LookbookEditor({
                     </div>
                 </main>
 
-                <aside className="w-96 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4">
+                <aside className="w-96 shrink-0 overflow-y-auto border-l border-border bg-card p-4">
                     <Sidebar
                         item={selected}
                         inventory={inventory}
@@ -425,7 +425,7 @@ export function LookbookEditor({
                 </aside>
             </div>
 
-            <div className="border-t border-slate-200 bg-white px-6 py-2 text-[11px] text-slate-500">
+            <div className="border-t border-border bg-card px-6 py-2 text-[11px] text-muted-foreground">
                 Editor status: {editorStatus} · slug: {orgSlug}
             </div>
         </div>
@@ -470,7 +470,7 @@ function PageBoard({
 
     return (
         <div className="relative inline-block w-full max-w-3xl" ref={wrapperRef}>
-            <div ref={canvasSlotRef} className="relative overflow-hidden rounded-md border border-slate-300 bg-slate-100" />
+            <div ref={canvasSlotRef} className="relative overflow-hidden rounded-md border border-input bg-muted" />
             {items.map(it => {
                 const colors = STATUS_COLORS[it.match_status]
                 const hasBbox = it.bbox_x !== null && it.bbox_y !== null && it.bbox_w !== null && it.bbox_h !== null
@@ -506,7 +506,7 @@ function PageBoard({
                         className={`group ${colors.border} ${colors.fill} border-2 ${isSelected ? 'ring-2 ring-offset-1 ring-emerald-500' : ''}`}
                         data-testid={`lookbook-editor-bbox-${it.id}`}
                     >
-                        <span className="pointer-events-none absolute -top-5 left-0 rounded bg-white/90 px-1 text-[10px] font-medium text-slate-700 shadow">
+                        <span className="pointer-events-none absolute -top-5 left-0 rounded bg-background/90 px-1 text-[10px] font-medium text-foreground shadow">
                             {colors.label}
                         </span>
                     </Rnd>
@@ -524,7 +524,7 @@ function OnboardingTooltip({ onDismiss }: { onDismiss: () => void }) {
                     <p className="font-medium">First time here?</p>
                     <p className="mt-1 text-xs">
                         <span className="rounded bg-emerald-200 px-1">Green</span> boxes were matched automatically — quickly skim and click <em>Confirm</em>.{' '}
-                        <span className="rounded bg-slate-200 px-1">Grey</span> boxes need a hot-zone you draw. Pages with no boxes need everything added by you.
+                        <span className="rounded bg-muted px-1">Grey</span> boxes need a hot-zone you draw. Pages with no boxes need everything added by you.
                     </p>
                 </div>
                 <button
@@ -551,7 +551,7 @@ function PageTabs({
     onSelect: (page: number) => void
 }) {
     return (
-        <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2">
+        <div className="flex gap-1 overflow-x-auto border-b border-border bg-card px-4 py-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
                 const isActive = page === activePage
                 const isProcessed = processedPages.has(page)
@@ -566,7 +566,7 @@ function PageTabs({
                                 ? 'bg-emerald-600 text-white'
                                 : isProcessed
                                     ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                                    : 'bg-muted text-muted-foreground hover:bg-muted')
                         }
                         data-testid={`lookbook-editor-page-${page}`}
                     >
@@ -595,7 +595,7 @@ function Sidebar({
 }) {
     if (!item) {
         return (
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-muted-foreground">
                 Click any green or grey box on the page to edit it, or add a new hot-zone with the
                 button below the page.
             </div>
@@ -605,21 +605,21 @@ function Sidebar({
     return (
         <div className="space-y-4 text-sm">
             <header>
-                <p className="text-xs uppercase tracking-wide text-slate-400">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground/70">
                     Page {item.page_number}
                 </p>
-                <h2 className="text-base font-semibold text-slate-900">
+                <h2 className="text-base font-semibold text-foreground">
                     {STATUS_COLORS[item.match_status].label}
                 </h2>
                 {item.match_confidence !== null && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                         Confidence: {Math.round(item.match_confidence * 100)}%
                     </p>
                 )}
             </header>
 
             <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="inventory-select">
+                <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="inventory-select">
                     Match to inventory
                 </label>
                 <select
@@ -627,7 +627,7 @@ function Sidebar({
                     name="inventory_item_id"
                     value={item.inventory_item_id ?? ''}
                     onChange={ev => onUpdate(item.id, { inventory_item_id: ev.target.value || null })}
-                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    className="w-full rounded-md border border-input px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                     data-testid="lookbook-editor-inventory-select"
                 >
                     <option value="">— select item —</option>
@@ -640,7 +640,7 @@ function Sidebar({
             </div>
 
             <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="admin-notes">
+                <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="admin-notes">
                     Notes
                 </label>
                 <textarea
@@ -649,20 +649,20 @@ function Sidebar({
                     value={item.admin_notes ?? ''}
                     onChange={ev => onUpdate(item.id, { admin_notes: ev.target.value })}
                     placeholder="e.g. customer-facing colour…"
-                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    className="w-full rounded-md border border-input px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                     rows={3}
                 />
             </div>
 
             {(item.session_visual_description || item.session_visible_text || item.session_position_label) && (
-                <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-                    <p className="font-medium text-slate-700">Lende suggestion</p>
+                <div className="rounded-md border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+                    <p className="font-medium text-foreground">Lende suggestion</p>
                     {item.session_visible_text && <p className="mt-1">SKU text: {item.session_visible_text}</p>}
                     {item.session_visual_description && (
                         <p className="mt-1 line-clamp-3">{item.session_visual_description}</p>
                     )}
                     {item.session_position_label && (
-                        <p className="mt-1 text-slate-500">Suggested position: {item.session_position_label}</p>
+                        <p className="mt-1 text-muted-foreground">Suggested position: {item.session_position_label}</p>
                     )}
                 </div>
             )}
@@ -689,7 +689,7 @@ function Sidebar({
                 <button
                     type="button"
                     onClick={() => onDelete(item.id)}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                    className="rounded-md border border-input px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                     Delete
                 </button>

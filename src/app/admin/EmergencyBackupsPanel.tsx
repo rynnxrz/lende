@@ -53,7 +53,7 @@ export function EmergencyBackupsPanel({ backups }: { backups: EmergencyBackup[] 
 
     if (items.length === 0) {
         return (
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-muted-foreground">
                 No emergency backups waiting.
             </div>
         )

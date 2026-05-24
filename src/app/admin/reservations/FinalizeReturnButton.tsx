@@ -43,7 +43,7 @@ export function FinalizeReturnButton({
             onClick={handleFinalize}
             disabled={isPending}
             size={compact ? 'sm' : 'default'}
-            className={compact ? undefined : 'bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 shadow-sm transition-all'}
+            className={compact ? undefined : 'bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary shadow-sm transition-all'}
         >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isPending ? 'Completing...' : buttonLabel}

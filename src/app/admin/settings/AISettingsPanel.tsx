@@ -190,11 +190,11 @@ export default function AISettingsPanel({
 
     return (
         <div className="space-y-6">
-            <Card className="border-slate-200">
+            <Card className="border-border">
                 <CardHeader className="flex flex-row items-start justify-between gap-4">
                     <div>
                         <CardTitle className="flex items-center gap-2">
-                            <Bot className="h-5 w-5 text-slate-600" />
+                            <Bot className="h-5 w-5 text-muted-foreground" />
                             AI Runtime
                         </CardTitle>
                         <CardDescription>
@@ -231,29 +231,29 @@ export default function AISettingsPanel({
                         <MetricCard label="Feedback Events" value={runtime?.metrics.feedbackEvents || 0} />
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="text-sm font-semibold text-slate-900">Recent Decisions</div>
+                    <div className="rounded-2xl border border-border bg-muted/50 p-4">
+                        <div className="text-sm font-semibold text-foreground">Recent Decisions</div>
                         <div className="mt-3 space-y-2">
                             {(runtime?.recentDecisions || []).length === 0 && (
-                                <div className="text-sm text-slate-500">No AI decision records yet.</div>
+                                <div className="text-sm text-muted-foreground">No AI decision records yet.</div>
                             )}
                             {(runtime?.recentDecisions || []).map(decision => (
                                 <div
                                     key={decision.id}
-                                    className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm"
+                                    className="rounded-xl border border-border bg-card px-3 py-3 text-sm"
                                 >
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <div className="font-medium text-slate-900">
+                                        <div className="font-medium text-foreground">
                                             {decision.feature} / {decision.operation}
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-muted-foreground">
                                             {decision.provider || 'provider?'} · {decision.model || 'model?'} · {decision.status}
                                         </div>
                                     </div>
                                     {decision.error_message && (
                                         <div className="mt-2 text-rose-600">{decision.error_message}</div>
                                     )}
-                                    <div className="mt-2 text-xs text-slate-500">
+                                    <div className="mt-2 text-xs text-muted-foreground">
                                         Started {new Date(decision.started_at).toLocaleString()}
                                     </div>
                                 </div>
@@ -263,10 +263,10 @@ export default function AISettingsPanel({
                 </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            <Card className="border-border">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Route className="h-5 w-5 text-slate-600" />
+                        <Route className="h-5 w-5 text-muted-foreground" />
                         LLM Routing
                     </CardTitle>
                     <CardDescription>
@@ -307,7 +307,7 @@ export default function AISettingsPanel({
                         placeholder="http://127.0.0.1:11434"
                     />
 
-                    <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                    <label className="flex items-center gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm">
                         <input
                             type="checkbox"
                             checked={settings.ai_allow_fallback}
@@ -320,7 +320,7 @@ export default function AISettingsPanel({
                     </label>
 
                     {settings.ai_allow_fallback && (
-                        <div className="grid gap-4 rounded-2xl border border-slate-200 p-4 md:grid-cols-3">
+                        <div className="grid gap-4 rounded-2xl border border-border p-4 md:grid-cols-3">
                             <LabeledSelect
                                 label="Fallback Provider"
                                 value={settings.ai_fallback_provider || ''}
@@ -354,10 +354,10 @@ export default function AISettingsPanel({
                 </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            <Card className="border-border">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <FileSearch className="h-5 w-5 text-slate-600" />
+                        <FileSearch className="h-5 w-5 text-muted-foreground" />
                         Document Parsing / OCR
                     </CardTitle>
                     <CardDescription>
@@ -386,13 +386,13 @@ export default function AISettingsPanel({
                         />
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                         `pdfjs` keeps local parsing dependency-free. `glm-ocr` enables richer OCR/layout parsing through the configured endpoint and is never selected as a silent fallback.
                     </div>
                 </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            <Card className="border-border">
                 <CardHeader>
                     <CardTitle>Prompt & Thinking Controls</CardTitle>
                     <CardDescription>
@@ -410,7 +410,7 @@ export default function AISettingsPanel({
                             }))}
                             placeholder="Leave empty for model default"
                         />
-                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                        <label className="flex items-center gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm">
                             <input
                                 type="checkbox"
                                 checked={settings.ai_use_system_instruction}
@@ -501,8 +501,8 @@ function RuntimeHealthCard({
 }) {
     const healthy = health?.ok
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 {healthy ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 ) : (
@@ -510,14 +510,14 @@ function RuntimeHealthCard({
                 )}
                 {title}
             </div>
-            <div className="mt-2 text-sm text-slate-600">
+            <div className="mt-2 text-sm text-muted-foreground">
                 {health ? health.message : 'Not configured'}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
                 {badges.map(badge => (
                     <span
                         key={badge}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600"
+                        className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground"
                     >
                         {badge}
                     </span>
@@ -534,8 +534,8 @@ function DocumentHealthCard({
 }) {
     const healthy = health?.ok
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 {healthy ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 ) : (
@@ -543,11 +543,11 @@ function DocumentHealthCard({
                 )}
                 Document Parser
             </div>
-            <div className="mt-2 text-sm text-slate-600">
+            <div className="mt-2 text-sm text-muted-foreground">
                 {health ? `${health.provider}: ${health.message}` : 'Not configured'}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
+                <span className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
                     {health?.is_local ? 'Local runtime' : 'Remote runtime'}
                 </span>
             </div>
@@ -557,9 +557,9 @@ function DocumentHealthCard({
 
 function MetricCard({ label, value }: { label: string; value: number }) {
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="text-sm text-slate-500">{label}</div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
+        <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
         </div>
     )
 }
