@@ -12,13 +12,11 @@ import { Lock, ArrowRight, Loader2, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { verifyWholesalePassword, checkWholesaleAuth } from '@/actions/wholesale'
 import { cn } from '@/lib/utils'
 
-// PR-A: legacy /wholesale path is rewritten from /ivyjstudio/wholesale via
-// middleware Phase A. After PR-B physical move, this page lives at
-// /[slug]/wholesale and reads params.slug. For now, hard-code IVYJSTUDIO —
-// it's the only org accepted by Phase A middleware anyway.
-const ORG_SLUG = 'ivyjstudio'
+interface WholesaleGateClientProps {
+    orgSlug: string
+}
 
-export default function WholesalePage() {
+export function WholesaleGateClient({ orgSlug }: WholesaleGateClientProps) {
     const router = useRouter()
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -26,17 +24,16 @@ export default function WholesalePage() {
     const [isSuccess, setIsSuccess] = useState(false)
 
     useEffect(() => {
-        // Check if already authenticated
         const checkAuth = async () => {
-            const isAuthenticated = await checkWholesaleAuth(ORG_SLUG)
+            const isAuthenticated = await checkWholesaleAuth(orgSlug)
             if (isAuthenticated) {
-                router.replace(`/${ORG_SLUG}/catalog?mode=wholesale`)
+                router.replace(`/${orgSlug}/catalog?mode=wholesale`)
             } else {
                 setIsCheckingAuth(false)
             }
         }
         checkAuth()
-    }, [router])
+    }, [router, orgSlug])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -45,16 +42,15 @@ export default function WholesalePage() {
         setIsLoading(true)
 
         try {
-            const result = await verifyWholesalePassword(password, ORG_SLUG)
+            const result = await verifyWholesalePassword(password, orgSlug)
             if (result.success) {
                 setIsSuccess(true)
                 toast.success("Access Granted", {
                     description: "Welcome to the Wholesale Portal",
                     icon: <ShieldCheck className="w-5 h-5 text-emerald-500" />,
                 })
-                // Small delay to show success state before redirect
                 setTimeout(() => {
-                    router.replace(`/${ORG_SLUG}/catalog?mode=wholesale`)
+                    router.replace(`/${orgSlug}/catalog?mode=wholesale`)
                 }, 800)
             } else {
                 toast.error("Access Denied", {
@@ -86,7 +82,6 @@ export default function WholesalePage() {
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100">
-            {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-slate-50/50 blur-3xl opacity-60" />
                 <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-slate-100/50 blur-3xl opacity-60" />
@@ -100,7 +95,6 @@ export default function WholesalePage() {
                     "border-slate-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/80 backdrop-blur-xl overflow-hidden transition-all duration-500",
                     isSuccess && "ring-2 ring-emerald-500/20 scale-[1.02] shadow-[0_20px_50px_rgb(16,185,129,0.1)]"
                 )}>
-                    {/* Progress Line */}
                     {isLoading && !isSuccess && (
                         <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-slate-200 via-slate-400 to-slate-200 animate-progress w-[50%]" />
@@ -173,7 +167,7 @@ export default function WholesalePage() {
 
                         <div className="mt-8 text-center">
                             <Link
-                                href="/"
+                                href={`/${orgSlug}`}
                                 className="inline-flex items-center text-sm text-slate-400 hover:text-slate-600 transition-colors gap-1 group py-2 px-4 rounded-full hover:bg-slate-50"
                             >
                                 <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-1" />
@@ -198,11 +192,11 @@ export default function WholesalePage() {
                 }
             `}</style>
             <CustomerServiceWidget
-                storageKey="customer-service:wholesale"
+                storageKey={`customer-service:wholesale:${orgSlug}`}
                 baseContext={{
                     pageType: 'wholesale_gate',
-                    path: `/${ORG_SLUG}/wholesale`,
-                    orgSlug: ORG_SLUG,
+                    path: `/${orgSlug}/wholesale`,
+                    orgSlug,
                     wholesale: {
                         authenticated: isSuccess,
                     },
