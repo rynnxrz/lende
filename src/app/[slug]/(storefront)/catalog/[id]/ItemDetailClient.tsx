@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from 'next/link'
 import Image from 'next/image'
+import { ProductImage } from '@/components/catalog/ProductImage'
 import { CustomerServiceWidget } from "@/components/customer-service/CustomerServiceWidget"
 import { BookingForm } from './BookingForm'
 import { ArrowLeft } from 'lucide-react'
@@ -289,16 +290,12 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
 
                     {/* Image Side */}
                     <div className="lg:sticky lg:top-24">
-                        <div className="relative bg-white w-full h-[40vh] lg:h-auto lg:aspect-square overflow-hidden rounded-md mb-4">
-                            <Image
-                                src={currentImage}
-                                alt={`${displayName} fine jewelry piece`}
-                                fill
-                                className="object-contain object-center p-8 transition-opacity duration-300"
-                                priority
-                                sizes="(max-width: 1024px) 100vw, 50vw"
-                            />
-                        </div>
+                        <ProductImage
+                            src={currentImage}
+                            alt={`${displayName} fine jewelry piece`}
+                            className="w-full h-[40vh] lg:h-auto lg:aspect-square bg-white rounded-md mb-4 p-4"
+                            priority
+                        />
 
                         {/* Thumbnails */}
                         {item.image_paths && item.image_paths.length > 1 && (

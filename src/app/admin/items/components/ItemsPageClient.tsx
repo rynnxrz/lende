@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { Plus } from 'lucide-react'
 import type { Item } from '@/types'
 import { GroupedItemsList } from './GroupedItemsList'
+import type { LookbookMatch } from '@/lib/lookbook/item-matches'
 
 interface Category {
     id: string
@@ -23,6 +24,7 @@ interface ItemsPageClientProps {
     collections: Collection[]
     isAdmin: boolean
     basePath?: string
+    lookbookMatchesByItemId?: Record<string, LookbookMatch[]>
 }
 
 export function ItemsPageClient({
@@ -31,6 +33,7 @@ export function ItemsPageClient({
     collections,
     isAdmin,
     basePath = '/admin',
+    lookbookMatchesByItemId,
 }: ItemsPageClientProps) {
     return (
         <div className="space-y-6">
@@ -53,6 +56,7 @@ export function ItemsPageClient({
                 categories={categories}
                 collections={collections}
                 basePath={basePath}
+                lookbookMatchesByItemId={lookbookMatchesByItemId}
             />
         </div>
     )

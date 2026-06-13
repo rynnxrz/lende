@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import Image from "next/image"
+import { ProductImage } from "@/components/catalog/ProductImage"
 import { format } from "date-fns"
 import { Check } from "lucide-react"
 import { toast } from "sonner"
@@ -267,16 +267,13 @@ export function ProductGroupCard({
                 aria-label={`View details for ${variantLabel}`}
                 className="block group/link focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none rounded-md"
             >
-                <div className="relative aspect-[4/5] bg-white overflow-hidden p-10">
-                    <Image
-                        src={getImageUrl(previewVariant.image_paths)}
-                        alt={`${variantLabel} fine jewelry piece`}
-                        fill
-                        className="object-contain object-center group-hover/link:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                        priority={index < 10}
-                    />
-                </div>
+                <ProductImage
+                    src={getImageUrl(previewVariant.image_paths)}
+                    alt={`${variantLabel} fine jewelry piece`}
+                    className="aspect-[4/5] bg-white p-6"
+                    imgClassName="group-hover/link:scale-105 transition-transform duration-300"
+                    priority={index < 10}
+                />
 
                 <div className="px-5 pt-3">
                     <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 min-h-[40px] group-hover/link:text-slate-700 transition-colors text-left">

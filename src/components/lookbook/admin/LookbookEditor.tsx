@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Rnd } from 'react-rnd'
 
 type MatchStatus = 'needs_review' | 'auto_matched' | 'confirmed' | 'rejected_no_match'
@@ -75,7 +76,14 @@ export function LookbookEditor({
     inventory,
 }: Props) {
     const [items, setItems] = useState<EditorItem[]>(initialItems)
-    const [activePage, setActivePage] = useState<number>(1)
+    // Honour a ?page=N deep-link (from the lookbook match column and the
+    // coverage drill-down) so the editor opens on the relevant page.
+    const searchParams = useSearchParams()
+    const [activePage, setActivePage] = useState<number>(() => {
+        const requested = Number(searchParams.get('page'))
+        if (!Number.isFinite(requested) || requested < 1) return 1
+        return pageCount > 0 ? Math.min(requested, pageCount) : requested
+    })
     const [pageCanvas, setPageCanvas] = useState<HTMLCanvasElement | null>(null)
     const [renderError, setRenderError] = useState<string | null>(null)
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null)

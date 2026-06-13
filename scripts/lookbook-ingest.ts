@@ -240,6 +240,17 @@ async function main(): Promise<void> {
         `[ingest] inserted ${autoMatched.size} auto_matched + ${needsReview.length} needs_review ` +
         `(total ${allRows.length}) for lookbook ${lookbookSlug}`,
     );
+
+    // 6. Render PDF pages to JPGs for the admin items-page bbox previews.
+    try {
+        const { renderLookbookById } = await import('./render-lookbook-pages');
+        await renderLookbookById(sb, lookbookId);
+    } catch (err) {
+        console.warn(
+            `[ingest] page rendering skipped (${err instanceof Error ? err.message : err}). ` +
+            `Run \`pnpm tsx scripts/render-lookbook-pages.ts ${lookbookId}\` manually after installing @napi-rs/canvas.`,
+        );
+    }
 }
 
 function autoMatchRow(lookbookId: string, m: TextMatch['matches'][number]) {

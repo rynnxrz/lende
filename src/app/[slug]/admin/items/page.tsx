@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Item } from '@/types'
 import { ItemsPageClient } from '@/app/admin/items/components/ItemsPageClient'
+import { getLookbookMatchesForItems, type LookbookMatch } from '@/lib/lookbook/item-matches'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,13 +24,22 @@ export default async function OrgItemsPage({
         ])
         : [{ data: [] }, { data: [] }, { data: [] }]
 
+    const items = (itemsResult.data as Item[]) || []
+    const matchesMap = orgId
+        ? await getLookbookMatchesForItems(orgId, items.map(i => i.id))
+        : new Map<string, LookbookMatch[]>()
+
+    const lookbookMatchesByItemId: Record<string, LookbookMatch[]> = {}
+    for (const [id, matches] of matchesMap) lookbookMatchesByItemId[id] = matches
+
     return (
         <ItemsPageClient
-            items={(itemsResult.data as Item[]) || []}
+            items={items}
             categories={categoriesResult.data || []}
             collections={collectionsResult.data || []}
             isAdmin={true}
             basePath={basePath}
+            lookbookMatchesByItemId={lookbookMatchesByItemId}
         />
     )
 }

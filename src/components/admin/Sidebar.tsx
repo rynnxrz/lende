@@ -12,7 +12,8 @@ import {
     Settings,
     LogOut,
     Menu, // Import Menu icon
-    FileText // Invoice icon
+    FileText, // Invoice icon
+    Images // Lookbook icon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -29,8 +30,9 @@ import { OrgSwitcher, type OrgSwitcherMembership } from './OrgSwitcher'
 const navSuffixes: { suffix: string; label: string; icon: typeof LayoutDashboard; tour?: string }[] = [
     { suffix: '', label: 'Dashboard', icon: LayoutDashboard },
     { suffix: '/items', label: 'Items', icon: Package, tour: 'listings' },
+    { suffix: '/lookbooks', label: 'Lookbooks', icon: Images, tour: 'lookbook' },
     { suffix: '/reservations', label: 'Reservations', icon: Calendar, tour: 'reservations' },
-    { suffix: '/invoices', label: 'Invoices', icon: FileText, tour: 'lookbook' },
+    { suffix: '/invoices', label: 'Invoices', icon: FileText },
     { suffix: '/customers', label: 'Customers', icon: Users, tour: 'team' },
 ]
 

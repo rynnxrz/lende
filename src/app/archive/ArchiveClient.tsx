@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import Image from "next/image"
+import { ProductImage } from "@/components/catalog/ProductImage"
 import { cn } from "@/lib/utils"
 import { Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -298,16 +298,13 @@ export function ArchiveClient({ initialItems, categories, collections }: Archive
                                                 className="block group/link focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none rounded-md"
                                             >
                                                 {/* Image */}
-                                                <div className="relative aspect-[4/5] bg-white overflow-hidden p-10">
-                                                    <Image
-                                                        src={getImageUrl(item.image_paths)}
-                                                        alt={`${displayName} fine jewelry piece`}
-                                                        fill
-                                                        className="object-contain object-center group-hover/link:scale-105 transition-transform duration-300"
-                                                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                                                        priority={index < 10}
-                                                    />
-                                                </div>
+                                                <ProductImage
+                                                    src={getImageUrl(item.image_paths)}
+                                                    alt={`${displayName} fine jewelry piece`}
+                                                    className="aspect-[4/5] bg-white p-6"
+                                                    imgClassName="group-hover/link:scale-105 transition-transform duration-300"
+                                                    priority={index < 10}
+                                                />
 
                                                 {/* Details (No Price, No Buttons for Archive) */}
                                                 <div

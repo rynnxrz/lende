@@ -24,6 +24,8 @@ import { bulkUpdateItems, bulkUpdateItemStatus, runItemTaxonomyBackfill } from '
 import type { Item, ItemLineType } from '@/types'
 import { OFFICIAL_CHARACTERS } from '@/lib/items/catalog-rules'
 import { DeleteItemButton } from '../DeleteItemButton'
+import { LookbookMatchCell } from './LookbookMatchCell'
+import type { LookbookMatch } from '@/lib/lookbook/item-matches'
 
 interface GroupedItemsListProps {
     initialItems: Item[]
@@ -31,6 +33,7 @@ interface GroupedItemsListProps {
     categories: { id: string; name: string }[]
     collections: { id: string; name: string }[]
     basePath?: string
+    lookbookMatchesByItemId?: Record<string, LookbookMatch[]>
 }
 
 type StatusFilter = 'all' | 'active' | 'maintenance' | 'retired'
@@ -98,7 +101,7 @@ function SelectionCheckbox({ checked, indeterminate = false, onChange, ariaLabel
     )
 }
 
-export function GroupedItemsList({ initialItems, isAdmin, categories, collections, basePath = '/admin' }: GroupedItemsListProps) {
+export function GroupedItemsList({ initialItems, isAdmin, categories, collections, basePath = '/admin', lookbookMatchesByItemId }: GroupedItemsListProps) {
     const router = useRouter()
     const [lineFilter, setLineFilter] = useState<ItemLineType>('Mainline')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -624,6 +627,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                         <TableHead className="h-8 text-xs">Material</TableHead>
                                                                         <TableHead className="h-8 text-right text-xs">RRP</TableHead>
                                                                         <TableHead className="h-8 text-xs">Status</TableHead>
+                                                                        <TableHead className="h-8 text-xs">Lookbook</TableHead>
                                                                         <TableHead className="h-8 text-right text-xs">Actions</TableHead>
                                                                     </TableRow>
                                                                 </TableHeader>
@@ -672,6 +676,14 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                                 <Badge variant={statusVariant(item.status)} className="h-5 px-1.5 text-[10px]">
                                                                                     {item.status}
                                                                                 </Badge>
+                                                                            </TableCell>
+                                                                            <TableCell className="py-2">
+                                                                                <LookbookMatchCell
+                                                                                    matches={lookbookMatchesByItemId?.[item.id] ?? []}
+                                                                                    itemImageUrl={item.image_paths && item.image_paths.length > 0 ? item.image_paths[0] : null}
+                                                                                    itemName={item.name || item.sku || 'Item'}
+                                                                                    basePath={basePath}
+                                                                                />
                                                                             </TableCell>
                                                                             <TableCell className="py-2 text-right">
                                                                                 {isAdmin && (

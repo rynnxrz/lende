@@ -1,4 +1,3 @@
-import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
 import { createClient, createServiceClient } from '@/lib/supabase/server'
@@ -9,44 +8,25 @@ export const dynamic = 'force-dynamic'
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60
 
-export default async function LookbookEditorPage({
+export default async function OrgLookbookEditorPage({
     params,
 }: {
-    params: Promise<{ 'lookbook-id': string }>
+    params: Promise<{ slug: string; 'lookbook-id': string }>
 }) {
-    const { 'lookbook-id': lookbookId } = await params
+    const { slug, 'lookbook-id': lookbookId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    const headerList = await headers()
-    const orgSlug = headerList.get('x-org-slug')
-    if (!orgSlug) notFound()
-
+    // Membership + slug match are enforced by [slug]/admin/layout.tsx; resolve
+    // the org from the route slug to scope all queries below.
     const service = createServiceClient()
-
     const { data: org } = await service
         .from('organizations')
-        .select('id, name')
-        .eq('slug', orgSlug)
+        .select('id, slug, name')
+        .ilike('slug', slug)
         .maybeSingle()
     if (!org) notFound()
-
-    const { data: member } = await service
-        .from('organization_members')
-        .select('role')
-        .eq('organization_id', org.id)
-        .eq('user_id', user.id)
-        .maybeSingle()
-    if (!(member?.role === 'owner' || member?.role === 'admin')) {
-        // Legacy single-tenant admin fallback (mirrors AdminLayout behaviour).
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-        if (profile?.role !== 'admin') redirect('/')
-    }
 
     const { data: lookbook } = await service
         .from('pdf_lookbooks')
@@ -101,7 +81,7 @@ export default async function LookbookEditorPage({
 
     return (
         <LookbookEditor
-            orgSlug={orgSlug}
+            orgSlug={org.slug}
             lookbookId={lookbook.id}
             title={lookbook.title}
             pageCount={lookbook.page_count ?? 0}
