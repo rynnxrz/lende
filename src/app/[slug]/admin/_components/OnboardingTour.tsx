@@ -47,8 +47,8 @@ const STEPS: Step[] = [
     {
         target: '[data-tour="lookbook"]',
         content:
-            'Soon: a customer-facing PDF lookbook so clients can browse your collection without logging in.',
-        title: 'PDF Lookbook · 4/5',
+            'Turn your PDF catalogues into a customer-facing lookbook clients can browse without logging in — and check how each PDF matches your live inventory before you publish.',
+        title: 'Lookbooks · 4/5',
         placement: 'right',
     },
     {

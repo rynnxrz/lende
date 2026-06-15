@@ -149,3 +149,33 @@ export async function getLookbookMatchesForItems(
 
     return out
 }
+
+export async function getLookbookMatchCountsForItems(
+    orgId: string,
+    itemIds: string[]
+): Promise<Map<string, number>> {
+    const out = new Map<string, number>()
+    if (!orgId || itemIds.length === 0) return out
+
+    const sb = createServiceClient()
+    const { data, error } = await sb
+        .from('pdf_lookbook_items')
+        .select(
+            'inventory_item_id, pdf_lookbooks:lookbook_id(organization_id)'
+        )
+        .in('inventory_item_id', itemIds)
+        .in('match_status', ['auto_matched', 'confirmed'])
+        .not('bbox_x', 'is', null)
+
+    if (error || !data) return out
+
+    for (const row of data as unknown as Array<{
+        inventory_item_id: string | null
+        pdf_lookbooks: { organization_id: string } | null
+    }>) {
+        if (!row.inventory_item_id || row.pdf_lookbooks?.organization_id !== orgId) continue
+        out.set(row.inventory_item_id, (out.get(row.inventory_item_id) ?? 0) + 1)
+    }
+
+    return out
+}

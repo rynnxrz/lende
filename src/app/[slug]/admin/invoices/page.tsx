@@ -1,5 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +11,14 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Plus, FileText, Download, Pencil } from 'lucide-react'
+import { withServerTiming } from '@/lib/admin/perf'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
     params: Promise<{ slug: string }>
-    searchParams: Promise<{ filter?: string }>
+    searchParams: Promise<{ filter?: string; page?: string }>
 }
 
 type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'VOID' | 'OVERDUE'
@@ -34,31 +34,27 @@ interface Invoice {
     due_date: string | null
     status: InvoiceStatus
     created_at: string
-    invoice_items?: { id: string; name: string; quantity: number }[]
-    reservation?: { id: string; group_id: string | null } | null
 }
+
+const PAGE_SIZE = 100
 
 export default async function OrgInvoicesPage({ params, searchParams }: PageProps) {
     const { slug } = await params
     const basePath = `/${slug}/admin`
     const resolvedParams = await searchParams
     const filter = resolvedParams.filter || 'all'
+    const currentPage = Math.max(1, Number(resolvedParams.page ?? 1) || 1)
+    const from = (currentPage - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
 
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const orgId = user.app_metadata?.current_org_id as string | undefined
+    const { supabase, org } = await getOrgAdminContext(slug)
+    const orgId = org.id
 
     let query = supabase
         .from('invoices')
-        .select(`
-            *,
-            invoice_items (id, name, quantity),
-            reservation:reservations (id, group_id)
-        `)
+        .select('id, invoice_number, category, customer_name, customer_email, total_amount, issue_date, due_date, status, created_at')
         .order('created_at', { ascending: false })
+        .range(from, to)
 
     if (orgId) query = query.eq('organization_id', orgId)
 
@@ -68,7 +64,7 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
         query = query.eq('status', 'PAID')
     }
 
-    const { data: invoices, error } = await query
+    const { data: invoices, error } = await withServerTiming('invoices:list', async () => await query)
 
     if (error) {
         console.error('Error fetching invoices full:', error)
@@ -109,6 +105,12 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
             <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
                 <InvoicesTable invoices={(invoices as Invoice[]) || []} basePath={basePath} />
             </div>
+            <PaginationControls
+                basePath={basePath}
+                filter={filter}
+                currentPage={currentPage}
+                hasNext={(invoices?.length ?? 0) === PAGE_SIZE}
+            />
         </div>
     )
 }
@@ -184,7 +186,7 @@ function InvoicesTable({ invoices, basePath }: { invoices: Invoice[]; basePath: 
                             )}
                         </TableCell>
                         <TableCell>
-                            <ItemsSummary items={invoice.invoice_items || []} />
+                            <span className="text-sm text-muted-foreground">Open invoice</span>
                         </TableCell>
                         <TableCell className="text-right font-medium text-foreground">
                             £{invoice.total_amount.toFixed(2)}
@@ -251,19 +253,31 @@ function getCategoryLabel(category: string): string {
     return labels[category] || category
 }
 
-function ItemsSummary({ items }: { items: { id: string; name: string; quantity: number }[] }) {
-    if (items.length === 0) {
-        return <span className="text-muted-foreground/70 text-sm">No items</span>
-    }
+function PaginationControls({
+    basePath,
+    filter,
+    currentPage,
+    hasNext,
+}: {
+    basePath: string
+    filter: string
+    currentPage: number
+    hasNext: boolean
+}) {
+    if (currentPage === 1 && !hasNext) return null
 
-    const firstItem = items[0]
-    const remaining = items.length - 1
-
+    const hrefFor = (page: number) => `${basePath}/invoices?filter=${encodeURIComponent(filter)}&page=${page}`
     return (
-        <div className="text-sm">
-            <span className="text-foreground">{firstItem.name}</span>
-            {remaining > 0 && (
-                <span className="text-muted-foreground/70"> + {remaining} more</span>
+        <div className="flex items-center justify-end gap-2">
+            {currentPage > 1 && (
+                <Button asChild variant="outline" size="sm">
+                    <Link href={hrefFor(currentPage - 1)}>Previous</Link>
+                </Button>
+            )}
+            {hasNext && (
+                <Button asChild variant="outline" size="sm">
+                    <Link href={hrefFor(currentPage + 1)}>Next</Link>
+                </Button>
             )}
         </div>
     )

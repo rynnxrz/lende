@@ -2,15 +2,15 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
-import { ExternalLink, FileText, Minus, Package } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ExternalLink, FileText, Loader2, Minus, Package } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
 import { BboxCrop } from '@/components/lookbook/BboxCrop'
 import type { LookbookMatch } from '@/lib/lookbook/item-matches'
 
 interface LookbookMatchCellProps {
-    matches: LookbookMatch[]
+    itemId: string
+    matchCount: number
     itemImageUrl: string | null
     itemName: string
     basePath?: string
@@ -129,14 +129,42 @@ function SideBySide({
 }
 
 export function LookbookMatchCell({
-    matches,
+    itemId,
+    matchCount,
     itemImageUrl,
     itemName,
     basePath = '/admin',
 }: LookbookMatchCellProps) {
     const [open, setOpen] = useState(false)
+    const [matches, setMatches] = useState<LookbookMatch[] | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const requestStartedRef = useRef(false)
 
-    if (matches.length === 0) {
+    const loading = open && matchCount > 0 && !matches && !error
+
+    useEffect(() => {
+        if (!open || matchCount === 0 || matches || requestStartedRef.current) return
+
+        let cancelled = false
+        requestStartedRef.current = true
+        fetch(`/api/admin/lookbook-matches?itemId=${encodeURIComponent(itemId)}`)
+            .then(async response => {
+                if (!response.ok) throw new Error(await response.text())
+                return response.json() as Promise<{ matches: LookbookMatch[] }>
+            })
+            .then(payload => {
+                if (!cancelled) setMatches(payload.matches)
+            })
+            .catch(err => {
+                if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load lookbook matches')
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [itemId, matchCount, matches, open])
+
+    if (matchCount === 0) {
         return (
             <div className="flex h-8 w-8 items-center justify-center text-muted-foreground/40">
                 <Minus className="h-3.5 w-3.5" />
@@ -144,8 +172,9 @@ export function LookbookMatchCell({
         )
     }
 
-    const primary = matches[0]
-    const extraCount = matches.length - 1
+    const loadedMatches = matches ?? []
+    const primary = loadedMatches[0]
+    const extraCount = Math.max(0, (matches?.length ?? matchCount) - 1)
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -155,7 +184,7 @@ export function LookbookMatchCell({
                     className="relative h-8 w-8 overflow-hidden rounded border border-border bg-muted hover:ring-2 hover:ring-ring focus:outline-none focus:ring-2 focus:ring-ring"
                     aria-label={`Lookbook match for ${itemName}`}
                 >
-                    {primary.bbox && primary.pageImageUrl ? (
+                    {primary?.bbox && primary.pageImageUrl ? (
                         <BboxCrop
                             pageImageUrl={primary.pageImageUrl}
                             bbox={primary.bbox}
@@ -164,12 +193,16 @@ export function LookbookMatchCell({
                         />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                            {loading ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                            ) : (
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
                         </div>
                     )}
                     <span
-                        className={`absolute right-0 top-0 h-2 w-2 rounded-bl-sm ${statusDotClass(primary.status)}`}
-                        title={statusLabel(primary.status)}
+                        className={`absolute right-0 top-0 h-2 w-2 rounded-bl-sm ${primary ? statusDotClass(primary.status) : 'bg-slate-400'}`}
+                        title={primary ? statusLabel(primary.status) : 'Lookbook match'}
                     />
                     {extraCount > 0 && (
                         <span className="absolute bottom-0 right-0 rounded-tl-sm bg-foreground/90 px-1 text-[8px] font-bold leading-tight text-background">
@@ -183,18 +216,34 @@ export function LookbookMatchCell({
                 sideOffset={6}
                 className="w-[280px] space-y-3 p-3"
             >
-                <SideBySide
-                    match={primary}
-                    itemImageUrl={itemImageUrl}
-                    itemName={itemName}
-                    basePath={basePath}
-                />
-                {matches.length > 1 && (
+                {loading && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading lookbook preview...
+                    </div>
+                )}
+                {error && (
+                    <div className="rounded border border-rose-500/30 bg-rose-500/10 p-2 text-xs text-rose-700">
+                        Could not load lookbook preview.
+                    </div>
+                )}
+                {primary && (
+                    <SideBySide
+                        match={primary}
+                        itemImageUrl={itemImageUrl}
+                        itemName={itemName}
+                        basePath={basePath}
+                    />
+                )}
+                {!loading && !error && !primary && (
+                    <div className="text-sm text-muted-foreground">No lookbook preview available.</div>
+                )}
+                {loadedMatches.length > 1 && (
                     <div className="space-y-3 border-t border-border pt-3">
                         <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                             Also appears in
                         </div>
-                        {matches.slice(1).map(m => (
+                        {loadedMatches.slice(1).map(m => (
                             <SideBySide
                                 key={m.matchId}
                                 match={m}
@@ -205,7 +254,7 @@ export function LookbookMatchCell({
                         ))}
                     </div>
                 )}
-                {primary.status === 'auto_matched' && (
+                {primary?.status === 'auto_matched' && (
                     <div className="rounded border border-amber-500/40 bg-amber-500/10 p-2 text-[10px] text-amber-900 dark:text-amber-200">
                         AI matched this — open the editor to confirm.
                     </div>

@@ -23,10 +23,8 @@ import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
  */
 export default async function AdminLayout({
     children,
-    searchParams,
 }: {
     children: React.ReactNode
-    searchParams?: Promise<{ onboarding?: string }>
 }) {
     const supabase = await createClient()
 
@@ -118,8 +116,13 @@ export default async function AdminLayout({
         redirect('/')
     }
 
-    const params = (await searchParams) ?? {}
-    const showOnboarding = params.onboarding === '1' && !onboardingCompletedAt && !!orgSlug
+    const referer = headerList.get('referer')
+    const showOnboarding = Boolean(
+        referer &&
+        new URL(referer).searchParams.get('onboarding') === '1' &&
+        !onboardingCompletedAt &&
+        orgSlug,
+    )
     const isEmailVerified = user.email_confirmed_at != null
 
     return (

@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/admin/Sidebar'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { EmailVerificationBanner } from '@/components/EmailVerificationBanner'
 import { SessionClaimSync } from './_components/SessionClaimSync'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { withServerTiming } from '@/lib/admin/perf'
 
 export default async function OrgAdminLayout({
     children,
@@ -12,43 +12,10 @@ export default async function OrgAdminLayout({
     params: Promise<{ slug: string }>
 }) {
     const { slug } = await params
-    const normalizedSlug = decodeURIComponent(slug).toLowerCase()
-
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        redirect('/login')
-    }
-
-    const service = createServiceClient()
-
-    // Resolve the workspace from the URL slug — NOT solely the JWT
-    // `current_org_id`, which can be missing/stale right after a project
-    // migration (the Custom Access Token Hook is a manual dashboard step).
-    // Resolving by slug + membership keeps the gate working and avoids the
-    // silent bounce to `/`.
-    const { data: org } = await service
-        .from('organizations')
-        .select('id, slug, name')
-        .eq('slug', normalizedSlug)
-        .maybeSingle()
-
-    if (!org) {
-        redirect('/')
-    }
-
-    // Verify membership for THIS org.
-    const { data: member } = await service
-        .from('organization_members')
-        .select('role')
-        .eq('organization_id', org.id)
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-    if (!member || !['owner', 'admin', 'staff'].includes(member.role)) {
-        redirect('/')
-    }
+    const { service, user, org, member } = await withServerTiming(
+        'admin-layout:org-context',
+        () => getOrgAdminContext(slug),
+    )
 
     // Org-scoped RLS reads `app_metadata.current_org_id` from the token. If it
     // is missing or points at a different org, stamp the correct value and let
@@ -73,11 +40,11 @@ export default async function OrgAdminLayout({
     // returns rows whose org matches the JWT's `current_org_id`; the
     // dropdown explicitly wants rows for OTHER orgs the user can
     // switch into.
-    const { data: membershipsRaw } = await service
+    const { data: membershipsRaw } = await withServerTiming('admin-layout:memberships', async () => await service
         .from('organization_members')
         .select('organization_id, role, organizations!inner(id, slug, name)')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: true }))
 
     type RawMembership = {
         organization_id: string

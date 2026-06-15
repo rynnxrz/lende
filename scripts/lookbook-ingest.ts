@@ -248,7 +248,8 @@ async function main(): Promise<void> {
     } catch (err) {
         console.warn(
             `[ingest] page rendering skipped (${err instanceof Error ? err.message : err}). ` +
-            `Run \`pnpm tsx scripts/render-lookbook-pages.ts ${lookbookId}\` manually after installing @napi-rs/canvas.`,
+            `Install Poppler (\`brew install poppler\`), then run ` +
+            `\`pnpm tsx scripts/render-lookbook-pages.ts ${lookbookId}\` manually.`,
         );
     }
 }

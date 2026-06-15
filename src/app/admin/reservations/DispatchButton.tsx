@@ -6,7 +6,7 @@ import { markAsShipped } from '@/app/admin/actions'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { downloadInvoicePdf } from '@/actions/invoice'
+import { getInvoicePdfDownloadUrl } from '@/actions/invoice'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,18 +33,9 @@ export function DispatchButton({ reservationId, invoiceId }: { reservationId: st
 
         setIsReviewing(true)
         try {
-            const result = await downloadInvoicePdf(invoiceId)
-            if (result.success && result.data) {
-                // Open PDF in new tab
-                const byteCharacters = atob(result.data)
-                const byteNumbers = new Array(byteCharacters.length)
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i)
-                }
-                const byteArray = new Uint8Array(byteNumbers)
-                const blob = new Blob([byteArray], { type: 'application/pdf' })
-                const url = URL.createObjectURL(blob)
-                window.open(url, '_blank')
+            const result = await getInvoicePdfDownloadUrl(invoiceId)
+            if (result.success && result.url) {
+                window.open(result.url, '_blank', 'noopener,noreferrer')
             } else {
                 toast.error(result.error || 'Failed to generate invoice PDF')
             }

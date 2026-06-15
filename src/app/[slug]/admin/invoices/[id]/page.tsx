@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +14,8 @@ import {
 } from '@/components/ui/table'
 import { ArrowLeft } from 'lucide-react'
 import { InvoiceActions } from '@/app/admin/invoices/[id]/InvoiceActions'
+import { withServerTiming } from '@/lib/admin/perf'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,12 +68,8 @@ export default async function OrgInvoiceDetailPage({ params }: PageProps) {
     const { slug, id } = await params
     const basePath = `/${slug}/admin`
 
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const orgId = user.app_metadata?.current_org_id as string | undefined
+    const { supabase, org } = await getOrgAdminContext(slug)
+    const orgId = org.id
 
     let invoiceQuery = supabase
         .from('invoices')
@@ -85,7 +82,7 @@ export default async function OrgInvoiceDetailPage({ params }: PageProps) {
 
     if (orgId) invoiceQuery = invoiceQuery.eq('organization_id', orgId)
 
-    const { data: invoice, error } = await invoiceQuery.single()
+    const { data: invoice, error } = await withServerTiming('invoices:detail', async () => await invoiceQuery.single())
 
     if (error || !invoice) {
         notFound()

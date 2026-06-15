@@ -1,7 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
 import type { Item } from '@/types'
 import { ItemsPageClient } from '@/app/admin/items/components/ItemsPageClient'
-import { getLookbookMatchesForItems, type LookbookMatch } from '@/lib/lookbook/item-matches'
+import { getLookbookMatchCountsForItems } from '@/lib/lookbook/item-matches'
+import { withServerTiming } from '@/lib/admin/perf'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,25 +13,30 @@ export default async function OrgItemsPage({
 }) {
     const { slug } = await params
     const basePath = `/${slug}/admin`
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const orgId = user?.app_metadata?.current_org_id as string | undefined
+    const { supabase, org } = await getOrgAdminContext(slug)
+    const orgId = org.id
 
-    const [itemsResult, categoriesResult, collectionsResult] = orgId
+    const [itemsResult, categoriesResult, collectionsResult] = await withServerTiming('items:list-primary', async () => orgId
         ? await Promise.all([
-            supabase.from('items').select('*').eq('organization_id', orgId).order('created_at', { ascending: false }),
+            supabase
+                .from('items')
+                .select('id, name, description, sku, status, image_paths, line_type, character_family, side_character, category_id, collection_id, color, material, specs, replacement_cost, rental_price, created_at')
+                .eq('organization_id', orgId)
+                .order('created_at', { ascending: false })
+                .limit(500),
             supabase.from('categories').select('id, name').eq('organization_id', orgId).order('name'),
             supabase.from('collections').select('id, name').eq('organization_id', orgId).order('name'),
         ])
-        : [{ data: [] }, { data: [] }, { data: [] }]
+        : [{ data: [] }, { data: [] }, { data: [] }])
 
     const items = (itemsResult.data as Item[]) || []
-    const matchesMap = orgId
-        ? await getLookbookMatchesForItems(orgId, items.map(i => i.id))
-        : new Map<string, LookbookMatch[]>()
+    const matchCountsMap = await withServerTiming('items:lookbook-counts', async () => orgId
+        ? await getLookbookMatchCountsForItems(orgId, items.map(i => i.id))
+        : new Map<string, number>()
+    )
 
-    const lookbookMatchesByItemId: Record<string, LookbookMatch[]> = {}
-    for (const [id, matches] of matchesMap) lookbookMatchesByItemId[id] = matches
+    const lookbookMatchCountsByItemId: Record<string, number> = {}
+    for (const [id, count] of matchCountsMap) lookbookMatchCountsByItemId[id] = count
 
     return (
         <ItemsPageClient
@@ -39,7 +45,7 @@ export default async function OrgItemsPage({
             collections={collectionsResult.data || []}
             isAdmin={true}
             basePath={basePath}
-            lookbookMatchesByItemId={lookbookMatchesByItemId}
+            lookbookMatchCountsByItemId={lookbookMatchCountsByItemId}
         />
     )
 }

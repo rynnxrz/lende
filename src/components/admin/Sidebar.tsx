@@ -135,6 +135,7 @@ export const Sidebar = ({
                     <Link
                         key={item.href}
                         href={item.href}
+                        prefetch={null}
                         onClick={onClick}
                         title={!expanded ? item.label : undefined}
                         data-tour={item.tour}

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Send, Download, Loader2 } from 'lucide-react'
-import { markInvoiceAsPaid, updateInvoiceStatus, voidInvoice, downloadInvoicePdf } from '@/actions/invoice'
+import { markInvoiceAsPaid, updateInvoiceStatus, voidInvoice, getInvoicePdfDownloadUrl } from '@/actions/invoice'
 
 type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'VOID' | 'OVERDUE'
 
@@ -55,27 +55,10 @@ export function InvoiceActions({ invoiceId, status }: InvoiceActionsProps) {
     const handleDownloadPdf = () => {
         setLoadingAction('download')
         startTransition(async () => {
-            const result = await downloadInvoicePdf(invoiceId)
+            const result = await getInvoicePdfDownloadUrl(invoiceId)
 
-            if (result.success && result.data) {
-                // Convert base64 to blob
-                const byteCharacters = atob(result.data)
-                const byteNumbers = new Array(byteCharacters.length)
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i)
-                }
-                const byteArray = new Uint8Array(byteNumbers)
-                const blob = new Blob([byteArray], { type: 'application/pdf' })
-
-                // Create download link
-                const url = window.URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `invoice-${invoiceId}.pdf` // e.g. invoice-INV-R-20251227-0001.pdf
-                document.body.appendChild(a)
-                a.click()
-                window.URL.revokeObjectURL(url)
-                document.body.removeChild(a)
+            if (result.success && result.url) {
+                window.open(result.url, '_blank', 'noopener,noreferrer')
             } else {
                 alert('Failed to download PDF: ' + (result.error || 'Unknown error'))
             }

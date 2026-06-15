@@ -1,14 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
 import SettingsClient from '@/app/admin/settings/SettingsClient'
 import type { BillingProfile, Category, Collection } from '@/types'
 import { getCategories, getCollections } from '@/app/admin/settings/actions'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { withServerTiming } from '@/lib/admin/perf'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OrgSettingsPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const orgId = user?.app_metadata?.current_org_id as string | undefined
+export default async function OrgSettingsPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>
+}) {
+    const { slug } = await params
+    const { supabase, org } = await getOrgAdminContext(slug)
+    const orgId = org.id
 
     let settingsQuery = supabase.from('app_settings').select('*')
     if (orgId) settingsQuery = settingsQuery.eq('organization_id', orgId)
@@ -31,7 +36,7 @@ export default async function OrgSettingsPage() {
     if (orgId) billingProfilesQuery = billingProfilesQuery.eq('organization_id', orgId)
     const { data: billingProfiles } = await billingProfilesQuery
 
-    const [categories, collections] = await Promise.all([getCategories(), getCollections()])
+    const [categories, collections] = await withServerTiming('settings:taxonomy', () => Promise.all([getCategories(), getCollections()]))
 
     return (
         <SettingsClient

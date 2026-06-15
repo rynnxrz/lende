@@ -357,6 +357,51 @@ async function uploadInvoicePdfToStorage(invoiceId: string, pdfBuffer: Buffer) {
     return { success: true, error: null as string | null, url: signedData.signedUrl }
 }
 
+async function signStoredInvoicePdf(invoiceId: string) {
+    const serviceClient = createServiceClient()
+    const { data: invoice } = await serviceClient
+        .from('invoices')
+        .select('signed_file_path')
+        .eq('id', invoiceId)
+        .maybeSingle()
+
+    const storagePath = invoice?.signed_file_path as string | null | undefined
+    if (!storagePath) return null
+
+    const { data, error } = await serviceClient.storage
+        .from('rental_items')
+        .createSignedUrl(storagePath, 60 * 60)
+
+    if (error || !data?.signedUrl) return null
+    return data.signedUrl
+}
+
+export async function getInvoicePdfDownloadUrl(invoiceId: string) {
+    await requireAdmin()
+
+    const existingUrl = await signStoredInvoicePdf(invoiceId)
+    if (existingUrl) {
+        return { success: true, error: null as string | null, url: existingUrl }
+    }
+
+    const pdfResult = await buildInvoicePdfBuffer(invoiceId)
+    if (!pdfResult.success || !pdfResult.data) {
+        return { success: false, error: pdfResult.error || 'Failed to generate PDF', url: null as string | null }
+    }
+
+    const uploadResult = await uploadInvoicePdfToStorage(invoiceId, pdfResult.data)
+    if (!uploadResult.success || !uploadResult.url) {
+        return { success: false, error: uploadResult.error || 'Failed to upload invoice PDF', url: null as string | null }
+    }
+
+    await createServiceClient()
+        .from('invoices')
+        .update({ signed_file_path: `invoices/${invoiceId}/latest.pdf` })
+        .eq('id', invoiceId)
+
+    return { success: true, error: null as string | null, url: uploadResult.url }
+}
+
 // ============================================================
 // Invoice CRUD Actions
 // ============================================================
@@ -661,7 +706,7 @@ export async function markInvoiceAsPaid(invoiceId: string) {
     // Update invoice status
     const { data: invoice, error: updateError } = await supabase
         .from('invoices')
-        .update({ status: 'PAID' })
+        .update({ status: 'PAID', signed_file_path: null })
         .eq('id', invoiceId)
         .select('reservation_id')
         .single()
@@ -897,7 +942,7 @@ export async function voidInvoice(invoiceId: string) {
 
     const { error } = await supabase
         .from('invoices')
-        .update({ status: 'VOID' })
+        .update({ status: 'VOID', signed_file_path: null })
         .eq('id', invoiceId)
 
     if (error) {
@@ -918,7 +963,7 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
 
     const { error } = await supabase
         .from('invoices')
-        .update({ status })
+        .update({ status, signed_file_path: null })
         .eq('id', invoiceId)
 
     if (error) {
@@ -939,18 +984,7 @@ export async function getInvoicePdfViewUrl(reservationId: string) {
         return { success: false, error: error || 'Invoice not found', url: null as string | null }
     }
 
-    const pdfResult = await downloadInvoicePdf(invoice.id)
-    if (!pdfResult.success || !pdfResult.data) {
-        return { success: false, error: pdfResult.error || 'Failed to generate invoice PDF', url: null as string | null }
-    }
-
-    const pdfBuffer = Buffer.from(pdfResult.data, 'base64')
-    const uploadResult = await uploadInvoicePdfToStorage(invoice.id, pdfBuffer)
-    if (!uploadResult.success || !uploadResult.url) {
-        return { success: false, error: uploadResult.error || 'Failed to upload invoice PDF', url: null as string | null }
-    }
-
-    return { success: true, error: null as string | null, url: uploadResult.url }
+    return getInvoicePdfDownloadUrl(invoice.id)
 }
 
 export async function sendInvoiceEmail(reservationId: string) {

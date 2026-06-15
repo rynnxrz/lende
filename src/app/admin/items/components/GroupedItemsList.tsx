@@ -25,7 +25,6 @@ import type { Item, ItemLineType } from '@/types'
 import { OFFICIAL_CHARACTERS } from '@/lib/items/catalog-rules'
 import { DeleteItemButton } from '../DeleteItemButton'
 import { LookbookMatchCell } from './LookbookMatchCell'
-import type { LookbookMatch } from '@/lib/lookbook/item-matches'
 
 interface GroupedItemsListProps {
     initialItems: Item[]
@@ -33,7 +32,7 @@ interface GroupedItemsListProps {
     categories: { id: string; name: string }[]
     collections: { id: string; name: string }[]
     basePath?: string
-    lookbookMatchesByItemId?: Record<string, LookbookMatch[]>
+    lookbookMatchCountsByItemId?: Record<string, number>
 }
 
 type StatusFilter = 'all' | 'active' | 'maintenance' | 'retired'
@@ -101,7 +100,7 @@ function SelectionCheckbox({ checked, indeterminate = false, onChange, ariaLabel
     )
 }
 
-export function GroupedItemsList({ initialItems, isAdmin, categories, collections, basePath = '/admin', lookbookMatchesByItemId }: GroupedItemsListProps) {
+export function GroupedItemsList({ initialItems, isAdmin, categories, collections, basePath = '/admin', lookbookMatchCountsByItemId }: GroupedItemsListProps) {
     const router = useRouter()
     const [lineFilter, setLineFilter] = useState<ItemLineType>('Mainline')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -203,13 +202,15 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
 
     useEffect(() => {
         const visibleIds = new Set(filteredItemIds)
-        setSelectedItemIds(prev => {
-            const next = new Set<string>()
-            for (const id of prev) {
-                if (visibleIds.has(id)) next.add(id)
-            }
-            return next
-        })
+        window.setTimeout(() => {
+            setSelectedItemIds(prev => {
+                const next = new Set<string>()
+                for (const id of prev) {
+                    if (visibleIds.has(id)) next.add(id)
+                }
+                return next
+            })
+        }, 0)
     }, [filteredItemIds])
 
     const toggleGroup = (groupKey: string) => {
@@ -679,7 +680,8 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                             </TableCell>
                                                                             <TableCell className="py-2">
                                                                                 <LookbookMatchCell
-                                                                                    matches={lookbookMatchesByItemId?.[item.id] ?? []}
+                                                                                    itemId={item.id}
+                                                                                    matchCount={lookbookMatchCountsByItemId?.[item.id] ?? 0}
                                                                                     itemImageUrl={item.image_paths && item.image_paths.length > 0 ? item.image_paths[0] : null}
                                                                                     itemName={item.name || item.sku || 'Item'}
                                                                                     basePath={basePath}

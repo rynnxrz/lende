@@ -1,31 +1,27 @@
-import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { TeamClient } from '@/app/admin/team/team-client'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { withServerTiming } from '@/lib/admin/perf'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OrgTeamPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const service = createServiceClient()
-    const orgId = user.app_metadata?.current_org_id as string | undefined
-
-    const { data: membership } = orgId
-        ? await service.from('organization_members').select('organization_id, role')
-            .eq('organization_id', orgId).eq('user_id', user.id).single()
-        : await service.from('organization_members').select('organization_id, role')
-            .eq('user_id', user.id).limit(1).single()
+export default async function OrgTeamPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>
+}) {
+    const { slug } = await params
+    const { service, org, member } = await getOrgAdminContext(slug)
+    const membership = { organization_id: org.id, role: member.role }
 
     if (!membership || !['owner', 'admin'].includes(membership.role)) redirect('/')
 
-    const { data: members } = await service
+    const { data: members } = await withServerTiming('team:members', async () => await service
         .from('organization_members').select('user_id, role, accepted_at')
-        .eq('organization_id', membership.organization_id)
+        .eq('organization_id', membership.organization_id))
 
     const memberDetails = await Promise.all(
-        (members ?? []).map(async (m) => {
+        ((members ?? []) as Array<{ user_id: string; role: string; accepted_at: string | null }>).map(async (m) => {
             const { data: { user: memberUser } } = await service.auth.admin.getUserById(m.user_id)
             return { userId: m.user_id, email: memberUser?.email ?? 'unknown', role: m.role, joinedAt: m.accepted_at }
         })
