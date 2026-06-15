@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { test, expect, Page } from '@playwright/test'
 import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
 
@@ -47,6 +48,16 @@ test.describe('auth recovery routing', () => {
         await expect(
             page.getByRole('link', { name: /request a new reset link/i }),
         ).toHaveAttribute('href', '/forgot-password')
+    })
+
+    test('reset-password submit button is not gated by form validity', async () => {
+        const source = await readFile(
+            'src/app/(marketing)/reset-password/page.tsx',
+            'utf8',
+        )
+
+        expect(source).toContain('disabled={loading || sessionReady === false}')
+        expect(source).not.toContain('disabled={!canSubmit}')
     })
 
     test('legacy root recovery query redirects into the auth callback', async ({ page }) => {

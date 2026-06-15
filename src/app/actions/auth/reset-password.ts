@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 /**
  * BRIEF-59 — Reset password server action.
@@ -23,6 +24,53 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
  *     reads the query string and renders a one-time success banner.
  */
 export type ResetPasswordResult = { ok: true } | { ok: false; error: string }
+
+export async function invalidateResetSessionsAction(
+    accessToken: string,
+): Promise<ResetPasswordResult> {
+    if (!accessToken) {
+        return {
+            ok: false,
+            error: 'Your reset session has expired. Please request a new link.',
+        }
+    }
+
+    const verifier = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        },
+    )
+
+    const {
+        data: { user },
+        error: getUserError,
+    } = await verifier.auth.getUser(accessToken)
+
+    if (getUserError || !user) {
+        return {
+            ok: false,
+            error: 'Your reset session has expired. Please request a new link.',
+        }
+    }
+
+    const service = createServiceClient()
+    try {
+        await service.auth.admin.signOut(user.id, 'global')
+    } catch (err) {
+        console.error('[reset-password] admin.signOut failed:', err)
+        return {
+            ok: false,
+            error: 'Password updated, but old sessions could not be cleared automatically.',
+        }
+    }
+
+    return { ok: true }
+}
 
 export async function resetPasswordAction(
     newPassword: string,
@@ -64,7 +112,6 @@ export async function resetPasswordAction(
         // Don't block the user on a sign-out failure — the password is
         // already updated. Log to server stderr so operations can pick
         // it up; the next access-token refresh will still re-issue.
-        // eslint-disable-next-line no-console
         console.error('[reset-password] admin.signOut failed:', err)
     }
 
