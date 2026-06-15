@@ -53,6 +53,7 @@ interface LayoutProps {
     children: React.ReactNode
     unsubscribeUrl?: string
     managePreferencesUrl?: string
+    footerNote?: React.ReactNode
 }
 
 /**
@@ -64,6 +65,7 @@ export function Layout({
     children,
     unsubscribeUrl,
     managePreferencesUrl,
+    footerNote,
 }: LayoutProps) {
     return (
         <Html>
@@ -98,6 +100,7 @@ export function Layout({
                     <EmailFooter
                         unsubscribeUrl={unsubscribeUrl}
                         managePreferencesUrl={managePreferencesUrl}
+                        note={footerNote}
                     />
                 </Container>
             </Body>
@@ -209,20 +212,30 @@ function BrandLockup({ size = 'sm' }: BrandLockupProps) {
 interface FooterProps {
     unsubscribeUrl?: string
     managePreferencesUrl?: string
+    note?: React.ReactNode
 }
 
+const DEFAULT_FOOTER_NOTE = (
+    <>
+        You&apos;re receiving this because you accepted an invitation to lende. If that
+        wasn&apos;t you, reply to this email and we&apos;ll sort it out.
+    </>
+)
+
 /**
- * Bottom footer — logo, ShipByX address + unsubscribe + manage preferences row,
- * reassurance line. Mirrors `EmailFooter` from email-shared.jsx.
+ * Bottom footer — logo, ShipByX address + optional unsubscribe/manage
+ * preferences row, reassurance line. Mirrors `EmailFooter` from
+ * email-shared.jsx. The unsubscribe/manage-preferences row only renders
+ * when a URL is provided — transactional/auth emails (reset password,
+ * signup confirmation, OTP) have no such links.
  */
-function EmailFooter({ unsubscribeUrl, managePreferencesUrl }: FooterProps = {}) {
-    const unsub = unsubscribeUrl ?? '#'
-    const manage = managePreferencesUrl ?? '#'
+function EmailFooter({ unsubscribeUrl, managePreferencesUrl, note }: FooterProps = {}) {
     const linkStyle = {
         color: colors.muted,
         textDecoration: 'underline',
         textUnderlineOffset: '3px' as const,
     }
+    const showLinks = !!(unsubscribeUrl || managePreferencesUrl)
     return (
         <Section
             style={{
@@ -240,15 +253,29 @@ function EmailFooter({ unsubscribeUrl, managePreferencesUrl }: FooterProps = {})
                     color: colors.muted,
                 }}
             >
-                ShipByX Ltd <span aria-hidden>·</span> Auckland, NZ{' '}
-                <span aria-hidden>·</span>{' '}
-                <Link href={unsub} style={linkStyle}>
-                    Unsubscribe
-                </Link>{' '}
-                <span aria-hidden>·</span>{' '}
-                <Link href={manage} style={linkStyle}>
-                    Manage preferences
-                </Link>
+                ShipByX Ltd <span aria-hidden>·</span> Auckland, NZ
+                {showLinks && (
+                    <>
+                        {' '}
+                        <span aria-hidden>·</span>{' '}
+                        {unsubscribeUrl && (
+                            <Link href={unsubscribeUrl} style={linkStyle}>
+                                Unsubscribe
+                            </Link>
+                        )}
+                        {unsubscribeUrl && managePreferencesUrl && (
+                            <>
+                                {' '}
+                                <span aria-hidden>·</span>{' '}
+                            </>
+                        )}
+                        {managePreferencesUrl && (
+                            <Link href={managePreferencesUrl} style={linkStyle}>
+                                Manage preferences
+                            </Link>
+                        )}
+                    </>
+                )}
             </Text>
             <Text
                 style={{
@@ -258,8 +285,7 @@ function EmailFooter({ unsubscribeUrl, managePreferencesUrl }: FooterProps = {})
                     color: colors.muted,
                 }}
             >
-                You&apos;re receiving this because you accepted an invitation to lende. If that
-                wasn&apos;t you, reply to this email and we&apos;ll sort it out.
+                {note ?? DEFAULT_FOOTER_NOTE}
             </Text>
         </Section>
     )

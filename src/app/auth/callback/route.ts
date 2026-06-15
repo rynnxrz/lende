@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
+import { resolvePostVerifyRedirect } from '@/lib/auth/post-verify-redirect'
 
 /**
  * BRIEF-05 — Email verification callback.
@@ -55,51 +56,22 @@ export async function GET(request: NextRequest) {
     }
 
     if (!exchanged) {
+        // Recovery links commonly fail with Supabase appending the real
+        // error (e.g. otp_expired) as a URL *fragment*, which a server
+        // route can never see — so `exchangeError` here is just our
+        // generic "Missing verification parameters." Send recovery
+        // failures to /reset-password, which already shows a "Link
+        // expired" state with a CTA to request a new one.
+        if (type === 'recovery') {
+            return NextResponse.redirect(new URL('/reset-password', origin))
+        }
+
         const errUrl = new URL('/login', origin)
         errUrl.searchParams.set('error', 'verification_failed')
         if (exchangeError) errUrl.searchParams.set('reason', exchangeError)
         return NextResponse.redirect(errUrl)
     }
 
-    // BRIEF-59 — recovery (forgot-password) flow lands here with a
-    // recovery-only session. Don't route to /{slug}/admin: the user
-    // hasn't proven they own the password yet (they're resetting it).
-    // Send them to /reset-password and let that page complete the loop
-    // (updateUser + signOut(global) + redirect to /login).
-    if (type === 'recovery') {
-        const resetUrl = new URL('/reset-password', origin)
-        return NextResponse.redirect(resetUrl)
-    }
-
-    // Verification succeeded — find the user's primary org so we can
-    // route them to the right `/{slug}/admin` and not the legacy single-
-    // tenant `/admin` (which would 301 to the default org and confuse a
-    // user who just signed up to a brand-new workspace).
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
-    let slug: string | null = null
-    if (user) {
-        // Use service role so RLS doesn't get in our way — we just
-        // verified this user, so reading their own membership is safe.
-        const service = createServiceClient()
-        const { data: membership } = await service
-            .from('organization_members')
-            .select('role, organizations!inner(slug)')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: true })
-            .limit(1)
-            .maybeSingle()
-
-        const org = (membership as { organizations?: { slug?: string } } | null)?.organizations
-        if (org?.slug) slug = org.slug
-    }
-
-    const target = slug ? `/${slug}/admin` : next
-    const redirectUrl = new URL(target, origin)
-    // Surface a small success flag so the banner can self-dismiss /
-    // toast can fire on landing.
-    redirectUrl.searchParams.set('email_verified', '1')
+    const redirectUrl = await resolvePostVerifyRedirect({ supabase, type, next, origin })
     return NextResponse.redirect(redirectUrl)
 }

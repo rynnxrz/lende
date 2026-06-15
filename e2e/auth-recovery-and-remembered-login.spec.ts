@@ -60,6 +60,43 @@ test.describe('auth recovery routing', () => {
         expect(source).not.toContain('disabled={!canSubmit}')
     })
 
+    test('expired recovery callback redirects to the expired-link state', async ({ page }) => {
+        await page.goto('/auth/callback?type=recovery&next=/reset-password')
+
+        await expect(page).toHaveURL(/\/reset-password$/)
+        await expect(page.getByRole('heading', { name: /link expired/i })).toBeVisible()
+    })
+
+    test('confirm page shows missing-link state without a token_hash', async ({ page }) => {
+        await page.goto('/auth/confirm')
+
+        await expect(page.getByRole('heading', { name: /this link is invalid/i })).toBeVisible()
+        await expect(
+            page.getByRole('link', { name: /request a new link/i }),
+        ).toHaveAttribute('href', '/forgot-password')
+    })
+
+    test('confirm page renders the click-to-confirm interstitial for recovery', async ({
+        page,
+    }) => {
+        await page.goto('/auth/confirm?token_hash=test-token&type=recovery&next=/reset-password')
+
+        await expect(
+            page.getByRole('heading', { name: /confirm password reset/i }),
+        ).toBeVisible()
+        await expect(page.getByRole('button', { name: /^continue$/i })).toBeVisible()
+    })
+
+    test('confirming an invalid recovery token redirects to the expired-link state', async ({
+        page,
+    }) => {
+        await page.goto('/auth/confirm?token_hash=test-token&type=recovery&next=/reset-password')
+        await page.getByRole('button', { name: /^continue$/i }).click()
+
+        await expect(page).toHaveURL(/\/reset-password$/)
+        await expect(page.getByRole('heading', { name: /link expired/i })).toBeVisible()
+    })
+
     test('legacy root recovery query redirects into the auth callback', async ({ page }) => {
         let callbackUrl: string | null = null
         await page.route('**/auth/callback**', async (route) => {
