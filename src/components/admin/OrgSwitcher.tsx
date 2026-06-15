@@ -59,6 +59,14 @@ export interface OrgSwitcherProps {
      * hover-expand pattern). Mobile callers pass `expanded` permanently true.
      */
     expanded: boolean
+    /**
+     * Notifies the parent sidebar when the dropdown opens/closes. The
+     * dropdown content is portaled to `document.body`, so while it's
+     * open the cursor sits over an element outside the sidebar's
+     * hover-expand area — without this, the sidebar's `onMouseLeave`
+     * fires and collapses it out from under the open menu.
+     */
+    onOpenChange?: (open: boolean) => void
 }
 
 function roleBadgeClasses(role: string): string {
@@ -79,6 +87,7 @@ export function OrgSwitcher({
     currentRole,
     memberships,
     expanded,
+    onOpenChange,
 }: OrgSwitcherProps) {
     const router = useRouter()
     const [pendingId, setPendingId] = React.useState<string | null>(null)
@@ -114,7 +123,7 @@ export function OrgSwitcher({
     if (!isMultiOrg) {
         return (
             <div className="px-2 pb-1">
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={onOpenChange}>
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
@@ -199,7 +208,7 @@ export function OrgSwitcher({
     // ── Multi-org path: shadcn DropdownMenu trigger. ──────────────────────
     return (
         <div className="px-2 pb-1">
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={onOpenChange}>
                 <DropdownMenuTrigger asChild>
                     <button
                         type="button"

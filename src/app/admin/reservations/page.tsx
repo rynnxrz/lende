@@ -508,7 +508,7 @@ function ReservationsTable({
                                                 {assessment.valueTier.toUpperCase()}
                                             </Badge>
                                             <Badge variant="outline" className={feasibilityBadgeClass(assessment.feasibilityStatus)}>
-                                                {assessment.feasibilityStatus.replace('_', ' ')}
+                                                {assessment.feasibilityStatus.replace('_', ' ').toUpperCase()}
                                             </Badge>
                                         </div>
                                         <div className="space-y-1 text-muted-foreground">

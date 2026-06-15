@@ -169,7 +169,7 @@ async function fetchNeighboringReservations(group: ReservationAssessmentRow[], b
     return ((data || []) as Array<Record<string, unknown>>).filter(row => !currentIds.has(String(row.id)))
 }
 
-async function fetchTurnaroundBuffer() {
+export async function fetchTurnaroundBuffer() {
     const supabase = createServiceClient()
     const { data } = await supabase
         .from('app_settings')
@@ -180,7 +180,7 @@ async function fetchTurnaroundBuffer() {
     return Math.max(0, Number(data?.turnaround_buffer || 0))
 }
 
-export async function deriveReservationGroupAssessment(group: ReservationAssessmentRow[]): Promise<ReservationGroupAssessment | null> {
+export async function deriveReservationGroupAssessment(group: ReservationAssessmentRow[], bufferDays?: number): Promise<ReservationGroupAssessment | null> {
     const primary = group[0]
     if (!primary) return null
 
@@ -196,9 +196,9 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     const feasibilityCheck: string[] = []
     const reasons: string[] = []
 
-    const [history, bufferDays, neighbors] = await Promise.all([
+    const [history, resolvedBufferDays, neighbors] = await Promise.all([
         fetchCustomerHistory(primary.renter_id || null, groupKey),
-        fetchTurnaroundBuffer(),
+        bufferDays !== undefined ? Promise.resolve(bufferDays) : fetchTurnaroundBuffer(),
         fetchNeighboringReservations(group, 0),
     ])
 
@@ -206,29 +206,29 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     const crossBorder = Boolean(normalizedCountry && !LOCAL_COUNTRIES.has(normalizedCountry))
     if (crossBorder) {
         riskTags.add('cross_border_logistics')
-        riskAssessment.push('首次或跨境履约需要额外确认清关与运输时效。')
+        riskAssessment.push('First-time or cross-border fulfilment needs extra confirmation on customs and shipping lead times.')
     }
 
     const destinationText = [primary.address_line1, primary.address_line2, primary.event_location].filter(Boolean).join(' ')
     if (HOTEL_REGEX.test(destinationText)) {
         riskTags.add('non_fixed_destination')
-        riskAssessment.push('收件地看起来像酒店或临时场所，建议确认签收安排。')
+        riskAssessment.push('The delivery address looks like a hotel or temporary venue — confirm the receiving arrangements.')
     }
 
     const hasLateHistory = history.some(row => LATE_RETURN_REGEX.test(String(row.return_notes || row.admin_notes || '')))
     if (hasLateHistory) {
         riskTags.add('late_return_history')
-        riskAssessment.push('客户历史记录里出现过延迟归还提示。')
+        riskAssessment.push("The customer's history shows a previous late-return flag.")
     }
 
     if (daysUntilStart <= 5) {
         riskTags.add('tight_timeline')
-        riskAssessment.push('使用日期很近，留给确认与履约的时间偏紧。')
+        riskAssessment.push('The rental dates are very close, leaving a tight window for confirmation and fulfilment.')
     }
 
     if (totalRetail >= 12000 || group.length >= 4) {
         riskTags.add('high_value_logistics')
-        riskAssessment.push('本单件数或作品价值较高，建议优先核对物流与保险安排。')
+        riskAssessment.push('This order has a high item count or value — prioritise checking logistics and insurance arrangements.')
     }
 
     let feasibilityStatus: ReservationGroupAssessment['feasibilityStatus'] = 'clear'
@@ -244,8 +244,8 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
         if (available === false) {
             feasibilityStatus = 'high_risk'
             riskTags.add('inventory_conflict')
-            const itemLabel = row.items?.name || '该作品'
-            feasibilityCheck.push(`${itemLabel} 在所选日期已有冲突档期。`)
+            const itemLabel = row.items?.name || 'This piece'
+            feasibilityCheck.push(`${itemLabel} already has a conflicting booking for the selected dates.`)
             break
         }
     }
@@ -256,15 +256,15 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
             if (!matchingRequest) continue
 
             const gapAfterPrevious = differenceInCalendarDays(new Date(matchingRequest.start_date), new Date(String(neighbor.end_date)))
-            if (gapAfterPrevious >= 0 && gapAfterPrevious <= Math.max(bufferDays, 2)) {
+            if (gapAfterPrevious >= 0 && gapAfterPrevious <= Math.max(resolvedBufferDays, 2)) {
                 feasibilityStatus = gapAfterPrevious <= 1 ? 'high_risk' : 'watch'
                 riskTags.add('tight_turnaround')
                 feasibilityCheck.push(
-                    `${matchingRequest.items?.name || '该作品'} 在 ${neighbor.end_date} 才结束上一单，距离本次开始只有 ${gapAfterPrevious} 天缓冲。`
+                    `${matchingRequest.items?.name || 'This piece'} doesn't finish its previous booking until ${neighbor.end_date}, leaving only ${gapAfterPrevious} day(s) buffer before this one starts.`
                 )
                 if (normalizeCountry(neighbor.country as string | null | undefined) !== normalizedCountry && normalizedCountry) {
                     riskTags.add('cross_city_turnaround')
-                    feasibilityCheck.push('前一单与本次使用地不同，建议额外确认跨城或跨境运输时长。')
+                    feasibilityCheck.push("The previous booking's location differs from this one — confirm the cross-city or cross-border shipping time.")
                 }
                 break
             }
@@ -272,7 +272,7 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     }
 
     if (feasibilityCheck.length === 0) {
-        feasibilityCheck.push('当前库存与时间窗口没有发现直接冲突。')
+        feasibilityCheck.push('No direct conflicts found in current inventory or timing.')
     }
 
     const previousOrders = new Set(history.map(row => buildReservationGroupKey({
@@ -289,28 +289,28 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     priorityScore = Math.max(10, Math.min(99, priorityScore))
 
     if (requestNotes.budget) {
-        reasons.push(`预算线索：${requestNotes.budget}`)
+        reasons.push(`Budget hint: ${requestNotes.budget}`)
     }
     if (requestNotes.style) {
-        reasons.push(`风格偏好：${requestNotes.style}`)
+        reasons.push(`Style preference: ${requestNotes.style}`)
     }
     if (requestNotes.brand) {
-        reasons.push(`品牌偏好：${requestNotes.brand}`)
+        reasons.push(`Brand preference: ${requestNotes.brand}`)
     }
 
     if (reasons.length === 0) {
         reasons.push(
             valueTier === 'vip' || valueTier === 'high'
-                ? '本单价值较高，建议优先处理。'
-                : '这是标准优先级请求，可按常规节奏跟进。'
+                ? 'This order has high value — prioritise it.'
+                : 'This is a standard-priority request — follow up at the usual pace.'
         )
     }
 
     const recommendedNextStep = feasibilityStatus === 'high_risk'
-        ? '先核对档期与物流缓冲，再决定是否推进。'
+        ? 'Check scheduling and logistics buffer before deciding whether to proceed.'
         : feasibilityStatus === 'watch'
-            ? '建议先确认收件地与运输窗口。'
-            : '可继续由 Ivy 审核作品选择与客户细节。'
+            ? 'Confirm the delivery address and shipping window first.'
+            : 'Ivy can continue reviewing the piece selection and customer details.'
 
     const assessment: ReservationGroupAssessment = {
         groupKey,
@@ -326,7 +326,7 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
         recommendedNextStep,
         generatedAt: new Date().toISOString(),
         snapshot: {
-            riskAssessment: riskAssessment.length > 0 ? riskAssessment : ['当前没有发现需要额外升级的客户风险信号。'],
+            riskAssessment: riskAssessment.length > 0 ? riskAssessment : ['No customer risk signals requiring escalation were found.'],
             feasibilityCheck,
             valueTier,
             priorityScore,
@@ -338,8 +338,8 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     return assessment
 }
 
-export async function ensureReservationGroupAssessment(group: ReservationAssessmentRow[]) {
-    const assessment = await deriveReservationGroupAssessment(group)
+export async function ensureReservationGroupAssessment(group: ReservationAssessmentRow[], bufferDays?: number) {
+    const assessment = await deriveReservationGroupAssessment(group, bufferDays)
     if (!assessment) return null
     await upsertReservationGroupAssessment(assessment)
     return assessment

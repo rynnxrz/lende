@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 import { LookbookEditor } from '@/components/lookbook/admin/LookbookEditor'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,35 +81,38 @@ export default async function OrgLookbookEditorPage({
     }
 
     return (
-        <LookbookEditor
-            orgSlug={org.slug}
-            lookbookId={lookbook.id}
-            title={lookbook.title}
-            pageCount={lookbook.page_count ?? 0}
-            pdfSignedUrl={pdfSignedUrl}
-            published={!!lookbook.published}
-            editorStatus={lookbook.editor_status}
-            items={items.map(row => ({
-                id: row.id,
-                page_number: row.page_number,
-                bbox_x: row.bbox_x !== null && row.bbox_x !== undefined ? Number(row.bbox_x) : null,
-                bbox_y: row.bbox_y !== null && row.bbox_y !== undefined ? Number(row.bbox_y) : null,
-                bbox_w: row.bbox_w !== null && row.bbox_w !== undefined ? Number(row.bbox_w) : null,
-                bbox_h: row.bbox_h !== null && row.bbox_h !== undefined ? Number(row.bbox_h) : null,
-                match_status: row.match_status,
-                match_confidence: row.match_confidence !== null && row.match_confidence !== undefined ? Number(row.match_confidence) : null,
-                inventory_item_id: row.inventory_item_id,
-                session_visual_description: row.session_visual_description,
-                session_visible_text: row.session_visible_text,
-                session_position_label: row.session_position_label,
-                admin_notes: row.admin_notes,
-            }))}
-            inventory={(inventory ?? []).map(it => ({
-                id: it.id,
-                sku: it.sku,
-                name: it.name,
-                rental_price: it.rental_price !== null && it.rental_price !== undefined ? Number(it.rental_price) : null,
-            }))}
-        />
+        <>
+            <TopLoaderReady />
+            <LookbookEditor
+                orgSlug={org.slug}
+                lookbookId={lookbook.id}
+                title={lookbook.title}
+                pageCount={lookbook.page_count ?? 0}
+                pdfSignedUrl={pdfSignedUrl}
+                published={!!lookbook.published}
+                editorStatus={lookbook.editor_status}
+                items={items.map(row => ({
+                    id: row.id,
+                    page_number: row.page_number,
+                    bbox_x: row.bbox_x !== null && row.bbox_x !== undefined ? Number(row.bbox_x) : null,
+                    bbox_y: row.bbox_y !== null && row.bbox_y !== undefined ? Number(row.bbox_y) : null,
+                    bbox_w: row.bbox_w !== null && row.bbox_w !== undefined ? Number(row.bbox_w) : null,
+                    bbox_h: row.bbox_h !== null && row.bbox_h !== undefined ? Number(row.bbox_h) : null,
+                    match_status: row.match_status,
+                    match_confidence: row.match_confidence !== null && row.match_confidence !== undefined ? Number(row.match_confidence) : null,
+                    inventory_item_id: row.inventory_item_id,
+                    session_visual_description: row.session_visual_description,
+                    session_visible_text: row.session_visible_text,
+                    session_position_label: row.session_position_label,
+                    admin_notes: row.admin_notes,
+                }))}
+                inventory={(inventory ?? []).map(it => ({
+                    id: it.id,
+                    sku: it.sku,
+                    name: it.name,
+                    rental_price: it.rental_price !== null && it.rental_price !== undefined ? Number(it.rental_price) : null,
+                }))}
+            />
+        </>
     )
 }

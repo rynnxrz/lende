@@ -16,28 +16,37 @@ import { usePathname } from "next/navigation"
  *
  * Marketing routes have their own MarketingHeader from
  * `(marketing)/layout.tsx`.
+ *
+ * `/admin` and `/[slug]/admin` are excluded: those routes render
+ * <Sidebar> with its own OrgSwitcher branding, so this header would
+ * just be a redundant, mismatched-theme bar stacked on top.
  */
 const TENANT_PREFIXES = [
-    "/admin", "/archive",
+    "/archive",
     "/request", "/payment", "/payment-confirmation", "/legacy",
     "/system-admin",
 ]
-const ORG_TENANT_RE = /^\/[^/]+\/(admin|archive|request|payment|payment-confirmation)\b/
+const ORG_TENANT_RE = /^\/[^/]+\/(archive|request|payment|payment-confirmation)\b/
 
 export function Header() {
     const pathname = usePathname() ?? ""
 
+    const orgMatch = pathname.match(ORG_TENANT_RE)
     const isTenantRoute =
         TENANT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
-        ORG_TENANT_RE.test(pathname)
+        orgMatch != null
 
     if (!isTenantRoute) return null
+
+    // Logo should return to this app's admin home, not the public
+    // marketing site — clicking it shouldn't exit the authenticated app.
+    const homeHref = orgMatch ? `/${pathname.split("/")[1]}/admin` : "/admin"
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
             <div className="flex h-16 items-center justify-between px-4 sm:px-8 max-w-[1920px] mx-auto">
                 {/* Project Name / Logo */}
-                <Link href="/" className="text-xl font-medium tracking-[0.2em] text-gray-900 hover:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-sm">
+                <Link href={homeHref} className="text-xl font-medium tracking-[0.2em] text-gray-900 hover:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-sm">
                     {BRAND_NAME_UPPER}
                 </Link>
 

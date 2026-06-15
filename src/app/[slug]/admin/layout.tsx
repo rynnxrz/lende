@@ -12,7 +12,7 @@ export default async function OrgAdminLayout({
     params: Promise<{ slug: string }>
 }) {
     const { slug } = await params
-    const { service, user, org, member } = await withServerTiming(
+    const { service, user, org, member, memberships } = await withServerTiming(
         'admin-layout:org-context',
         () => getOrgAdminContext(slug),
     )
@@ -33,25 +33,6 @@ export default async function OrgAdminLayout({
             })
             .catch(() => {})
     }
-
-    // BRIEF-63 — fetch all of the user's memberships so the Sidebar
-    // OrgSwitcher can list every workspace they belong to. We use the
-    // service role here because RLS on `organization_members` only
-    // returns rows whose org matches the JWT's `current_org_id`; the
-    // dropdown explicitly wants rows for OTHER orgs the user can
-    // switch into.
-    const { data: membershipsRaw } = await withServerTiming('admin-layout:memberships', async () => await service
-        .from('organization_members')
-        .select('organization_id, role, organizations!inner(id, slug, name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true }))
-
-    type RawMembership = {
-        organization_id: string
-        role: string
-        organizations: { id: string; slug: string; name: string } | null
-    }
-    const memberships: RawMembership[] = (membershipsRaw ?? []) as unknown as RawMembership[]
 
     const isEmailVerified = user.email_confirmed_at != null
 

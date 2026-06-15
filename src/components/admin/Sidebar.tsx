@@ -67,7 +67,12 @@ export const Sidebar = ({
     const router = useRouter()
     const supabase = createClient()
     const [isHovered, setIsHovered] = useState(false)
+    const [isOrgMenuOpen, setIsOrgMenuOpen] = useState(false)
     const [isMobileOpen, setIsMobileOpen] = useState(false)
+    // Keep the sidebar expanded while the OrgSwitcher dropdown is open —
+    // its content portals to document.body, which would otherwise
+    // trigger onMouseLeave below and collapse the sidebar mid-interaction.
+    const isExpanded = isHovered || isOrgMenuOpen
 
     const basePath = currentOrg ? `/${currentOrg.slug}/admin` : '/admin'
     const settingsHref = `${basePath}/settings`
@@ -102,6 +107,7 @@ export const Sidebar = ({
                     currentRole={currentRole!}
                     memberships={memberships!}
                     expanded={expanded}
+                    onOpenChange={setIsOrgMenuOpen}
                 />
             )
         }
@@ -211,14 +217,14 @@ export const Sidebar = ({
                 className={cn(
                     'hidden md:flex fixed left-0 top-0 h-screen flex-col border-r border-border bg-muted/50/95 backdrop-blur-sm z-40 overflow-hidden',
                     'transition-[width] duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
-                    isHovered ? 'w-60' : 'w-16'
+                    isExpanded ? 'w-60' : 'w-16'
                 )}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 {/* Top slot — OrgSwitcher when org context supplied, legacy brand header otherwise */}
                 <div className="py-3" style={{ width: '240px' }}>
-                    {renderTopSlot(isHovered)}
+                    {renderTopSlot(isExpanded)}
                 </div>
 
                 <Separator className="bg-muted/50" />
@@ -234,7 +240,7 @@ export const Sidebar = ({
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    title={!isHovered ? item.label : undefined}
+                                    title={!isExpanded ? item.label : undefined}
                                     data-tour={item.tour}
                                     className={cn(
                                         'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
@@ -249,7 +255,7 @@ export const Sidebar = ({
                                     <span
                                         className={cn(
                                             "whitespace-nowrap transition-opacity",
-                                            isHovered ? "opacity-100 delay-200" : "opacity-0"
+                                            isExpanded ? "opacity-100 delay-200" : "opacity-0"
                                         )}
                                     >
                                         {item.label}
@@ -266,7 +272,7 @@ export const Sidebar = ({
                 <div className="py-2" style={{ width: '240px' }}>
                     <Link
                         href={settingsHref}
-                        title={!isHovered ? 'Settings' : undefined}
+                        title={!isExpanded ? 'Settings' : undefined}
                         data-tour="settings"
                         className={cn(
                             'flex items-center mx-2 rounded-lg py-2 text-sm font-medium transition-colors',
@@ -281,7 +287,7 @@ export const Sidebar = ({
                         <span
                             className={cn(
                                 "whitespace-nowrap transition-opacity",
-                                isHovered ? "opacity-100 delay-200" : "opacity-0"
+                                isExpanded ? "opacity-100 delay-200" : "opacity-0"
                             )}
                         >
                             Settings
@@ -289,7 +295,7 @@ export const Sidebar = ({
                     </Link>
 
                     <button
-                        title={!isHovered ? 'Sign Out' : undefined}
+                        title={!isExpanded ? 'Sign Out' : undefined}
                         className="flex items-center mx-2 rounded-lg py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-red-600 hover:bg-red-50 w-[calc(100%-16px)]"
                         onClick={handleSignOut}
                     >
@@ -299,7 +305,7 @@ export const Sidebar = ({
                         <span
                             className={cn(
                                 "whitespace-nowrap transition-opacity",
-                                isHovered ? "opacity-100 delay-200" : "opacity-0"
+                                isExpanded ? "opacity-100 delay-200" : "opacity-0"
                             )}
                         >
                             Sign Out

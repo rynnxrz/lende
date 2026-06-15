@@ -3,6 +3,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Rnd } from 'react-rnd'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
 
 type MatchStatus = 'needs_review' | 'auto_matched' | 'confirmed' | 'rejected_no_match'
 
@@ -601,6 +616,8 @@ function Sidebar({
     onRejectNoMatch: (id: string) => void
     onDelete: (id: string) => void
 }) {
+    const [inventoryPickerOpen, setInventoryPickerOpen] = useState(false)
+
     if (!item) {
         return (
             <div className="text-sm text-muted-foreground">
@@ -630,21 +647,57 @@ function Sidebar({
                 <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="inventory-select">
                     Match to inventory
                 </label>
-                <select
-                    id="inventory-select"
-                    name="inventory_item_id"
-                    value={item.inventory_item_id ?? ''}
-                    onChange={ev => onUpdate(item.id, { inventory_item_id: ev.target.value || null })}
-                    className="w-full rounded-md border border-input px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-                    data-testid="lookbook-editor-inventory-select"
-                >
-                    <option value="">— select item —</option>
-                    {inventory.map(inv => (
-                        <option key={inv.id} value={inv.id}>
-                            {inv.sku} · {inv.name}
-                        </option>
-                    ))}
-                </select>
+                <Popover open={inventoryPickerOpen} onOpenChange={setInventoryPickerOpen}>
+                    <PopoverTrigger asChild>
+                        <button
+                            id="inventory-select"
+                            type="button"
+                            role="combobox"
+                            aria-expanded={inventoryPickerOpen}
+                            aria-controls="inventory-select-list"
+                            className="flex w-full items-center justify-between rounded-md border border-input px-2 py-1.5 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                            data-testid="lookbook-editor-inventory-select"
+                        >
+                            <span className="truncate">
+                                {item.inventory_item_id
+                                    ? (() => {
+                                        const selected = inventory.find(inv => inv.id === item.inventory_item_id)
+                                        return selected ? `${selected.sku} · ${selected.name}` : '— select item —'
+                                    })()
+                                    : '— select item —'}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent id="inventory-select-list" className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                            <CommandInput placeholder="Search by SKU or name…" />
+                            <CommandList>
+                                <CommandEmpty>No item found.</CommandEmpty>
+                                <CommandGroup>
+                                    {inventory.map(inv => (
+                                        <CommandItem
+                                            key={inv.id}
+                                            value={`${inv.sku ?? ''} ${inv.name ?? ''}`}
+                                            onSelect={() => {
+                                                onUpdate(item.id, { inventory_item_id: inv.id })
+                                                setInventoryPickerOpen(false)
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    'mr-2 h-4 w-4',
+                                                    item.inventory_item_id === inv.id ? 'opacity-100' : 'opacity-0'
+                                                )}
+                                            />
+                                            {inv.sku} · {inv.name}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             <div>

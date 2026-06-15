@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import NextTopLoader from 'nextjs-toploader';
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/Header"
+import { RouteProgress } from "@/components/RouteProgress"
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,6 +38,9 @@ export default function RootLayout({
           shadow="none"
           zIndex={9999}
         />
+        <Suspense fallback={null}>
+          <RouteProgress />
+        </Suspense>
 
         {/* Microsoft Clarity - production only */}
         {process.env.NODE_ENV === "production" && (

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 import { getLookbookCoverage } from '@/lib/lookbook/coverage'
 
 import { LookbookManager } from './_components/LookbookManager'
@@ -20,6 +21,7 @@ export default async function OrgLookbooksPage({
 
     return (
         <div className="space-y-6">
+            <TopLoaderReady />
             <AdminPageHeader
                 title="Lookbooks"
                 description="Digitised PDF catalogues — check how each PDF matches your current inventory before publishing."

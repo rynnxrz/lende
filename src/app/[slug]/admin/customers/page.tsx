@@ -6,6 +6,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 import { Users } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -53,6 +54,7 @@ export default async function OrgCustomersPage({
 
     return (
         <div className="space-y-6">
+            <TopLoaderReady />
             <AdminPageHeader
                 title="Customers"
                 description={`${customers?.length || 0} customer${(customers?.length || 0) !== 1 ? 's' : ''} registered`}

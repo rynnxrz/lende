@@ -13,6 +13,7 @@ import {
 import { Plus, FileText, Download, Pencil } from 'lucide-react'
 import { withServerTiming } from '@/lib/admin/perf'
 import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,6 +81,7 @@ export default async function OrgInvoicesPage({ params, searchParams }: PageProp
 
     return (
         <div className="space-y-6">
+            <TopLoaderReady />
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">Invoices</h1>

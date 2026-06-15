@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, ArrowLeft, Save } from 'lucide-react'
 import Link from 'next/link'
 import { createManualInvoice } from '@/actions/invoice'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 interface LineItem {
     name: string
@@ -87,6 +88,7 @@ export default function OrgNewInvoicePage() {
 
     return (
         <div className="space-y-6 max-w-4xl">
+            <TopLoaderReady />
             <div className="flex items-center gap-4">
                 <Link href={`${basePath}/invoices`}>
                     <Button variant="ghost" size="icon">

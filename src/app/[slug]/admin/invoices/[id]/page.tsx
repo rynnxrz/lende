@@ -16,6 +16,7 @@ import { ArrowLeft } from 'lucide-react'
 import { InvoiceActions } from '@/app/admin/invoices/[id]/InvoiceActions'
 import { withServerTiming } from '@/lib/admin/perf'
 import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -97,6 +98,7 @@ export default async function OrgInvoiceDetailPage({ params }: PageProps) {
 
     return (
         <div className="space-y-6 max-w-4xl">
+            <TopLoaderReady />
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link href={`${basePath}/invoices`}>

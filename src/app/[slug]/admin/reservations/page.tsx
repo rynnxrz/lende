@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { ApproveButton } from '@/app/admin/reservations/ApproveButton'
@@ -29,11 +28,14 @@ import {
     buildReservationGroupKey,
     ensureReservationGroupAssessment,
     fetchReservationGroupAssessments,
+    fetchTurnaroundBuffer,
     type ReservationAssessmentRow,
     type ReservationGroupAssessment,
 } from '@/lib/reservations/assessment'
 import type { BillingProfile } from '@/types'
 import { computeRentalChargeFromRetail } from '@/lib/invoice/pricing'
+import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,9 +58,8 @@ export default async function OrgReservationsPage({ params, searchParams }: Page
     const filter = resolvedSearchParams.filter || 'pending_request'
     const customerEmail = resolvedSearchParams.customer
 
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const orgId = user?.app_metadata?.current_org_id as string | undefined
+    const { supabase, org } = await getOrgAdminContext(slug)
+    const orgId = org.id
 
     let query = supabase
         .from('reservations')
@@ -71,6 +72,13 @@ export default async function OrgReservationsPage({ params, searchParams }: Page
 
     if (orgId) query = query.eq('organization_id', orgId)
 
+    if (!customerEmail && filter !== 'archived') {
+        const status = STATUS_FILTERS[filter as keyof typeof STATUS_FILTERS]
+        if (status) {
+            query = query.eq('status', status)
+        }
+    }
+
     let billingProfilesQuery = supabase
         .from('billing_profiles')
         .select('*')
@@ -79,16 +87,10 @@ export default async function OrgReservationsPage({ params, searchParams }: Page
 
     if (orgId) billingProfilesQuery = billingProfilesQuery.eq('organization_id', orgId)
 
-    const { data: billingProfiles } = await billingProfilesQuery
-
-    if (!customerEmail && filter !== 'archived') {
-        const status = STATUS_FILTERS[filter as keyof typeof STATUS_FILTERS]
-        if (status) {
-            query = query.eq('status', status)
-        }
-    }
-
-    const { data: reservations, error } = await query
+    const [{ data: reservations, error }, { data: billingProfiles }] = await Promise.all([
+        query,
+        billingProfilesQuery,
+    ])
 
     const baseReservations = customerEmail
         ? (reservations || []).filter(r => r.profiles?.email === customerEmail)
@@ -124,14 +126,20 @@ export default async function OrgReservationsPage({ params, searchParams }: Page
     const assessments = await fetchReservationGroupAssessments(groupKeys)
 
     if (filter === 'pending_request') {
-        await Promise.all(baseSortedGroups.map(async (group) => {
+        const uncachedGroups = baseSortedGroups.filter(group => {
             const primary = group[0]
-            if (!primary) return
-            const groupKey = buildReservationGroupKey(primary)
-            if (assessments.has(groupKey)) return
-            const assessment = await ensureReservationGroupAssessment(group.map(toAssessmentRow))
-            if (assessment) assessments.set(groupKey, assessment)
-        }))
+            return primary && !assessments.has(buildReservationGroupKey(primary))
+        })
+        if (uncachedGroups.length > 0) {
+            const bufferDays = await fetchTurnaroundBuffer()
+            await Promise.all(uncachedGroups.map(async (group) => {
+                const primary = group[0]
+                if (!primary) return
+                const groupKey = buildReservationGroupKey(primary)
+                const assessment = await ensureReservationGroupAssessment(group.map(toAssessmentRow), bufferDays)
+                if (assessment) assessments.set(groupKey, assessment)
+            }))
+        }
     }
 
     const sortedGroups = [...baseSortedGroups].sort((left, right) => {
@@ -151,6 +159,7 @@ export default async function OrgReservationsPage({ params, searchParams }: Page
 
     return (
         <div className="space-y-6">
+            <TopLoaderReady />
             <RealtimeReservationsListener />
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -344,7 +353,7 @@ function ReservationsTable({
                                                 {assessment.valueTier.toUpperCase()}
                                             </Badge>
                                             <Badge variant="outline" className={feasibilityBadgeClass(assessment.feasibilityStatus)}>
-                                                {assessment.feasibilityStatus.replace('_', ' ')}
+                                                {assessment.feasibilityStatus.replace('_', ' ').toUpperCase()}
                                             </Badge>
                                         </div>
                                         <div className="space-y-1 text-muted-foreground">

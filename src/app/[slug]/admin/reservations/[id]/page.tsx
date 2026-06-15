@@ -21,6 +21,7 @@ import {
     type ReservationAssessmentRow,
     type ReservationGroupAssessment,
 } from '@/lib/reservations/assessment'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -134,6 +135,7 @@ export default async function OrgRequestDetailPage(props: Props) {
 
     return (
         <div className="max-w-5xl mx-auto py-10 px-4">
+            <TopLoaderReady />
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <Link href={`${basePath}/reservations`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2">

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/collapsible'
 import { bulkUpdateItems, bulkUpdateItemStatus, runItemTaxonomyBackfill } from '@/actions/items'
 import type { Item, ItemLineType } from '@/types'
-import { OFFICIAL_CHARACTERS } from '@/lib/items/catalog-rules'
+import { OFFICIAL_CHARACTERS, createCharacterSummary } from '@/lib/items/catalog-rules'
 import { DeleteItemButton } from '../DeleteItemButton'
 import { LookbookMatchCell } from './LookbookMatchCell'
 
@@ -303,18 +303,18 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                         return
                     }
 
-                    const summary = result.summary || {
-                        'Orchid Whisper': 0,
-                        'Daffodils Blossom': 0,
-                    }
+                    const summary = result.summary || createCharacterSummary()
+                    const characterCounts = OFFICIAL_CHARACTERS
+                        .map(character => `${character} ${summary[character] ?? 0}`)
+                        .join(', ')
 
                     toast.success(
-                        `Character backfill complete: ${result.updated}/${result.total} items updated (Orchid Whisper ${summary['Orchid Whisper']}, Daffodils Blossom ${summary['Daffodils Blossom']})`
+                        `Character backfill complete: ${result.updated}/${result.total} items updated (${characterCounts})`
                     )
                     router.refresh()
                 } catch (error) {
                     console.error('Backfill failed', error)
-                    toast.error('Backfill failed')
+                    toast.error(error instanceof Error ? error.message : 'Backfill failed')
                 }
             })()
         })

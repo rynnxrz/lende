@@ -3,6 +3,7 @@ import { ItemsPageClient } from '@/app/admin/items/components/ItemsPageClient'
 import { getLookbookMatchCountsForItems } from '@/lib/lookbook/item-matches'
 import { withServerTiming } from '@/lib/admin/perf'
 import { getOrgAdminContext } from '@/lib/admin/org-context'
+import { TopLoaderReady } from '@/components/TopLoaderReady'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,8 +14,9 @@ export default async function OrgItemsPage({
 }) {
     const { slug } = await params
     const basePath = `/${slug}/admin`
-    const { supabase, org } = await getOrgAdminContext(slug)
+    const { supabase, org, member } = await getOrgAdminContext(slug)
     const orgId = org.id
+    const isAdmin = member.role === 'owner' || member.role === 'admin'
 
     const [itemsResult, categoriesResult, collectionsResult] = await withServerTiming('items:list-primary', async () => orgId
         ? await Promise.all([
@@ -39,13 +41,16 @@ export default async function OrgItemsPage({
     for (const [id, count] of matchCountsMap) lookbookMatchCountsByItemId[id] = count
 
     return (
-        <ItemsPageClient
-            items={items}
-            categories={categoriesResult.data || []}
-            collections={collectionsResult.data || []}
-            isAdmin={true}
-            basePath={basePath}
-            lookbookMatchCountsByItemId={lookbookMatchCountsByItemId}
-        />
+        <>
+            <TopLoaderReady />
+            <ItemsPageClient
+                items={items}
+                categories={categoriesResult.data || []}
+                collections={collectionsResult.data || []}
+                isAdmin={isAdmin}
+                basePath={basePath}
+                lookbookMatchCountsByItemId={lookbookMatchCountsByItemId}
+            />
+        </>
     )
 }
