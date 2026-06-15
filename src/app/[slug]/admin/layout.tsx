@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/admin/Sidebar'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { EmailVerificationBanner } from '@/components/EmailVerificationBanner'
+import { SessionClaimSync } from './_components/SessionClaimSync'
 
 export default async function OrgAdminLayout({
     children,
@@ -20,29 +21,24 @@ export default async function OrgAdminLayout({
         redirect('/login')
     }
 
-    // Verify slug matches the user's current org from JWT
-    const currentOrgId = user.app_metadata?.current_org_id
-    if (!currentOrgId) {
-        redirect('/login')
-    }
-
     const service = createServiceClient()
+
+    // Resolve the workspace from the URL slug — NOT solely the JWT
+    // `current_org_id`, which can be missing/stale right after a project
+    // migration (the Custom Access Token Hook is a manual dashboard step).
+    // Resolving by slug + membership keeps the gate working and avoids the
+    // silent bounce to `/`.
     const { data: org } = await service
         .from('organizations')
         .select('id, slug, name')
-        .eq('id', currentOrgId)
-        .single()
+        .eq('slug', normalizedSlug)
+        .maybeSingle()
 
     if (!org) {
-        redirect('/login')
+        redirect('/')
     }
 
-    // Slug mismatch → redirect to user's actual org
-    if (normalizedSlug !== org.slug.toLowerCase()) {
-        redirect(`/${org.slug}/admin`)
-    }
-
-    // Verify membership
+    // Verify membership for THIS org.
     const { data: member } = await service
         .from('organization_members')
         .select('role')
@@ -52,6 +48,23 @@ export default async function OrgAdminLayout({
 
     if (!member || !['owner', 'admin', 'staff'].includes(member.role)) {
         redirect('/')
+    }
+
+    // Org-scoped RLS reads `app_metadata.current_org_id` from the token. If it
+    // is missing or points at a different org, stamp the correct value and let
+    // <SessionClaimSync> refresh the client token so RLS lines up — instead of
+    // bouncing the user out.
+    const claimNeedsSync = user.app_metadata?.current_org_id !== org.id
+    if (claimNeedsSync) {
+        await service.auth.admin
+            .updateUserById(user.id, {
+                app_metadata: {
+                    ...(user.app_metadata ?? {}),
+                    current_org_id: org.id,
+                    current_org_role: member.role,
+                },
+            })
+            .catch(() => {})
     }
 
     // BRIEF-63 — fetch all of the user's memberships so the Sidebar
@@ -77,6 +90,7 @@ export default async function OrgAdminLayout({
 
     return (
         <div className="min-h-screen bg-muted">
+            {claimNeedsSync && <SessionClaimSync />}
             {!isEmailVerified && user.email && (
                 <EmailVerificationBanner email={user.email} />
             )}

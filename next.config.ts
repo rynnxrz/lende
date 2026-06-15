@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        // Current (multi-tenant SaaS) Supabase project — where live item
+        // images are stored. Matches NEXT_PUBLIC_SUPABASE_URL.
+        hostname: 'zigyiqqboiadinelfzxw.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        // Legacy single-tenant project — kept so any not-yet-migrated
+        // image URLs still resolve.
         hostname: 'bfizqdyngujjdmaaoggg.supabase.co',
         pathname: '/**',
       },
@@ -53,7 +62,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.sentry-cdn.com https://va.vercel-scripts.com",
               "worker-src 'self' blob:",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' https://bfizqdyngujjdmaaoggg.supabase.co https://placehold.co https://ivyjstudio.com https://cdn.shopify.com data: blob:",
+              "img-src 'self' https://*.supabase.co https://placehold.co https://ivyjstudio.com https://cdn.shopify.com data: blob:",
               "font-src 'self' data:",
               `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.clarity.ms https://*.sentry.io https://*.ingest.sentry.io https://vitals.vercel-insights.com https://va.vercel-scripts.com${devConnectSrc}`,
               "frame-ancestors 'self' http://localhost:5173 https://shipbyx.com https://www.shipbyx.com",
