@@ -59,7 +59,7 @@ export default async function OrgHomePage({
         <main
             id="main-content"
             tabIndex={-1}
-            className="min-h-screen bg-background flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border"
+            className="min-h-screen bg-white text-slate-900 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-100"
         >
             <h1 className="sr-only">{org.name}</h1>
 
@@ -67,13 +67,13 @@ export default async function OrgHomePage({
                 <Link
                     key={entry.href}
                     href={entry.href}
-                    className="group relative flex flex-1 items-center justify-center min-h-[33vh] md:min-h-screen hover:bg-muted/50 transition-colors duration-500"
+                    className="group relative flex flex-1 items-center justify-center min-h-[33vh] md:min-h-screen hover:bg-slate-50 transition-colors duration-500"
                 >
                     <div className="text-center px-8">
-                        <h2 className="text-3xl md:text-4xl font-light tracking-[0.2em] text-foreground mb-4 group-hover:scale-110 transition-transform duration-500">
+                        <h2 className="text-3xl md:text-4xl font-light tracking-[0.2em] text-slate-900 mb-4 group-hover:scale-110 transition-transform duration-500">
                             {entry.title.toUpperCase()}
                         </h2>
-                        <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-500 delay-100">
+                        <p className="text-xs text-slate-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-500 delay-100">
                             {entry.description}
                         </p>
                     </div>

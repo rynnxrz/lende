@@ -375,6 +375,37 @@ export function CatalogClient({ initialItems, categories, collections, orgSlug }
                     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
                     40%, 60% { transform: translate3d(4px, 0, 0); }
                 }
+                .catalog-date-popover {
+                    background: #ffffff;
+                    color: #1f2937;
+                }
+                .catalog-date-popover .rdp {
+                    color: #334155;
+                }
+                .catalog-date-popover .rdp-caption_label {
+                    color: #1f2937;
+                    font-weight: 600;
+                    letter-spacing: 0.01em;
+                }
+                .catalog-date-popover .rdp-head_cell,
+                .catalog-date-popover .day-outside,
+                .catalog-date-popover [disabled] {
+                    color: #94a3b8;
+                }
+                .catalog-date-popover .rdp-button {
+                    border-color: transparent;
+                    background: transparent;
+                    color: #334155;
+                    box-shadow: none;
+                }
+                .catalog-date-popover .rdp-button:hover:not([disabled]) {
+                    background: #f1f5f9;
+                    color: #0f172a;
+                }
+                .catalog-date-popover .rdp-button[aria-selected="true"] {
+                    background: #0f172a;
+                    color: #ffffff;
+                }
             `}} />
             {/* Layout Container */}
             <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-8 flex flex-col md:flex-row gap-12">
@@ -400,7 +431,7 @@ export function CatalogClient({ initialItems, categories, collections, orgSlug }
                                 }
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent id="mobile-date-popover" className="w-[320px] p-0" align="start" sideOffset={8}>
+                        <PopoverContent id="mobile-date-popover" className="catalog-date-popover w-[320px] overflow-hidden rounded-lg border-slate-200 p-0 shadow-xl" align="start" sideOffset={8}>
                             {/* Reused Calendar Content - same as desktop but strictly mobile styled if needed. 
                                 For DRY, we are duplicating logic here for safety. Ideally refactor to component. */}
                             <div className="p-3 border-b border-slate-100 bg-slate-50/50">
@@ -579,7 +610,7 @@ export function CatalogClient({ initialItems, categories, collections, orgSlug }
                 </nav>
 
                 {/* Sidebar Filters */}
-                <aside className="hidden md:block w-full md:w-56 flex-shrink-0 pt-2 border-r border-slate-50 pr-2" aria-label="Catalog filters">
+                <aside className="hidden md:block sticky top-24 self-start w-full md:w-56 max-h-[calc(100dvh-6rem)] overflow-y-auto flex-shrink-0 pt-2 border-r border-slate-50 pr-2" aria-label="Catalog filters">
                     {/* 1. Rental Dates */}
                     <div style={{ animation: isDateShakeError ? 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both' : 'none' }}>
                         <h3 className="text-[11px] font-bold text-slate-600 tracking-[0.2em] uppercase mb-4 flex items-center justify-between">
@@ -659,7 +690,7 @@ export function CatalogClient({ initialItems, categories, collections, orgSlug }
 
                                 </div>
                             </PopoverTrigger>
-                            <PopoverContent id="desktop-date-popover" className="w-auto p-0" align="start" side="right" sideOffset={20}>
+                            <PopoverContent id="desktop-date-popover" className="catalog-date-popover w-auto overflow-hidden rounded-lg border-slate-200 p-0 shadow-xl" align="start" side="right" sideOffset={20}>
                                 <div className="p-3 border-b border-slate-100 bg-slate-50/50">
                                     <div className="flex items-center gap-2 text-sm justify-between">
                                         <div className="flex items-center gap-2">
@@ -792,7 +823,7 @@ export function CatalogClient({ initialItems, categories, collections, orgSlug }
                 <section className="flex-1 relative min-h-[500px]" aria-label="Catalog results">
 
                     {/* Aligned Header (Desktop Only) */}
-                    <div className="hidden md:block mb-6 pt-2">
+                    <div className="hidden md:block sticky top-16 z-20 -mt-8 mb-6 bg-white/95 pt-10 pb-3">
                         <h2 className="text-[11px] font-bold text-slate-700 tracking-[0.2em] uppercase">
                             Collection Pieces
                         </h2>

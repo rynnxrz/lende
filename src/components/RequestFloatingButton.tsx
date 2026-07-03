@@ -137,7 +137,7 @@ export function RequestFloatingButton() {
                     aria-expanded={open}
                     aria-controls="request-drawer"
                     className={cn(
-                        "relative h-11 w-11 min-w-[44px] text-slate-900 hover:bg-slate-100 rounded-full transition-transform",
+                        "relative h-11 w-11 min-w-[44px] rounded-full bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 transition-transform hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                         isBouncing && "scale-125"
                     )}
                 >
