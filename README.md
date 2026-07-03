@@ -25,6 +25,8 @@ npm run dev
 
 App runs at http://localhost:3000. The build script pins webpack (`NEXT_FORCE_WEBPACK=1 next build`) to avoid Turbopack edge cases with the current dependency tree.
 
+> **Supabase free-tier auto-pause:** the project (`lende` / `zigyiqqboiadinelfzxw`) is paused by Supabase after inactivity. A paused project drops its DNS record entirely, so every DB-backed page 404s and auth shows "fetch failed". Check with `npx supabase projects list` (status must be `ACTIVE_HEALTHY`, not `INACTIVE`) and restore it from the Supabase dashboard before debugging anything else. Note there are two projects in the org — restore **lende**, not the legacy `rynnxrz's Project`.
+
 ```bash
 npm run build   # production build
 npm run start   # serve the built app

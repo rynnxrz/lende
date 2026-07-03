@@ -123,7 +123,7 @@ test.describe('BRIEF-60 s11 — multi-org picker count + active-org RPC', () => 
         expect(signErr).toBeNull()
 
         // (c) Read membership rows under user RLS (anon-key session).
-        let { data: rows1, error: r1Err } = await anon
+        const { data: rows1, error: r1Err } = await anon
             .from('organization_members')
             .select('organization_id, organizations!inner(slug)')
             .eq('user_id', userId)

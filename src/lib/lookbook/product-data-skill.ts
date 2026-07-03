@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { DocumentStructureSection, LookbookItemDraft, ParsedPage } from '@/types'
 import { createLlmClient } from '@/lib/ai/llm-client'
 import { normalizeLineType, sanitizeCharacterFamily } from '@/lib/items/catalog-rules'
+import { cleanExtractedSku, cleanExtractedText } from '@/lib/lookbook/field-cleaning'
 import { coerceNumber } from '@/lib/lookbook/utils'
 
 const extractedItemSchema = z.object({
@@ -115,12 +116,12 @@ export async function runProductDataSkill(input: {
         return {
             section_id: input.section.id,
             page_numbers: item.page_numbers,
-            name: item.name?.trim() || null,
-            description: item.description?.trim() || null,
-            sku: item.sku?.trim() || null,
-            material: item.material?.trim() || null,
-            color: item.color?.trim() || null,
-            weight: item.weight?.trim() || null,
+            name: cleanExtractedText(item.name),
+            description: cleanExtractedText(item.description),
+            sku: cleanExtractedSku(item.sku),
+            material: cleanExtractedText(item.material),
+            color: cleanExtractedText(item.color),
+            weight: cleanExtractedText(item.weight),
             rental_price: coerceNumber(item.rental_price),
             replacement_cost: coerceNumber(item.replacement_cost),
             category_name: item.category_name?.trim() || null,

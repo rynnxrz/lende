@@ -1,13 +1,14 @@
 'use client'
 
-import { Fragment, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ChevronRight, Edit, Filter, Package, WandSparkles } from 'lucide-react'
+import { ChevronRight, Edit, Filter, Package, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import {
     Table,
     TableBody,
@@ -20,9 +21,9 @@ import {
     Collapsible,
     CollapsibleContent,
 } from '@/components/ui/collapsible'
-import { bulkUpdateItems, bulkUpdateItemStatus, runItemTaxonomyBackfill } from '@/actions/items'
+import { bulkUpdateItems, bulkUpdateItemStatus } from '@/actions/items'
+import { OFFICIAL_CHARACTERS } from '@/lib/items/catalog-rules'
 import type { Item, ItemLineType } from '@/types'
-import { OFFICIAL_CHARACTERS, createCharacterSummary } from '@/lib/items/catalog-rules'
 import { DeleteItemButton } from '../DeleteItemButton'
 import { LookbookMatchCell } from './LookbookMatchCell'
 
@@ -104,9 +105,10 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
     const router = useRouter()
     const [lineFilter, setLineFilter] = useState<ItemLineType>('Mainline')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [isResearchOpen, setIsResearchOpen] = useState(false)
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
     const [updatingGroup, setUpdatingGroup] = useState<string | null>(null)
-    const [isBackfillPending, startBackfillTransition] = useTransition()
     const [isBulkPending, startBulkTransition] = useTransition()
     const [isBulkEditPending, startBulkEditTransition] = useTransition()
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set())
@@ -121,6 +123,9 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
     const collectionMap = useMemo(() => {
         return new Map(collections.map(collection => [collection.id, collection.name]))
     }, [collections])
+
+    const deferredSearchQuery = useDeferredValue(searchQuery)
+    const normalizedSearchQuery = deferredSearchQuery.trim().toLowerCase()
 
     const lineCounts = useMemo(() => {
         return initialItems.reduce(
@@ -147,12 +152,39 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
         })
     }, [initialItems, lineFilter, statusFilter])
 
+    const searchedItems = useMemo(() => {
+        if (!normalizedSearchQuery) return filteredItems
+
+        return filteredItems.filter(item => {
+            const categoryName = item.category_id ? categoryMap.get(item.category_id) || '' : ''
+            const collectionName = item.collection_id ? collectionMap.get(item.collection_id) || '' : ''
+            const searchableText = [
+                item.name,
+                item.sku,
+                item.description,
+                item.side_character,
+                item.character_family,
+                item.color,
+                item.material,
+                categoryName,
+                collectionName,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+
+            return searchableText.includes(normalizedSearchQuery)
+        })
+    }, [filteredItems, normalizedSearchQuery, categoryMap, collectionMap])
+
+    const visibleItemCount = searchedItems.length
+
     const groupedCharacters = useMemo<CharacterGroup[]>(() => {
         const groups = new Map<string, Item[]>()
         const missingCharacterLabel = 'Needs Character'
         const defaultSideCharacterLabel = 'General'
 
-        for (const item of filteredItems) {
+        for (const item of searchedItems) {
             const character = (item.character_family || '').trim() || missingCharacterLabel
             const sideCharacter = (item.side_character || '').trim() || defaultSideCharacterLabel
             const key = `${character}::${sideCharacter}`
@@ -187,11 +219,11 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                 if (characterCompare !== 0) return characterCompare
                 return a.sideCharacter.localeCompare(b.sideCharacter)
             })
-    }, [filteredItems])
+    }, [searchedItems])
 
     const filteredItemIds = useMemo(() => {
-        return filteredItems.map(item => item.id)
-    }, [filteredItems])
+        return searchedItems.map(item => item.id)
+    }, [searchedItems])
 
     const selectedCount = selectedItemIds.size
     const selectedVisibleCount = useMemo(() => {
@@ -243,6 +275,12 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
         })
     }
 
+    const clearFilters = () => {
+        setLineFilter('Mainline')
+        setStatusFilter('all')
+        setSearchQuery('')
+    }
+
     const toggleGroupSelection = (group: CharacterGroup, checked: boolean) => {
         setSelectedItemIds(prev => {
             const next = new Set(prev)
@@ -286,35 +324,6 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                     toast.error('Failed to update items')
                 } finally {
                     setUpdatingGroup(null)
-                }
-            })()
-        })
-    }
-
-    const handleRunBackfill = () => {
-        if (!isAdmin) return
-
-        startBackfillTransition(() => {
-            void (async () => {
-                try {
-                    const result = await runItemTaxonomyBackfill()
-                    if (!result.success) {
-                        toast.error(result.error || 'Backfill failed')
-                        return
-                    }
-
-                    const summary = result.summary || createCharacterSummary()
-                    const characterCounts = OFFICIAL_CHARACTERS
-                        .map(character => `${character} ${summary[character] ?? 0}`)
-                        .join(', ')
-
-                    toast.success(
-                        `Character backfill complete: ${result.updated}/${result.total} items updated (${characterCounts})`
-                    )
-                    router.refresh()
-                } catch (error) {
-                    console.error('Backfill failed', error)
-                    toast.error(error instanceof Error ? error.message : 'Backfill failed')
                 }
             })()
         })
@@ -389,7 +398,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-border pb-3">
+            <div className="flex flex-col gap-4 border-b border-border pb-3 md:flex-row md:items-end md:justify-between">
                 <div className="space-y-3">
                     <nav className="flex flex-wrap gap-2">
                         {LINE_TABS.map(tab => (
@@ -410,31 +419,77 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                     <p className="text-xs text-muted-foreground">Grouped by Character and Side Character in the selected line.</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-                        <Filter className="h-4 w-4 text-muted-foreground" />
-                        <select
-                            value={statusFilter}
-                            onChange={event => setStatusFilter(event.target.value as StatusFilter)}
-                            className="bg-transparent text-sm text-foreground focus:outline-none"
-                        >
-                            <option value="all">All statuses</option>
-                            <option value="active">Active</option>
-                            <option value="maintenance">Maintenance</option>
-                            <option value="retired">Retired</option>
-                        </select>
+                <div className="flex max-w-full items-center gap-2 overflow-hidden">
+                    <button
+                        type="button"
+                        onClick={() => setIsResearchOpen(prev => !prev)}
+                        aria-expanded={isResearchOpen}
+                        className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors ${
+                            isResearchOpen
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-input bg-background text-foreground hover:border-ring hover:bg-muted/40'
+                        }`}
+                    >
+                        <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                        Research
+                    </button>
+
+                    <div
+                        className={`grid origin-left items-center gap-2 overflow-hidden rounded-full border border-border bg-card/70 transition-all duration-200 ease-out ${
+                            isResearchOpen
+                                ? 'max-w-[620px] translate-x-0 opacity-100 px-3 py-2'
+                                : 'max-w-0 translate-x-2 opacity-0 px-0 py-0 border-transparent'
+                        }`}
+                        aria-hidden={!isResearchOpen}
+                    >
+                        <div className="relative w-[320px] max-w-[58vw]">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                value={searchQuery}
+                                onChange={event => setSearchQuery(event.target.value)}
+                                placeholder="Search items by name, SKU, color..."
+                                aria-label="Search items"
+                                className="h-9 rounded-full pl-9 pr-9"
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchQuery('')}
+                                    aria-label="Clear search"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2 rounded-full border border-input bg-background px-3">
+                            <Filter className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <select
+                                value={statusFilter}
+                                onChange={event => setStatusFilter(event.target.value as StatusFilter)}
+                                className="h-9 min-w-0 bg-transparent text-sm text-foreground focus:outline-none"
+                            >
+                                <option value="all">All statuses</option>
+                                <option value="active">Active</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="retired">Retired</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                                {visibleItemCount} visible
+                            </span>
+                            {(statusFilter !== 'all' || searchQuery.trim().length > 0 || lineFilter !== 'Mainline') && (
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="text-xs font-medium text-foreground transition-colors hover:text-primary"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
                     </div>
-                    {isAdmin && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleRunBackfill}
-                            disabled={isBackfillPending}
-                        >
-                            <WandSparkles className="mr-2 h-4 w-4" />
-                            {isBackfillPending ? 'Running Backfill...' : 'Backfill Character Names'}
-                        </Button>
-                    )}
                 </div>
             </div>
 
@@ -498,36 +553,45 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                 </div>
             )}
 
-            {groupedCharacters.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground bg-muted/30 rounded-lg border border-dashed">
-                    <Package className="h-10 w-10 text-muted-foreground/60" />
-                    <h3 className="mt-4 text-base font-medium text-foreground">No items found in this view.</h3>
-                </div>
-            ) : (
-                <div className="rounded-md border border-border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/50">
-                                <TableHead className="w-[40px]">
-                                    {isAdmin && (
-                                        <SelectionCheckbox
-                                            checked={allVisibleSelected}
-                                            indeterminate={someVisibleSelected}
-                                            onChange={toggleAllVisible}
-                                            ariaLabel="Select all visible items"
-                                        />
-                                    )}
-                                </TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                                <TableHead>Character</TableHead>
-                                <TableHead>Side Character</TableHead>
-                                <TableHead>SKUs</TableHead>
-                                <TableHead>Jewelry Type Mix</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+            {/* ponytail: table-fixed + explicit widths so headers don't reflow when tab content changes */}
+            <div className="rounded-md border border-border">
+                <Table className="table-fixed min-w-[880px]">
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
+                            <TableHead className="w-[40px]">
+                                {isAdmin && (
+                                    <SelectionCheckbox
+                                        checked={allVisibleSelected}
+                                        indeterminate={someVisibleSelected}
+                                        onChange={toggleAllVisible}
+                                        ariaLabel="Select all visible items"
+                                    />
+                                )}
+                            </TableHead>
+                            <TableHead className="w-[44px]"></TableHead>
+                            <TableHead className="w-[22%]">Character</TableHead>
+                            <TableHead className="w-[18%]">Side Character</TableHead>
+                            <TableHead className="w-[70px]">SKUs</TableHead>
+                            <TableHead>Jewelry Type Mix</TableHead>
+                            <TableHead className="w-[220px] text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {groupedCharacters.length === 0 && (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={7}>
+                                    <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
+                                        <Package className="h-10 w-10 text-muted-foreground/60" />
+                                        <h3 className="mt-4 text-base font-medium text-foreground">
+                                            {searchQuery
+                                                ? 'No items matched your search.'
+                                                : 'No items found in this view.'}
+                                        </h3>
+                                    </div>
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {groupedCharacters.map(group => {
+                        )}
+                        {groupedCharacters.map(group => {
                                 const selectedInGroup = group.items.filter(item => selectedItemIds.has(item.id)).length
                                 const allInGroupSelected = group.items.length > 0 && selectedInGroup === group.items.length
                                 const someInGroupSelected = selectedInGroup > 0 && !allInGroupSelected
@@ -541,8 +605,11 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
 
                                 return (
                                     <Fragment key={group.key}>
-                                        <TableRow className="hover:bg-muted/40">
-                                            <TableCell>
+                                        <TableRow
+                                            className="cursor-pointer hover:bg-muted/40"
+                                            onClick={() => toggleGroup(group.key)}
+                                        >
+                                            <TableCell onClick={event => event.stopPropagation()}>
                                                 {isAdmin && (
                                                     <SelectionCheckbox
                                                         checked={allInGroupSelected}
@@ -556,16 +623,15 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => toggleGroup(group.key)}
+                                                    aria-expanded={openGroups.has(group.key)}
+                                                    aria-label={`Toggle group ${group.character} / ${group.sideCharacter}`}
                                                     className="h-8 w-8 p-0"
                                                 >
-                                                    {openGroups.has(group.key)
-                                                        ? <ChevronDown className="h-4 w-4" />
-                                                        : <ChevronRight className="h-4 w-4" />}
+                                                    <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${openGroups.has(group.key) ? 'rotate-90' : ''}`} />
                                                 </Button>
                                             </TableCell>
-                                            <TableCell className="font-medium">{group.character}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="truncate font-medium">{group.character}</TableCell>
+                                            <TableCell className="truncate">
                                                 <Badge variant="outline" className="font-normal">
                                                     {group.sideCharacter}
                                                 </Badge>
@@ -584,7 +650,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                     )) : <span className="text-muted-foreground/70 text-sm">-</span>}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right" onClick={event => event.stopPropagation()}>
                                                 {isAdmin && (
                                                     <div className="flex justify-end gap-2">
                                                         <Button
@@ -619,7 +685,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                         <TableHead className="h-8 w-10 text-xs"></TableHead>
                                                                         <TableHead className="h-8 w-12 text-xs">Image</TableHead>
                                                                         <TableHead className="h-8 text-xs">SKU</TableHead>
-                                                                        <TableHead className="h-8 text-xs">Description</TableHead>
+                                                                        <TableHead className="h-8 w-[180px] text-xs">Description</TableHead>
                                                                         <TableHead className="h-8 text-xs">Side Character</TableHead>
                                                                         <TableHead className="h-8 text-xs">Jewelry Type</TableHead>
                                                                         <TableHead className="h-8 text-xs">Website Collection</TableHead>
@@ -629,7 +695,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                         <TableHead className="h-8 text-right text-xs">RRP</TableHead>
                                                                         <TableHead className="h-8 text-xs">Status</TableHead>
                                                                         <TableHead className="h-8 text-xs">Lookbook</TableHead>
-                                                                        <TableHead className="h-8 text-right text-xs">Actions</TableHead>
+                                                                        <TableHead className="sticky right-0 z-10 h-8 bg-muted/30 text-right text-xs shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.25)]">Actions</TableHead>
                                                                     </TableRow>
                                                                 </TableHeader>
                                                                 <TableBody>
@@ -661,7 +727,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                                 )}
                                                                             </TableCell>
                                                                             <TableCell className="py-2 font-mono text-xs text-muted-foreground">{item.sku || '-'}</TableCell>
-                                                                            <TableCell className="py-2 text-sm font-medium">{item.description || item.name || '-'}</TableCell>
+                                                                            <TableCell className="max-w-[180px] truncate py-2 text-sm font-medium" title={item.description || item.name || undefined}>{item.description || item.name || '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm">{item.side_character || '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm">{item.category_id ? categoryMap.get(item.category_id) || '-' : '-'}</TableCell>
                                                                             <TableCell className="py-2 text-sm">{item.collection_id ? collectionMap.get(item.collection_id) || '-' : '-'}</TableCell>
@@ -687,7 +753,7 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                                                                     basePath={basePath}
                                                                                 />
                                                                             </TableCell>
-                                                                            <TableCell className="py-2 text-right">
+                                                                            <TableCell className="sticky right-0 z-10 bg-muted/30 py-2 text-right shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.25)]">
                                                                                 {isAdmin && (
                                                                                     <div className="flex justify-end gap-1">
                                                                                         {statusFilter !== 'retired' && (
@@ -713,10 +779,9 @@ export function GroupedItemsList({ initialItems, isAdmin, categories, collection
                                     </Fragment>
                                 )
                             })}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     )
 }

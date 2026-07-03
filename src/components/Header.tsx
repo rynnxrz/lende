@@ -22,25 +22,25 @@ import { usePathname } from "next/navigation"
  * just be a redundant, mismatched-theme bar stacked on top.
  */
 const TENANT_PREFIXES = [
-    "/archive",
-    "/request", "/payment", "/payment-confirmation", "/legacy",
+    "/request",
+    "/payment",
+    "/payment-confirmation",
+    "/legacy",
     "/system-admin",
 ]
-const ORG_TENANT_RE = /^\/[^/]+\/(archive|request|payment|payment-confirmation)\b/
 
 export function Header() {
     const pathname = usePathname() ?? ""
 
-    const orgMatch = pathname.match(ORG_TENANT_RE)
-    const isTenantRoute =
-        TENANT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
-        orgMatch != null
+    const isTenantRoute = TENANT_PREFIXES.some(
+        (p) => pathname === p || pathname.startsWith(`${p}/`)
+    )
 
     if (!isTenantRoute) return null
 
     // Logo should return to this app's admin home, not the public
     // marketing site — clicking it shouldn't exit the authenticated app.
-    const homeHref = orgMatch ? `/${pathname.split("/")[1]}/admin` : "/admin"
+    const homeHref = "/admin"
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">

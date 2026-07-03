@@ -87,6 +87,16 @@ function getImageUrl(images: string[] | null) {
     return "https://placehold.co/600x400.png?text=No+Image"
 }
 
+function hasImage(variant: CatalogVariant) {
+    return !!variant.image_paths?.length
+}
+
+function pickImageFirstVariant<T extends CatalogVariant>(variants: T[], activeVariantId?: string): T {
+    const active = activeVariantId ? variants.find((variant) => variant.id === activeVariantId) : null
+    if (active && hasImage(active)) return active
+    return variants.find(hasImage) || active || variants[0]
+}
+
 function getColorHexesFromText(colorText: string): string[] {
     const matches = Object.entries(COLOR_HEX_MAP)
         .map(([token, hex]) => ({ token, hex, index: colorText.indexOf(token) }))
@@ -135,7 +145,7 @@ export function normalizeValue(value: string): string {
 }
 
 export function getVariantSize(variant: CatalogVariant | { specs: Record<string, unknown> | null }): string | null {
-    const specs = (variant as any).specs
+    const specs: unknown = (variant as { specs?: unknown }).specs
     if (!specs || typeof specs !== "object") return null
 
     for (const [key, rawValue] of Object.entries(specs)) {
@@ -183,9 +193,7 @@ export function buildUniqueSwatchVariants<T extends CatalogVariant>(
     }
 
     return Array.from(buckets.entries()).map(([, bucket]) => {
-        const picked = activeVariantId 
-            ? (bucket.find((v) => v.id === activeVariantId) || bucket[0])
-            : bucket[0]
+        const picked = pickImageFirstVariant(bucket, activeVariantId)
             
         const isAvailable = referenceSizeKey 
             ? bucket.some(v => normalizeValue(getVariantSize(v) || "") === referenceSizeKey)
@@ -217,20 +225,12 @@ export function ProductGroupCard({
     triggerDateError,
     orgSlug,
 }: ProductGroupCardProps) {
-    const [activeVariant, setActiveVariant] = React.useState<CatalogVariant>(group.variants[0])
-    const [hoverVariant, setHoverVariant] = React.useState<CatalogVariant | null>(null)
-    const [supportsHover, setSupportsHover] = React.useState(false)
-
-    React.useEffect(() => {
-        setActiveVariant(group.variants[0])
-        setHoverVariant(null)
-    }, [group.groupKey, group.variants])
-
-    React.useEffect(() => {
-        if (typeof window === "undefined" || !window.matchMedia) return
-        setSupportsHover(window.matchMedia("(hover: hover) and (pointer: fine)").matches)
-    }, [])
-
+    const [activeVariantId, setActiveVariantId] = React.useState(pickImageFirstVariant(group.variants).id)
+    const [hoverVariantId, setHoverVariantId] = React.useState<string | null>(null)
+    const activeVariant = group.variants.find((variant) => variant.id === activeVariantId) ?? group.variants[0]
+    const hoverVariant = hoverVariantId
+        ? group.variants.find((variant) => variant.id === hoverVariantId) ?? null
+        : null
     const previewVariant = hoverVariant ?? activeVariant
     const uniqueSwatchVariants = React.useMemo(
         () => buildUniqueSwatchVariants(
@@ -238,11 +238,14 @@ export function ProductGroupCard({
             activeVariant.id, 
             normalizeValue(getVariantSize(activeVariant) || "")
         ),
-        [group.variants, activeVariant.id, activeVariant]
+        [group.variants, activeVariant]
     )
-    const displayColor = activeVariant.color?.trim() || "Default"
+    const displayColor = previewVariant.color?.trim() || "Default"
     const variantLabel = activeVariant.color?.trim()
         ? `${activeVariant.color} ${group.displayName}`
+        : group.displayName
+    const previewVariantLabel = previewVariant.color?.trim()
+        ? `${previewVariant.color} ${group.displayName}`
         : group.displayName
 
     const isSelected = isMounted && hasItem(activeVariant.id)
@@ -269,7 +272,7 @@ export function ProductGroupCard({
             >
                 <ProductImage
                     src={getImageUrl(previewVariant.image_paths)}
-                    alt={`${variantLabel} fine jewelry piece`}
+                    alt={`${previewVariantLabel} fine jewelry piece`}
                     className="aspect-[4/5] bg-white p-6"
                     imgClassName="group-hover/link:scale-105 transition-transform duration-300"
                     priority={index < 10}
@@ -295,13 +298,13 @@ export function ProductGroupCard({
                                 type="button"
                                 onClick={(e) => {
                                     e.preventDefault() // prevent navigating if button click propagates
-                                    setActiveVariant(variant)
+                                    setActiveVariantId(variant.id)
                                 }}
                                 onMouseEnter={() => {
-                                    if (supportsHover) setHoverVariant(variant)
+                                    setHoverVariantId(variant.id)
                                 }}
                                 onMouseLeave={() => {
-                                    if (supportsHover) setHoverVariant(null)
+                                    setHoverVariantId(null)
                                 }}
                                 aria-label={`Select ${variant.color?.trim() || variant.name} variant`}
                                 aria-pressed={isActive}

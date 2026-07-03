@@ -2,6 +2,7 @@ import {
     existingUserExists,
     getInvitationByToken,
 } from '@/app/actions/invitations/accept'
+import Link from 'next/link'
 import { InviteAcceptForm } from './invite-accept-form'
 import { track } from '@/lib/analytics/track'
 
@@ -48,12 +49,12 @@ export default async function InvitePage({
                     <p className="text-muted-foreground">
                         This invitation has already been used. You can log in to access your account.
                     </p>
-                    <a
+                    <Link
                         href="/login"
                         className="inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
                     >
                         Go to Login
-                    </a>
+                    </Link>
                 </div>
             </div>
         )

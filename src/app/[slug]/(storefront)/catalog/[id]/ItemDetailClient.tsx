@@ -15,7 +15,6 @@ import {
     formatTierAmount,
 } from "@/lib/invoice/tiered-display"
 import {
-    buildUniqueSwatchVariants,
     getVariantSize,
     getVariantSwatchKey,
     normalizeValue,
@@ -126,7 +125,7 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
         
         // Shallow update URL without triggering Next.js suspense/loading boundary
         const url = new URL(window.location.href);
-        url.pathname = `/catalog/${variantId}`;
+        url.pathname = `/${orgSlug}/catalog/${variantId}`;
         window.history.replaceState(null, '', url.pathname + url.search);
     }
 
@@ -139,17 +138,35 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
         if (unselectedSize) return null
         return normalizeValue(getVariantSize(item) || "")
     }, [item, unselectedSize])
-    const colorOptions = React.useMemo(() => {
-        const uniqueData = buildUniqueSwatchVariants(
-            normalizedVariants as unknown as CatalogVariant[],
-            item.id,
-            activeSizeKey
-        )
+    React.useEffect(() => {
+        for (const variant of normalizedVariants) {
+            const src = variant.image_paths?.[0]
+            if (!src || src.includes("placehold.co")) continue
+            const img = new window.Image()
+            img.src = src
+        }
+    }, [normalizedVariants])
 
-        return uniqueData.map(({ variant, isAvailable }) => ({
-            variant,
-            swatchKey: getVariantSwatchKey(variant as unknown as CatalogVariant),
-            isAvailableWithCurrentSize: isAvailable
+    const colorOptions = React.useMemo(() => {
+        const buckets = new Map<string, Item[]>()
+
+        for (const variant of normalizedVariants) {
+            const swatchKey = getVariantSwatchKey(variant as unknown as CatalogVariant)
+            const existing = buckets.get(swatchKey)
+            if (existing) {
+                existing.push(variant)
+            } else {
+                buckets.set(swatchKey, [variant])
+            }
+        }
+
+        return Array.from(buckets.entries()).map(([swatchKey, bucket]) => ({
+            variant: bucket.find((variant) => variant.id === item.id) || bucket[0],
+            swatchKey,
+            sizeCount: new Set(bucket.map(v => normalizeValue(getVariantSize(v) || "")).filter(Boolean)).size,
+            isAvailableWithCurrentSize: activeSizeKey
+                ? bucket.some(v => normalizeValue(getVariantSize(v) || "") === activeSizeKey)
+                : true
         }))
     }, [normalizedVariants, item.id, activeSizeKey])
     const sizeOptions = React.useMemo(() => {
@@ -178,19 +195,14 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                 sizeKey,
                 label: getVariantSize(bucket[0]) || "",
                 representative: bucket.find((variant) => variant.id === item.id) || bucket[0],
+                colorCount: new Set(bucket.map(v => getVariantSwatchKey(v as unknown as CatalogVariant))).size,
                 isAvailableWithCurrentColor
             }
-        }).sort((a, b) => {
-            // Sort available first
-            if (a.isAvailableWithCurrentColor && !b.isAvailableWithCurrentColor) return -1
-            if (!a.isAvailableWithCurrentColor && b.isAvailableWithCurrentColor) return 1
-            return 0
         })
     }, [normalizedVariants, item.id, activeSwatchKey])
 
     const handleColorChange = (swatchKey: string) => {
         if (swatchKey === activeSwatchKey) {
-            setUnselectedSwatch(true)
             return
         }
 
@@ -212,7 +224,6 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
 
     const handleSizeChange = (sizeKey: string) => {
         if (sizeKey === activeSizeKey) {
-            setUnselectedSize(true)
             return
         }
 
@@ -264,6 +275,12 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
     const sizeLabel = activeSizeKey
         ? (getVariantSize(item) || "-")
         : 'PLEASE SELECT'
+    const activeSizeOption = activeSizeKey
+        ? sizeOptions.find(option => option.sizeKey === activeSizeKey)
+        : null
+    const sizeMeta = activeSizeOption && activeSizeOption.colorCount > 1
+        ? ` · ${activeSizeOption.colorCount} colours`
+        : ''
 
     const isReadyToBook = (!sizeOptions.length || activeSizeKey) && activeSwatchKey
 
@@ -381,15 +398,17 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                                     <span className="text-slate-900">COLOR: <span className={cn("font-normal ml-1", !activeSwatchKey ? "text-red-500" : "text-slate-500")}>{colorLabel}</span></span>
                                 </h3>
                                 <div className="flex flex-wrap gap-3 pb-4" aria-label={`${item.name} color variants`}>
-                                    {colorOptions.map(({ variant, swatchKey, isAvailableWithCurrentSize }) => {
+                                    {colorOptions.map(({ variant, swatchKey, sizeCount, isAvailableWithCurrentSize }) => {
                                         const isActive = swatchKey === activeSwatchKey
+                                        const variantLabel = variant.color?.trim() || variant.name
                                         return (
                                             <button
                                                 key={variant.id}
                                                 type="button"
                                                 onClick={() => handleColorChange(swatchKey)}
-                                                aria-label={`Select ${variant.color?.trim() || variant.name} variant`}
+                                                aria-label={`Select ${variantLabel} color${sizeCount > 1 ? `, ${sizeCount} sizes` : ''}`}
                                                 aria-pressed={isActive}
+                                                title={`${variantLabel}${sizeCount > 1 ? ` · ${sizeCount} sizes` : ''}`}
                                                 className={cn(
                                                     "w-8 h-8 rounded-full border border-gray-200 cursor-pointer flex-shrink-0 transition-all",
                                                     "focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none",
@@ -406,7 +425,7 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                                 {sizeOptions.length > 0 && (
                                     <>
                                         <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-4 mt-2 flex items-center">
-                                            <span className="text-slate-900">SIZE: <span className={cn("font-normal ml-1", !activeSizeKey ? "text-red-500" : "text-slate-500")}>{sizeLabel}</span></span>
+                                            <span className="text-slate-900">SIZE: <span className={cn("font-normal ml-1", !activeSizeKey ? "text-red-500" : "text-slate-500")}>{sizeLabel}{sizeMeta}</span></span>
                                         </h3>
                                         <div className="flex flex-wrap gap-2 pb-4" aria-label={`${item.name} size variants`}>
                                             {sizeOptions.map((sizeOption) => {
@@ -426,6 +445,7 @@ export function ItemDetailClient({ item: initialItem, variants = [], context, re
                                                                 : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900",
                                                             !sizeOption.isAvailableWithCurrentColor && "opacity-20 relative overflow-hidden after:absolute after:inset-0 after:block after:h-[1.5px] after:w-[150%] after:bg-slate-600 after:-rotate-45 after:top-1/2 after:-left-1/4 hover:opacity-50"
                                                         )}
+                                                        title={`${sizeOption.label}${sizeOption.colorCount > 1 ? ` · ${sizeOption.colorCount} colors` : ''}`}
                                                     >
                                                         {sizeOption.label}
                                                     </button>

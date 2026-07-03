@@ -5,12 +5,12 @@ import { updateSession } from '@/lib/supabase/middleware'
  * Path-based multi-tenant routing middleware (Next.js 16 `proxy.ts`).
  *
  * Phase B partial:
- * - Storefront routes (`catalog`, `wholesale`) are physically migrated to
- *   `src/app/[slug]/(storefront)/...`. For those, the URL `/{slug}/{route}`
- *   is served natively by Next.js — middleware just needs to lowercase the
- *   slug and let Next.js route. Any non-existent slug 404s via the page's
- *   own `notFound()`.
- * - Other tenant routes (`admin`, `archive`, `request`, `payment`,
+ * - Storefront routes (`catalog`, `wholesale`, `archive`) are physically
+ *   migrated to `src/app/[slug]/(storefront)/...`. For those, the URL
+ *   `/{slug}/{route}` is served natively by Next.js — middleware just needs
+ *   to lowercase the slug and let Next.js route. Any non-existent slug 404s
+ *   via the page's own `notFound()`.
+ * - Other tenant routes (`request`, `payment`,
  *   `payment-confirmation`) are still at legacy `src/app/{route}/...`. For
  *   those, middleware preserves Phase A behaviour: `/ivyjstudio/{route}`
  *   rewrites to `/{route}` and forwards the slug via `x-org-slug` header.
@@ -34,7 +34,7 @@ const TENANT_ROUTES = [
 
 // Routes whose pages are physically under `src/app/[slug]`.
 // Middleware must NOT rewrite these — let Next.js route to the new files.
-const MIGRATED_TENANT_ROUTES = new Set<string>(['admin', 'catalog', 'wholesale'])
+const MIGRATED_TENANT_ROUTES = new Set<string>(['admin', 'catalog', 'wholesale', 'archive'])
 
 const DEFAULT_ORG = 'ivyjstudio'
 

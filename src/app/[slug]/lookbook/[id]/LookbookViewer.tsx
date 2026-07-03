@@ -4,9 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react'
 import HTMLFlipBook from 'react-pageflip'
 
-import { useIsMobile } from '@/hooks/useIsMobile'
 import { useLookbookCart } from '@/store/lookbook-cart'
-import type { LookbookCartItem } from '@/store/lookbook-cart'
 import { LookbookCartDrawer } from './LookbookCartDrawer'
 import { ProductDetailPage } from './ProductDetailPage'
 
@@ -39,6 +37,7 @@ export type LookbookItemRow = {
 }
 
 type Props = {
+    orgSlug: string
     orgName: string
     organizationId: string
     lookbookId: string
@@ -74,6 +73,7 @@ const FlipPage = React.forwardRef<HTMLDivElement, { children: React.ReactNode }>
 // ---------------------------------------------------------------------------
 
 export function LookbookViewer({
+    orgSlug,
     orgName,
     organizationId,
     lookbookId,
@@ -99,7 +99,6 @@ export function LookbookViewer({
     const [containerSize, setContainerSize] = useState({ width: 600, height: 800 })
     const [flipKey, setFlipKey] = useState(0)
 
-    const isMobile = useIsMobile()
     const cart = useLookbookCart()
 
     // After splitting landscape PDF pages into halves, the logical page count
@@ -144,6 +143,15 @@ export function LookbookViewer({
         },
         [itemsByOriginalPage],
     )
+
+    const firstInteractivePageIndex = useMemo(() => {
+        const index = renderedPages.findIndex(rp => itemsForRenderedPage(rp).length > 0)
+        return index >= 0 ? index : 0
+    }, [renderedPages, itemsForRenderedPage])
+
+    useEffect(() => {
+        setCurrentPage(firstInteractivePageIndex)
+    }, [firstInteractivePageIndex])
 
     // Measure viewport for single-page flip book. Use the real aspect ratio of
     // the first rendered page (after landscape splitting) so the container
@@ -376,13 +384,15 @@ export function LookbookViewer({
     const isLastPage = currentPage >= totalPages - 1
 
     return (
-        <div className="relative h-[100dvh] w-full overflow-hidden bg-slate-950">
+        <div className="relative h-[100dvh] w-full overflow-hidden bg-[#0d0c0a] text-[#eceae4]">
+            {/* Gallery stage: one soft downlight + vignette — the lookbook is the only colour on the page */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(255,255,255,0.06),transparent_50%),radial-gradient(ellipse_at_center,transparent_60%,rgba(0,0,0,0.45)_100%)]" />
             {/* Floating top-left: org + title */}
-            <div className="pointer-events-none absolute left-4 top-4 z-30 max-w-[40%] rounded-md bg-slate-900/50 px-3 py-2 backdrop-blur-sm">
-                <p className="text-[10px] uppercase tracking-widest text-white/50">
+            <div className="pointer-events-none absolute left-5 top-5 z-30 max-w-[52%]">
+                <p className="text-[9px] uppercase tracking-[0.32em] text-[#8a857b]">
                     {orgName}
                 </p>
-                <h1 className="truncate text-sm font-medium text-white/90">
+                <h1 className="mt-1 truncate text-sm font-light uppercase tracking-[0.2em] text-[#eceae4]/90">
                     {lookbookTitle}
                 </h1>
             </div>
@@ -392,11 +402,11 @@ export function LookbookViewer({
                 <button
                     type="button"
                     onClick={() => setCartOpen(true)}
-                    className="absolute right-4 top-4 z-30 rounded-full bg-slate-900/50 p-2.5 text-white/80 backdrop-blur-sm transition-colors hover:bg-slate-900/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="absolute right-5 top-5 z-30 rounded-full border border-white/15 bg-white/[0.06] p-2.5 text-[#eceae4]/85 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md transition-colors duration-300 hover:border-white/40 hover:text-[#eceae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                     aria-label={`Cart, ${cart.items.length} items`}
                 >
                     <ShoppingBag className="size-5" />
-                    <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-emerald-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-[#eceae4] px-1 text-[10px] font-semibold tabular-nums text-[#0d0c0a]">
                         {cart.items.length}
                     </span>
                 </button>
@@ -406,7 +416,7 @@ export function LookbookViewer({
             <div className="absolute inset-0 flex items-center justify-center">
                 <div
                     ref={containerRef}
-                    className="relative overflow-hidden rounded-lg bg-slate-900"
+                    className="relative overflow-visible rounded-[3px] bg-[#131211] shadow-[0_34px_120px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.08)] [perspective:1800px]"
                     style={{
                         width: `${containerSize.width}px`,
                         height: `${containerSize.height}px`,
@@ -425,7 +435,7 @@ export function LookbookViewer({
                             <ProductDetailPage
                                 item={(showProduct ?? closingProduct)!}
                                 onBack={goBackFromProduct}
-                                isMobile={isMobile}
+                                orgSlug={orgSlug}
                             />
                         </div>
                     )}
@@ -433,82 +443,82 @@ export function LookbookViewer({
                         flipbook does not re-mount on close, and the fade-out
                         animation reveals the book smoothly. */}
                     <>
-                            {loading && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" />
-                                </div>
-                            )}
-                            {error && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <p className="text-center text-rose-300">
-                                        Failed to load lookbook ({error})
-                                    </p>
-                                </div>
-                            )}
+                        {loading && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="h-8 w-8 animate-spin rounded-full border border-white/15 border-t-[#eceae4]/80" />
+                            </div>
+                        )}
+                        {error && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <p className="text-center text-[#c9c4ba]">
+                                    Failed to load lookbook ({error})
+                                </p>
+                            </div>
+                        )}
 
-                            {!loading && !error && renderedPages.length > 0 && (
-                                /* @ts-expect-error react-pageflip types are incomplete */
-                                <HTMLFlipBook
-                                    key={flipKey}
-                                    ref={flipBookRef}
-                                    width={containerSize.width}
-                                    height={containerSize.height}
-                                    size="fixed"
-                                    minWidth={280}
-                                    maxWidth={2400}
-                                    minHeight={370}
-                                    maxHeight={2400}
-                                    drawShadow={true}
-                                    flippingTime={550}
-                                    usePortrait={true}
-                                    maxShadowOpacity={0.5}
-                                    showCover={false}
-                                    showPageCorners={false}
-                                    mobileScrollSupport={true}
-                                    onFlip={(e: { data: number }) => setCurrentPage(e.data)}
-                                    className="book-shadow"
-                                    startPage={0}
-                                    clickEventForward={true}
-                                    swipeDistance={30}
-                                >
-                                    {renderedPages.map((rp) => (
-                                        <FlipPage key={rp.pageNumber}>
-                                            <PageWithHotZones
-                                                pageNumber={rp.pageNumber}
-                                                canvas={rp.canvas}
-                                                items={itemsForRenderedPage(rp)}
-                                                pulsed={pulsed}
-                                                onItemClick={handleItemClick}
-                                            />
-                                        </FlipPage>
-                                    ))}
-                                </HTMLFlipBook>
-                            )}
+                        {!loading && !error && renderedPages.length > 0 && (
+                            /* @ts-expect-error react-pageflip types are incomplete */
+                            <HTMLFlipBook
+                                key={flipKey}
+                                ref={flipBookRef}
+                                width={containerSize.width}
+                                height={containerSize.height}
+                                size="fixed"
+                                minWidth={280}
+                                maxWidth={2400}
+                                minHeight={370}
+                                maxHeight={2400}
+                                drawShadow={true}
+                                flippingTime={760}
+                                usePortrait={true}
+                                maxShadowOpacity={0.72}
+                                showCover={false}
+                                showPageCorners={false}
+                                mobileScrollSupport={true}
+                                onFlip={(e: { data: number }) => setCurrentPage(e.data)}
+                                className="book-shadow"
+                                startPage={firstInteractivePageIndex}
+                                clickEventForward={true}
+                                swipeDistance={30}
+                            >
+                                {renderedPages.map((rp) => (
+                                    <FlipPage key={rp.pageNumber}>
+                                        <PageWithHotZones
+                                            pageNumber={rp.pageNumber}
+                                            canvas={rp.canvas}
+                                            items={itemsForRenderedPage(rp)}
+                                            pulsed={pulsed}
+                                            onItemClick={handleItemClick}
+                                        />
+                                    </FlipPage>
+                                ))}
+                            </HTMLFlipBook>
+                        )}
 
-                        </>
+                    </>
                 </div>
             </div>
 
             {/* Floating bottom-right page controls — compact, low noise */}
             {!showProduct && !loading && !error && totalPages > 1 && (
-                <div className="absolute bottom-4 right-4 z-30 flex items-center gap-0.5 rounded-full bg-slate-900/50 px-1 py-1 backdrop-blur-sm">
+                <div className="absolute bottom-5 right-5 z-30 flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-1.5 py-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.42)] backdrop-blur-md">
                     <button
                         type="button"
                         onClick={flipPrev}
                         disabled={isFirstPage}
-                        className="rounded-full p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="rounded-full p-1 text-[#eceae4]/70 transition-colors duration-300 hover:bg-white/10 hover:text-[#eceae4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         aria-label="Previous page"
                     >
                         <ChevronLeft className="size-4" />
                     </button>
-                    <span className="px-1.5 text-[11px] tabular-nums text-white/70">
+                    <span className="px-2 text-[10px] tracking-[0.18em] tabular-nums text-[#8a857b]">
                         {currentPage + 1} / {totalPages}
                     </span>
                     <button
                         type="button"
                         onClick={flipNext}
                         disabled={isLastPage}
-                        className="rounded-full p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="rounded-full p-1 text-[#eceae4]/70 transition-colors duration-300 hover:bg-white/10 hover:text-[#eceae4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         aria-label="Next page"
                     >
                         <ChevronRight className="size-4" />
@@ -556,7 +566,7 @@ function PageWithHotZones({
     }, [canvas])
 
     return (
-        <section className="relative flex h-full items-center justify-center overflow-hidden bg-slate-900" data-page={pageNumber}>
+        <section className="relative flex h-full items-center justify-center overflow-hidden bg-[#131211]" data-page={pageNumber}>
             <div
                 className="relative w-full"
                 style={{
@@ -564,7 +574,7 @@ function PageWithHotZones({
                     maxHeight: '100%',
                 }}
             >
-                <div ref={slotRef} className="w-full" />
+                <div ref={slotRef} className="w-full shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]" />
 
                 {items.map((it) => {
                     const left = `${it.bbox_x * 100}%`
@@ -575,14 +585,15 @@ function PageWithHotZones({
                     return (
                         <button
                             key={it.id}
+                            data-testid={`lookbook-hotzone-${it.id}`}
                             type="button"
                             onClick={() => onItemClick(it)}
                             className={
-                                'group absolute z-10 rounded transition-all duration-200 cursor-pointer ' +
-                                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ' +
+                                'group absolute z-10 cursor-pointer rounded-[2px] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ' +
+                                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ' +
                                 (pulsed
                                     ? 'animate-hotzone-pulse '
-                                    : 'border border-transparent hover:border-white/30 hover:bg-white/10 hover:shadow-[0_0_16px_rgba(255,255,255,0.2)] hover:scale-[1.03] ')
+                                    : 'border border-transparent hover:border-white/50 hover:bg-white/[0.05] hover:shadow-[0_0_24px_rgba(255,255,255,0.1)] ')
                             }
                             style={{
                                 left,
@@ -596,7 +607,7 @@ function PageWithHotZones({
                             aria-label={it.item?.name ?? 'View item'}
                         >
                             {it.item?.name && (
-                                <span className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/80 px-2 py-0.5 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap border border-white/10 bg-black/75 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[#eceae4] opacity-0 shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur-md transition-opacity duration-500 group-hover:opacity-100">
                                     {it.item.name}
                                 </span>
                             )}

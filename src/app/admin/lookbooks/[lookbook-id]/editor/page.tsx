@@ -56,6 +56,23 @@ export default async function LookbookEditorPage({
         .maybeSingle()
     if (!lookbook) notFound()
 
+    type InventoryRow = {
+        id: string
+        sku: string | null
+        name: string | null
+        description: string | null
+        status: string | null
+        category_id: string | null
+        collection_id: string | null
+        material: string | null
+        weight: string | null
+        color: string | null
+        replacement_cost: number | string | null
+        rental_price: number | string | null
+        image_paths: string[] | null
+        updated_at: string | null
+    }
+
     type EditorRow = {
         id: string
         page_number: number
@@ -70,22 +87,41 @@ export default async function LookbookEditorPage({
         session_visible_text: string | null
         session_position_label: string | null
         admin_notes: string | null
+        synced_image_url?: string | null
     }
-    const { data: itemsRaw } = await service
+    const baseItemColumns =
+        'id, page_number, bbox_x, bbox_y, bbox_w, bbox_h, ' +
+        'match_status, match_confidence, inventory_item_id, ' +
+        'session_visual_description, session_visible_text, ' +
+        'session_position_label, admin_notes'
+    let itemsRaw: unknown = (await service
         .from('pdf_lookbook_items')
-        .select(
-            'id, page_number, bbox_x, bbox_y, bbox_w, bbox_h, ' +
-                'match_status, match_confidence, inventory_item_id, ' +
-                'session_visual_description, session_visible_text, ' +
-                'session_position_label, admin_notes',
-        )
+        .select(`${baseItemColumns}, synced_image_url`)
         .eq('lookbook_id', lookbook.id)
-        .order('page_number', { ascending: true })
+        .order('page_number', { ascending: true })).data
+    if (!itemsRaw) {
+        // synced_image_url ships in migration 20260703090000; fall back until
+        // it has been applied to this database.
+        const retry = await service
+            .from('pdf_lookbook_items')
+            .select(baseItemColumns)
+            .eq('lookbook_id', lookbook.id)
+            .order('page_number', { ascending: true })
+        itemsRaw = retry.data
+    }
     const items = (itemsRaw ?? []) as unknown as EditorRow[]
+
+    const { data: categories } = await service
+        .from('categories')
+        .select('id, name')
+        .eq('organization_id', org.id)
+        .order('name', { ascending: true })
 
     const { data: inventory } = await service
         .from('items')
-        .select('id, sku, name, rental_price')
+        .select(
+            'id, sku, name, description, status, category_id, collection_id, material, weight, color, replacement_cost, rental_price, image_paths, updated_at',
+        )
         .eq('organization_id', org.id)
         .eq('status', 'active')
         .order('name', { ascending: true })
@@ -108,6 +144,7 @@ export default async function LookbookEditorPage({
             pdfSignedUrl={pdfSignedUrl}
             published={!!lookbook.published}
             editorStatus={lookbook.editor_status}
+            categories={(categories ?? []) as Array<{ id: string; name: string }>}
             items={items.map(row => ({
                 id: row.id,
                 page_number: row.page_number,
@@ -122,12 +159,23 @@ export default async function LookbookEditorPage({
                 session_visible_text: row.session_visible_text,
                 session_position_label: row.session_position_label,
                 admin_notes: row.admin_notes,
+                synced_image_url: row.synced_image_url ?? null,
             }))}
-            inventory={(inventory ?? []).map(it => ({
+            inventory={((inventory ?? []) as unknown as InventoryRow[]).map(it => ({
                 id: it.id,
                 sku: it.sku,
                 name: it.name,
+                description: it.description,
+                status: it.status,
+                category_id: it.category_id,
+                collection_id: it.collection_id,
+                material: it.material,
+                weight: it.weight,
+                color: it.color,
+                replacement_cost: it.replacement_cost !== null && it.replacement_cost !== undefined ? Number(it.replacement_cost) : null,
                 rental_price: it.rental_price !== null && it.rental_price !== undefined ? Number(it.rental_price) : null,
+                image_paths: it.image_paths,
+                updated_at: it.updated_at,
             }))}
         />
     )

@@ -70,3 +70,7 @@ outputs/
 # samples/ folder is a v1 artifact that mirrors docs/2026SS.pdf + docs/Ivy J Studio Pricing List.pdf
 # (sandbox couldn't delete it during the v1→v2 retraction; safe to ignore + remove on next clean checkout)
 /scripts/spike-vision-ocr/samples/
+
+# machine-local code index and generated demo media
+/.codegraph/
+/output/

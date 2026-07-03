@@ -41,9 +41,10 @@ interface ArchiveClientProps {
     initialItems: Item[]
     categories: Category[]
     collections: Collection[]
+    orgSlug: string
 }
 
-export function ArchiveClient({ initialItems, categories, collections }: ArchiveClientProps) {
+export function ArchiveClient({ initialItems, categories, collections, orgSlug }: ArchiveClientProps) {
     // Filter State
     const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null)
     const [selectedCollectionId, setSelectedCollectionId] = React.useState<string | null>(null)
@@ -91,6 +92,9 @@ export function ArchiveClient({ initialItems, categories, collections }: Archive
         if (images && images.length > 0) return images[0]
         return 'https://placehold.co/600x400.png?text=No+Image'
     }
+
+    const catalogHref = (itemId: string) =>
+        `/${orgSlug}/catalog/${itemId}?context=archive`
 
     return (
         <main id="main-content" tabIndex={-1} className="min-h-screen bg-white" aria-label="Archive catalog">
@@ -293,7 +297,7 @@ export function ArchiveClient({ initialItems, categories, collections }: Archive
                                     return (
                                         <article key={item.id} className="group flex flex-col h-full bg-white relative" aria-label={displayName}>
                                             <Link
-                                                href={`/catalog/${item.id}?context=archive`}
+                                                href={catalogHref(item.id)}
                                                 aria-label={`View details for ${displayName}`}
                                                 className="block group/link focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none rounded-md"
                                             >

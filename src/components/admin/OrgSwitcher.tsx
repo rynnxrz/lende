@@ -27,7 +27,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeftRight, Building2, Check, ChevronDown, Plus } from 'lucide-react'
+import { ArrowLeftRight, Building2, Check, ChevronDown, ExternalLink, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
     DropdownMenu,
@@ -95,6 +95,7 @@ export function OrgSwitcher({
 
     const isMultiOrg = memberships.length > 1
     const isSwitching = pendingId !== null
+    const publicSiteHref = `/${currentOrg.slug}`
 
     const handleSwitch = async (
         orgId: string,
@@ -119,7 +120,7 @@ export function OrgSwitcher({
         router.push(`/${targetSlug}/admin`)
     }
 
-    // ── Single-org path: minimal dropdown with "Add workspace" option. ───
+    // ── Single-org path: workspace actions + add workspace. ──────────────
     if (!isMultiOrg) {
         return (
             <div className="px-2 pb-1">
@@ -164,6 +165,18 @@ export function OrgSwitcher({
                         <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
                             Workspace
                         </DropdownMenuLabel>
+                        <DropdownMenuItem asChild data-testid="org-switcher-website">
+                            <Link
+                                href={publicSiteHref}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
+                            >
+                                <ExternalLink className="h-4 w-4" />
+                                <span>Open website</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                             disabled
                             aria-current="true"
@@ -250,6 +263,18 @@ export function OrgSwitcher({
                     <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         Workspaces
                     </DropdownMenuLabel>
+                    <DropdownMenuItem asChild data-testid="org-switcher-website">
+                        <Link
+                            href={publicSiteHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            <span>Open website</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     {memberships.map((m) => {
                         const isCurrent = m.organization_id === currentOrg.id
                         const orgSlug = m.organizations?.slug ?? 'unknown'

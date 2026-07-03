@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Send, Download, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { markInvoiceAsPaid, updateInvoiceStatus, voidInvoice, getInvoicePdfDownloadUrl } from '@/actions/invoice'
 
 type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'VOID' | 'OVERDUE'
@@ -60,7 +61,7 @@ export function InvoiceActions({ invoiceId, status }: InvoiceActionsProps) {
             if (result.success && result.url) {
                 window.open(result.url, '_blank', 'noopener,noreferrer')
             } else {
-                alert('Failed to download PDF: ' + (result.error || 'Unknown error'))
+                toast.error('Failed to download PDF: ' + (result.error || 'Unknown error'))
             }
             setLoadingAction(null)
         })

@@ -1,4 +1,5 @@
 import { inferCharacterFamilyFromText, inferJewelryTypeFromText, inferLineTypeFromText, normalizeLineType } from '@/lib/items/catalog-rules'
+import { cleanExtractedText } from '@/lib/lookbook/field-cleaning'
 import { loadServerPdfJs } from '@/lib/pdf/loadServerPdfJs'
 import type { ItemLineType } from '@/types'
 
@@ -129,7 +130,7 @@ const toBlockRows = (items: PdfTextNode[]): BlockRow[] => {
 
             return {
                 label,
-                value: label ? normalizeText(texts.slice(1).join(' ')) || null : normalizeText(texts.join(' ')) || null,
+                value: label ? cleanExtractedText(texts.slice(1).join(' ')) : cleanExtractedText(texts.join(' ')),
             }
         })
         .filter((row) => row.value || row.label)
@@ -157,9 +158,12 @@ const parseBlockFields = (rows: BlockRow[]) => {
             continue
         }
 
-        if (!fields.style && STYLE_CODE_PATTERN.test(value)) {
-            fields.style = value
-            continue
+        if (!fields.style) {
+            const styleCode = value.match(STYLE_CODE_PATTERN)?.[0]
+            if (styleCode) {
+                fields.style = styleCode
+                continue
+            }
         }
         if (!fields.rrp && PRICE_PATTERN.test(value)) {
             fields.rrp = value

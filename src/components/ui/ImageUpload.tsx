@@ -1,5 +1,6 @@
 'use client'
 
+import { toast } from 'sonner'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { v4 as uuidv4 } from 'uuid'
@@ -49,7 +50,7 @@ export default function ImageUpload({ onUpload, bucket = 'rental_items', folder 
 
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Unknown error'
-            alert('Error uploading image: ' + message)
+            toast.error('Error uploading image: ' + message)
             setPreview(null)
         } finally {
             setUploading(false)

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { RequestFloatingButton } from "@/components/RequestFloatingButton"
 
 interface StorefrontHeaderProps {
@@ -9,32 +10,41 @@ interface StorefrontHeaderProps {
 }
 
 export function StorefrontHeader({ orgSlug, orgName }: StorefrontHeaderProps) {
+    const pathname = usePathname()
+    const normalizedPath = pathname.replace(/\/+$/, "") || "/"
+    const homePath = `/${orgSlug}`
+    const isHome = normalizedPath === homePath
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
-            <div className="flex h-16 items-center justify-between px-4 sm:px-8 max-w-[1920px] mx-auto">
+        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#030817] text-[#f7f5f0] shadow-[0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-8 max-w-[1920px]">
                 <Link
                     href={`/${orgSlug}`}
-                    className="text-xl font-medium tracking-[0.2em] text-gray-900 hover:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-sm uppercase"
+                    className="text-xl font-medium tracking-[0.28em] text-[#f7f5f0] transition-opacity duration-300 hover:opacity-75 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030817] focus-visible:outline-none rounded-sm uppercase"
                 >
                     {orgName}
                 </Link>
 
-                <nav className="hidden md:flex items-center gap-8 text-sm text-gray-700">
-                    <Link
-                        href={`/${orgSlug}/catalog`}
-                        className="hover:text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-sm"
-                    >
-                        Catalog
-                    </Link>
-                    <Link
-                        href={`/${orgSlug}/wholesale`}
-                        className="hover:text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none rounded-sm"
-                    >
-                        Wholesale
-                    </Link>
-                </nav>
+                {!isHome && (
+                    <div className="flex items-center gap-6">
+                        <nav className="hidden md:flex items-center gap-9 text-sm text-[#f7f5f0]/58">
+                            <Link
+                                href={`/${orgSlug}/catalog`}
+                                className="transition-colors duration-300 hover:text-[#f7f5f0] focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030817] focus-visible:outline-none rounded-sm"
+                            >
+                                Catalog
+                            </Link>
+                            <Link
+                                href={`/${orgSlug}/wholesale`}
+                                className="transition-colors duration-300 hover:text-[#f7f5f0] focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030817] focus-visible:outline-none rounded-sm"
+                            >
+                                Wholesale
+                            </Link>
+                        </nav>
 
-                <RequestFloatingButton />
+                        <RequestFloatingButton />
+                    </div>
+                )}
             </div>
         </header>
     )

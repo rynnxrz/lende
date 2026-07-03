@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { createServiceClient } from '@/lib/supabase/server'
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { createServiceClient } from "@/lib/supabase/server"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata({
     params,
@@ -12,10 +12,11 @@ export async function generateMetadata({
     const { slug } = await params
     const supabase = createServiceClient()
     const { data: org } = await supabase
-        .from('organizations')
-        .select('name')
-        .eq('slug', slug.toLowerCase())
+        .from("organizations")
+        .select("name")
+        .eq("slug", slug.toLowerCase())
         .maybeSingle()
+
     return { title: org?.name ?? slug }
 }
 
@@ -29,83 +30,55 @@ export default async function OrgHomePage({
 
     const supabase = createServiceClient()
     const { data: org } = await supabase
-        .from('organizations')
-        .select('id, slug, name')
-        .eq('slug', orgSlug)
+        .from("organizations")
+        .select("id, slug, name")
+        .eq("slug", orgSlug)
         .maybeSingle()
+
     if (!org) notFound()
 
-    const { data: lookbooks } = await supabase
-        .from('pdf_lookbooks')
-        .select('id, slug, title')
-        .eq('organization_id', org.id)
-        .eq('published', true)
-        .eq('editor_status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(6)
-
-    const cards = [
+    const entries = [
         {
-            title: 'Catalog',
-            description: 'Browse the full inventory and request rentals.',
+            title: "Rental",
+            description: "Current collection",
             href: `/${org.slug}/catalog`,
         },
         {
-            title: 'Wholesale',
-            description: 'Trade pricing for authorized partners.',
+            title: "Wholesale",
+            description: "For partners",
             href: `/${org.slug}/wholesale`,
+        },
+        {
+            title: "Archive",
+            description: "Past collection",
+            href: `/${org.slug}/archive`,
         },
     ]
 
     return (
-        <main id="main-content" tabIndex={-1} className="min-h-screen bg-white">
-            <section className="max-w-[1600px] mx-auto px-4 sm:px-8 py-16 sm:py-24 text-center">
-                <h1 className="text-3xl sm:text-5xl font-light tracking-wide text-gray-900">
-                    {org.name}
-                </h1>
-                <p className="mt-4 text-sm sm:text-base text-gray-500 max-w-xl mx-auto">
-                    Fine jewelry rental and wholesale, curated by {org.name}.
-                </p>
-            </section>
+        <main
+            id="main-content"
+            tabIndex={-1}
+            className="min-h-screen bg-background flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border"
+        >
+            <h1 className="sr-only">{org.name}</h1>
 
-            <section className="max-w-[1200px] mx-auto px-4 sm:px-8 pb-24">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {cards.map((card) => (
-                        <Link
-                            key={card.href}
-                            href={card.href}
-                            className="group block p-8 sm:p-12 border border-gray-100 rounded-md hover:border-gray-300 transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
-                        >
-                            <h2 className="text-xl font-medium tracking-wide text-gray-900 group-hover:text-gray-700 transition-colors">
-                                {card.title}
-                            </h2>
-                            <p className="mt-3 text-sm text-gray-500">
-                                {card.description}
-                            </p>
-                        </Link>
-                    ))}
-                </div>
-
-                {lookbooks && lookbooks.length > 0 && (
-                    <div className="mt-16">
-                        <h2 className="text-sm uppercase tracking-[0.18em] text-gray-500 mb-6">
-                            Lookbooks
+            {entries.map((entry) => (
+                <Link
+                    key={entry.href}
+                    href={entry.href}
+                    className="group relative flex flex-1 items-center justify-center min-h-[33vh] md:min-h-screen hover:bg-muted/50 transition-colors duration-500"
+                >
+                    <div className="text-center px-8">
+                        <h2 className="text-3xl md:text-4xl font-light tracking-[0.2em] text-foreground mb-4 group-hover:scale-110 transition-transform duration-500">
+                            {entry.title.toUpperCase()}
                         </h2>
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {lookbooks.map((lb) => (
-                                <li key={lb.id}>
-                                    <Link
-                                        href={`/${org.slug}/lookbook/${lb.slug ?? lb.id}`}
-                                        className="block px-4 py-3 border border-gray-100 rounded-md hover:border-gray-300 transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
-                                    >
-                                        <span className="text-sm text-gray-900">{lb.title}</span>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
+                        <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-500 delay-100">
+                            {entry.description}
+                        </p>
                     </div>
-                )}
-            </section>
+                </Link>
+            ))}
         </main>
     )
 }

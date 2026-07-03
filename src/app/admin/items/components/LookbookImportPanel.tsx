@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ItemForm } from '@/components/admin/ItemForm'
+import { ProductImage } from '@/components/catalog/ProductImage'
 import type {
     DocumentStructureMap,
     ItemLineType,
@@ -859,67 +860,114 @@ export function LookbookImportPanel({
             </div>
 
             <Dialog open={Boolean(editingItem)} onOpenChange={(open) => !open && setEditingItem(null)}>
-                <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
+                <DialogContent className="max-w-6xl overflow-y-auto max-h-[90vh]">
                     <DialogHeader>
                         <DialogTitle>Edit Draft Item</DialogTitle>
                     </DialogHeader>
 
                     {editingItem && (
-                        <ItemForm
-                            mode="edit"
-                            isStaging
-                            item={undefined}
-                            initialData={{
-                                sku: editingItem.sku || '',
-                                name: editingItem.name || '',
-                                description: editingItem.description || '',
-                                line_type: editingItem.line_type as ItemLineType,
-                                character_family: editingItem.character_family,
-                                category_id: editingItem.category_id || '',
-                                collection_id: editingItem.collection_id || '',
-                                material: editingItem.material || '',
-                                weight: editingItem.weight || '',
-                                color: editingItem.color || '',
-                                rental_price: editingItem.rental_price || 0,
-                                replacement_cost: editingItem.replacement_cost || 0,
-                                status: 'active',
-                                image_paths: editingItem.image_urls || [],
-                            }}
-                            categories={categories}
-                            collections={collections}
-                            onCancel={() => setEditingItem(null)}
-                            onSubmitOverride={async (data) => {
-                                const result = await updateLookbookDraftItemAction({
-                                    itemId: editingItem.id,
-                                    updates: {
-                                        sku: data.sku,
-                                        name: data.name,
-                                        description: data.description || null,
-                                        line_type: data.line_type,
-                                        character_family: data.character_family,
-                                        category_id: data.category_id || null,
-                                        collection_id: data.collection_id || null,
-                                        material: data.material || null,
-                                        weight: data.weight || null,
-                                        color: data.color || null,
-                                        rental_price: data.rental_price,
-                                        replacement_cost: data.replacement_cost,
-                                        image_urls: data.image_paths,
-                                    },
-                                    reason: 'manual_item_edit',
-                                })
+                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                            <div>
+                                <ItemForm
+                                    mode="edit"
+                                    isStaging
+                                    item={undefined}
+                                    initialData={{
+                                        sku: editingItem.sku || '',
+                                        name: editingItem.name || '',
+                                        description: editingItem.description || '',
+                                        line_type: editingItem.line_type as ItemLineType,
+                                        character_family: editingItem.character_family,
+                                        category_id: editingItem.category_id || '',
+                                        collection_id: editingItem.collection_id || '',
+                                        material: editingItem.material || '',
+                                        weight: editingItem.weight || '',
+                                        color: editingItem.color || '',
+                                        rental_price: editingItem.rental_price || 0,
+                                        replacement_cost: editingItem.replacement_cost || 0,
+                                        status: 'active',
+                                        image_paths: editingItem.image_urls || [],
+                                    }}
+                                    categories={categories}
+                                    collections={collections}
+                                    onCancel={() => setEditingItem(null)}
+                                    onSubmitOverride={async (data) => {
+                                        const result = await updateLookbookDraftItemAction({
+                                            itemId: editingItem.id,
+                                            updates: {
+                                                sku: data.sku,
+                                                name: data.name,
+                                                description: data.description || null,
+                                                line_type: data.line_type,
+                                                character_family: data.character_family,
+                                                category_id: data.category_id || null,
+                                                collection_id: data.collection_id || null,
+                                                material: data.material || null,
+                                                weight: data.weight || null,
+                                                color: data.color || null,
+                                                rental_price: data.rental_price,
+                                                replacement_cost: data.replacement_cost,
+                                                image_urls: data.image_paths,
+                                            },
+                                            reason: 'manual_item_edit',
+                                        })
 
-                                if (!result.success) {
-                                    return { success: false, error: result.error || 'Could not save draft item' }
-                                }
+                                        if (!result.success) {
+                                            return { success: false, error: result.error || 'Could not save draft item' }
+                                        }
 
-                                if (selectedSessionId) {
-                                    await refreshSession(selectedSessionId)
-                                }
-                                setEditingItem(null)
-                                return { success: true }
-                            }}
-                        />
+                                        if (selectedSessionId) {
+                                            await refreshSession(selectedSessionId)
+                                        }
+                                        setEditingItem(null)
+                                        return { success: true }
+                                    }}
+                                />
+                            </div>
+
+                            <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4">
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
+                                        Future live DB
+                                    </p>
+                                    <h3 className="mt-1 text-base font-semibold text-foreground">
+                                        {editingItem.sku || editingItem.name || 'Draft item'}
+                                    </h3>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        This is the inventory record that will be created or updated when you commit the import.
+                                    </p>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-card p-2">
+                                    <ProductImage
+                                        src={editingItem.image_urls?.[0] ?? null}
+                                        alt={editingItem.name || editingItem.sku || 'Draft item image'}
+                                        className="h-56 w-full rounded-lg bg-white p-2"
+                                    />
+                                </div>
+
+                                <dl className="space-y-2 text-xs">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <dt className="text-muted-foreground">SKU</dt>
+                                        <dd className="truncate text-right text-foreground">{editingItem.sku || '—'}</dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <dt className="text-muted-foreground">Name</dt>
+                                        <dd className="truncate text-right text-foreground">{editingItem.name || '—'}</dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <dt className="text-muted-foreground">Category</dt>
+                                        <dd className="truncate text-right text-foreground">{editingItem.category_id || '—'}</dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <dt className="text-muted-foreground">Images</dt>
+                                        <dd className="text-right text-foreground">
+                                            {editingItem.image_urls?.length ? `${editingItem.image_urls.length} image${editingItem.image_urls.length === 1 ? '' : 's'}` : 'No images yet'}
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        </div>
                     )}
                 </DialogContent>
             </Dialog>

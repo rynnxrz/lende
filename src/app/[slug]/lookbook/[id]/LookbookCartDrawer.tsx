@@ -128,7 +128,7 @@ export function LookbookCartDrawer({ open, onOpenChange, organizationId, lookboo
                                                 </div>
                                                 {item.rentalPrice != null && (
                                                     <p className="shrink-0 text-sm font-semibold tabular-nums text-slate-700">
-                                                        ${item.rentalPrice}
+                                                        £{item.rentalPrice.toFixed(2)}
                                                     </p>
                                                 )}
                                                 <button
@@ -251,7 +251,7 @@ export function LookbookCartDrawer({ open, onOpenChange, organizationId, lookboo
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={isPending}
-                                    className="w-full bg-emerald-700 text-white hover:bg-emerald-800"
+                                    className="w-full bg-[#161513] text-[#f7f5f0] uppercase tracking-[0.18em] text-[11px] font-medium hover:bg-black"
                                 >
                                     {isPending ? 'Submitting...' : 'Submit Request'}
                                 </Button>
@@ -302,7 +302,7 @@ function ShoppingBag(props: React.ComponentProps<'svg'>) {
 function SuccessState({ onClose, itemCount }: { onClose: () => void; itemCount: number }) {
     return (
         <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-            <CheckCircle2 className="mb-4 size-12 text-emerald-600" />
+            <CheckCircle2 className="mb-4 size-12 text-[#161513]" strokeWidth={1.25} />
             <h3 className="text-lg font-semibold text-slate-900">Request Submitted</h3>
             <p className="mt-2 text-sm text-slate-500">
                 We&apos;ve received your request for {itemCount}{' '}

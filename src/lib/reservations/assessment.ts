@@ -16,6 +16,7 @@ const LATE_RETURN_REGEX = /\b(late|delay|overdue)\b/i
 
 export type ReservationAssessmentRow = {
     id: string
+    organization_id?: string | null
     group_id?: string | null
     renter_id?: string | null
     item_id: string
@@ -48,6 +49,7 @@ export type ReservationAssessmentRow = {
 
 export type ReservationGroupAssessment = {
     groupKey: string
+    organizationId: string | null
     primaryReservationId: string
     renterId: string | null
     statusSnapshot: string
@@ -169,6 +171,17 @@ async function fetchNeighboringReservations(group: ReservationAssessmentRow[], b
     return ((data || []) as Array<Record<string, unknown>>).filter(row => !currentIds.has(String(row.id)))
 }
 
+async function fetchReservationOrganizationId(reservationId: string) {
+    const supabase = createServiceClient()
+    const { data } = await supabase
+        .from('reservations')
+        .select('organization_id')
+        .eq('id', reservationId)
+        .maybeSingle()
+
+    return typeof data?.organization_id === 'string' ? data.organization_id : null
+}
+
 export async function fetchTurnaroundBuffer() {
     const supabase = createServiceClient()
     const { data } = await supabase
@@ -185,6 +198,7 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
     if (!primary) return null
 
     const groupKey = buildReservationGroupKey(primary)
+    const organizationId = primary.organization_id || await fetchReservationOrganizationId(primary.id)
     const today = new Date()
     const requestNotes = parseRequestNotes(primary.dispatch_notes)
     const totalRental = group.reduce((sum, row) => sum + Number(row.items?.rental_price || 0), 0)
@@ -314,6 +328,7 @@ export async function deriveReservationGroupAssessment(group: ReservationAssessm
 
     const assessment: ReservationGroupAssessment = {
         groupKey,
+        organizationId,
         primaryReservationId: primary.id,
         renterId: primary.renter_id || null,
         statusSnapshot: normalizeLegacyReservationStatus(primary.status),
@@ -351,6 +366,7 @@ export async function upsertReservationGroupAssessment(assessment: ReservationGr
         .from('reservation_group_assessments')
         .upsert({
             group_key: assessment.groupKey,
+            organization_id: assessment.organizationId,
             primary_reservation_id: assessment.primaryReservationId,
             renter_id: assessment.renterId,
             status_snapshot: assessment.statusSnapshot,
@@ -388,6 +404,7 @@ export async function fetchReservationGroupAssessments(groupKeys: string[]) {
     for (const row of (data || []) as Array<Record<string, unknown>>) {
         map.set(String(row.group_key), {
             groupKey: String(row.group_key),
+            organizationId: typeof row.organization_id === 'string' ? row.organization_id : null,
             primaryReservationId: String(row.primary_reservation_id),
             renterId: typeof row.renter_id === 'string' ? row.renter_id : null,
             statusSnapshot: String(row.status_snapshot || RESERVATION_STATUSES.PENDING_REQUEST),

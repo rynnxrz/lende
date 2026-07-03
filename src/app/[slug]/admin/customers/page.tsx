@@ -31,7 +31,7 @@ export default async function OrgCustomersPage({
         created_at: string
     }
 
-    let customers: CustomerProfile[] = []
+    const customers: CustomerProfile[] = []
     let error: { message: string } | null = null
 
     if (orgId) {

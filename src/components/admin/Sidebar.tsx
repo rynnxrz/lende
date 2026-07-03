@@ -13,7 +13,8 @@ import {
     LogOut,
     Menu, // Import Menu icon
     FileText, // Invoice icon
-    Images // Lookbook icon
+    Images, // Lookbook icon
+    ExternalLink
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -76,6 +77,7 @@ export const Sidebar = ({
 
     const basePath = currentOrg ? `/${currentOrg.slug}/admin` : '/admin'
     const settingsHref = `${basePath}/settings`
+    const storefrontHref = currentOrg ? `/${currentOrg.slug}` : null
     const navItems = navSuffixes.map((s) => ({
         href: `${basePath}${s.suffix}`,
         label: s.label,
@@ -179,7 +181,7 @@ export const Sidebar = ({
                             <Menu className="h-5 w-5 text-foreground" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-64 p-0 bg-muted/50 border-r-border">
+                    <SheetContent side="left" className="w-64 p-0 bg-background border-r-border">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         <div className="flex h-full flex-col">
                             <div className="border-b border-border bg-card py-3">
@@ -189,6 +191,19 @@ export const Sidebar = ({
                             {renderNavItems(true, closeMobileMenu)}
 
                             <div className="p-4 border-t border-border bg-card space-y-1">
+                                {storefrontHref && (
+                                    <Link
+                                        href={storefrontHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={closeMobileMenu}
+                                        className="flex w-full items-center rounded-lg py-2 px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground gap-3"
+                                    >
+                                        <ExternalLink className="h-5 w-5" />
+                                        <span>View Storefront</span>
+                                    </Link>
+                                )}
+
                                 <Link
                                     href={settingsHref}
                                     onClick={closeMobileMenu}
@@ -215,7 +230,7 @@ export const Sidebar = ({
             {/* --- DESKTOP SIDEBAR (Drawer Animation) --- */}
             <aside
                 className={cn(
-                    'hidden md:flex fixed left-0 top-0 h-screen flex-col border-r border-border bg-muted/50/95 backdrop-blur-sm z-40 overflow-hidden',
+                    'hidden md:flex fixed left-0 top-0 h-screen flex-col border-r border-border bg-background z-40 overflow-hidden shadow-sm',
                     'transition-[width] duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
                     isExpanded ? 'w-60' : 'w-16'
                 )}
@@ -270,6 +285,28 @@ export const Sidebar = ({
 
                 {/* Footer Controls */}
                 <div className="py-2" style={{ width: '240px' }}>
+                    {storefrontHref && (
+                        <Link
+                            href={storefrontHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={!isExpanded ? 'View Storefront' : undefined}
+                            className="flex items-center mx-2 rounded-lg py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                            <div className="flex items-center justify-center w-12 flex-shrink-0">
+                                <ExternalLink className="h-5 w-5" />
+                            </div>
+                            <span
+                                className={cn(
+                                    "whitespace-nowrap transition-opacity",
+                                    isExpanded ? "opacity-100 delay-200" : "opacity-0"
+                                )}
+                            >
+                                View Storefront
+                            </span>
+                        </Link>
+                    )}
+
                     <Link
                         href={settingsHref}
                         title={!isExpanded ? 'Settings' : undefined}

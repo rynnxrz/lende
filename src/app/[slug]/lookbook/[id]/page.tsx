@@ -90,6 +90,7 @@ export default async function LookbookPage({
     return (
         <div className="min-h-screen bg-slate-950 text-white">
             <LookbookViewer
+                orgSlug={orgSlug}
                 orgName={org.name}
                 organizationId={org.id}
                 lookbookId={lookbook.id}

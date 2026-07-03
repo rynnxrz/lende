@@ -361,7 +361,7 @@ export async function runItemTaxonomyBackfill() {
 
 export async function uploadItemImage(formData: FormData) {
     await requireAdmin()
-    const supabase = await createClient()
+    const supabase = createServiceClient()
 
     const file = formData.get('file') as File
     if (!file) {
