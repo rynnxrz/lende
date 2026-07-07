@@ -51,7 +51,7 @@
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
     "nextjs-toploader": "^3.9.17",
-    "pdfjs-dist": "^5.5.207",
+    "pdfjs-dist": "5.5.207",
     "playwright": "^1.59.1",
     "react": "19.2.3",
     "react-day-picker": "^8.10.1",
