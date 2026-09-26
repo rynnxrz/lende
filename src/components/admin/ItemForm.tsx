@@ -125,6 +125,10 @@ export const ItemForm = ({
     // Local state for categories/collections to support immediate UI updates after quick add
     const [categories, setCategories] = useState(initialCategories)
     const [collections, setCollections] = useState(initialCollections)
+    const [isAddingCollection, setIsAddingCollection] = useState(false)
+    const [newCollectionName, setNewCollectionName] = useState('')
+    const [isCreatingCollection, setIsCreatingCollection] = useState(false)
+    const [collectionError, setCollectionError] = useState<string | null>(null)
     const initialCharacterFamily = initialData?.character_family ?? item?.character_family ?? ''
     const defaultCharacterFamily = OFFICIAL_CHARACTERS.includes(initialCharacterFamily as typeof OFFICIAL_CHARACTERS[number])
         ? initialCharacterFamily
@@ -191,16 +195,26 @@ export const ItemForm = ({
     }
 
     const handleQuickAddCollection = async () => {
-        const name = prompt("Enter new website collection name:")
-        if (!name) return
+        const name = newCollectionName.trim()
+        if (!name || isCreatingCollection) return
 
-        const result = await createCollection(name)
-        if (result.success && result.data) {
-            setCollections([...collections, result.data])
-            setValue('collection_id', result.data.id)
-            toast.success(`Website collection "${name}" created`)
-        } else {
-            toast.error("Failed to create website collection")
+        setIsCreatingCollection(true)
+        setCollectionError(null)
+        try {
+            const result = await createCollection(name)
+            if (!result.success || !result.data) {
+                setCollectionError(result.error || 'Failed to create website collection. Please try again.')
+                return
+            }
+            setCollections(current => [...current, result.data])
+            setValue('collection_id', result.data.id, { shouldDirty: true })
+            setIsAddingCollection(false)
+            setNewCollectionName('')
+            toast.success(`Website collection "${result.data.name}" created`)
+        } catch {
+            setCollectionError('Unable to create website collection. Please try again.')
+        } finally {
+            setIsCreatingCollection(false)
         }
     }
 
@@ -610,7 +624,7 @@ export const ItemForm = ({
                                     value={watch('collection_id') || "none"}
                                     onValueChange={(value) => setValue('collection_id', value === "none" ? "" : value)}
                                 >
-                                    <SelectTrigger className="flex-1">
+                                    <SelectTrigger id="collection_id" className="flex-1">
                                         <SelectValue placeholder="Select Website Collection" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -620,10 +634,53 @@ export const ItemForm = ({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <Button type="button" variant="outline" size="icon" onClick={handleQuickAddCollection} title="Quick Add Website Collection">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => { setIsAddingCollection(true); setCollectionError(null) }}
+                                    title="Quick Add Website Collection"
+                                    aria-label="Quick Add Website Collection"
+                                    aria-expanded={isAddingCollection}
+                                    aria-controls="quick-add-collection"
+                                    disabled={isCreatingCollection}
+                                >
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
+                            {isAddingCollection && (
+                                <div id="quick-add-collection" className="space-y-2 rounded-md border p-3">
+                                    <Label htmlFor="new-collection-name">New website collection name</Label>
+                                    <Input
+                                        id="new-collection-name"
+                                        autoFocus
+                                        value={newCollectionName}
+                                        onChange={event => setNewCollectionName(event.target.value)}
+                                        disabled={isCreatingCollection}
+                                        aria-invalid={!!collectionError}
+                                        aria-describedby={collectionError ? 'collection-error' : undefined}
+                                        onKeyDown={event => {
+                                            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                                                event.preventDefault()
+                                                event.stopPropagation()
+                                                void handleQuickAddCollection()
+                                            }
+                                        }}
+                                    />
+                                    {collectionError && <p id="collection-error" role="alert" className="text-sm text-destructive">{collectionError}</p>}
+                                    <div className="flex gap-2">
+                                        <Button type="button" onClick={handleQuickAddCollection} disabled={!newCollectionName.trim() || isCreatingCollection}>
+                                            {isCreatingCollection && <Loader2 className="h-4 w-4 animate-spin" />}
+                                            {isCreatingCollection ? 'Adding...' : 'Add Collection'}
+                                        </Button>
+                                        <Button type="button" variant="outline" disabled={isCreatingCollection} onClick={() => {
+                                            setIsAddingCollection(false)
+                                            setNewCollectionName('')
+                                            setCollectionError(null)
+                                        }}>Cancel</Button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-2">

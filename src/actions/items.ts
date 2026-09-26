@@ -408,13 +408,26 @@ export async function createCategory(name: string) {
 }
 
 export async function createCollection(name: string) {
-    await requireAdmin()
-    const supabase = createServiceClient()
+    name = name.trim()
+    if (!name) {
+        return { success: false, error: 'Website collection name is required.', data: null }
+    }
+
+    // Keep the user's session so collection writes enforce workspace admin RLS.
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        return { success: false, error: 'Please log in to create a website collection.', data: null }
+    }
+    const organizationId = user.app_metadata?.current_org_id
+    if (typeof organizationId !== 'string' || !organizationId) {
+        return { success: false, error: 'Please select a workspace before creating a website collection.', data: null }
+    }
     const slug = slugify(name, 'collection')
 
     const { data, error } = await supabase
         .from('collections')
-        .insert({ name, slug })
+        .insert({ name, slug, organization_id: organizationId })
         .select()
         .single()
 

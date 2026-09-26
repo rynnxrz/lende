@@ -47,16 +47,22 @@ export default function CatalogSetupManager({ categories, collections }: Catalog
     const [isDeleting, startDeleteTransition] = useTransition()
 
     const handleCreate = async (type: 'category' | 'collection') => {
-        if (!newItemName.trim()) return
+        if (!newItemName.trim() || isCreating) return
 
         const itemLabel = type === 'category' ? 'jewelry type' : 'website collection'
         setIsCreating(true)
         setError(null)
         try {
             if (type === 'category') {
-                await createCategory(newItemName)
+                await createCategory(newItemName.trim())
             } else {
-                await createCollection(newItemName)
+                const result = await createCollection(newItemName.trim())
+                if (!result.success) {
+                    const message = result.error || 'Could not add this website collection.'
+                    setError(message)
+                    toast.error(message)
+                    return
+                }
             }
             toast.success(`${itemLabel[0].toUpperCase()}${itemLabel.slice(1)} added`)
             setDialogOpen(null)
@@ -215,7 +221,12 @@ export default function CatalogSetupManager({ categories, collections }: Catalog
                                 Choose which website collections appear in the website filters.
                             </CardDescription>
                         </div>
-                        <Dialog open={dialogOpen === 'collection'} onOpenChange={(open) => setDialogOpen(open ? 'collection' : null)}>
+                        <Dialog open={dialogOpen === 'collection'} onOpenChange={(open) => {
+                            if (isCreating) return
+                            setDialogOpen(open ? 'collection' : null)
+                            setNewItemName('')
+                            setError(null)
+                        }}>
                             <DialogTrigger asChild>
                                 <Button size="sm" variant="outline" className="gap-2">
                                     <Plus className="h-4 w-4" />
@@ -234,11 +245,24 @@ export default function CatalogSetupManager({ categories, collections }: Catalog
                                         value={newItemName}
                                         onChange={(e) => setNewItemName(e.target.value)}
                                         placeholder="e.g., Summer 2024"
+                                        disabled={isCreating}
+                                        aria-invalid={!!error}
+                                        aria-describedby={error ? 'collection-create-error' : undefined}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                                                event.preventDefault()
+                                                void handleCreate('collection')
+                                            }
+                                        }}
                                     />
+                                    {error && <p id="collection-create-error" role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
                                 </div>
                                 <DialogFooter>
-                                    <Button variant="outline" onClick={() => setDialogOpen(null)}>Cancel</Button>
-                                    <Button onClick={() => handleCreate('collection')} disabled={isCreating}>Create</Button>
+                                    <Button type="button" variant="outline" disabled={isCreating} onClick={() => setDialogOpen(null)}>Cancel</Button>
+                                    <Button type="button" onClick={() => handleCreate('collection')} disabled={isCreating || !newItemName.trim()}>
+                                        {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
+                                        {isCreating ? 'Creating...' : 'Create'}
+                                    </Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>

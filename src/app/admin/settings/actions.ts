@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createCollection as createItemCollection } from '@/actions/items'
 import { revalidateAdminPath } from '@/lib/revalidate-admin'
 import { healthCheckAiProvider, listAiModels } from '@/lib/ai/gateway'
 import { healthCheckDocumentProvider } from '@/lib/ai/document-gateway'
@@ -120,18 +121,9 @@ export async function createCategory(name: string) {
 }
 
 export async function createCollection(name: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const slug = slugify(name)
-    const { error } = await supabase
-        .from('collections')
-        .insert({ name, slug })
-
-    if (error) throw error
-    revalidateAdminPath('/settings')
-    return { success: true }
+    const result = await createItemCollection(name)
+    if (result.success) revalidateAdminPath('/settings')
+    return result
 }
 
 // ============================================================================
