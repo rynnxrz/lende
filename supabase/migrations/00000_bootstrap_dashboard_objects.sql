@@ -14,14 +14,17 @@
 -- is allowed. Default body is `SELECT false` to fail closed (RLS deny) in case
 -- migration apply is interrupted before the real bodies install.
 --
--- Safety on prod: prod schema_migrations does not yet have 00000. When this
--- file ships to prod via `supabase db push`, every CREATE OR REPLACE here is
--- harmless: prod functions are immediately overwritten by 00052/00054/00058
--- in the same migration run. End state identical.
+-- Only create missing functions. On an existing deployment, later migrations
+-- may already be recorded as applied and will NOT run again after 00000.
+-- Replacing existing helpers here would permanently disable admin writes.
 -- ============================================================
 
 -- 1. is_org_admin() — first formally CREATE'd in 00052_multi_tenant_orgs.sql
-CREATE OR REPLACE FUNCTION is_org_admin()
+DO $bootstrap$
+BEGIN
+IF to_regprocedure('public.is_org_admin()') IS NULL THEN
+EXECUTE $definition$
+CREATE FUNCTION public.is_org_admin()
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
@@ -30,10 +33,18 @@ SET search_path = public
 AS $$
   SELECT false
 $$;
+$definition$;
+END IF;
+END;
+$bootstrap$;
 
 -- 2. is_admin() — first formally CREATE'd in 00054_jwt_org_claims.sql,
 --    re-codified as org-scoped shim in 00058
-CREATE OR REPLACE FUNCTION is_admin()
+DO $bootstrap$
+BEGIN
+IF to_regprocedure('public.is_admin()') IS NULL THEN
+EXECUTE $definition$
+CREATE FUNCTION public.is_admin()
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
@@ -42,6 +53,10 @@ SET search_path = public
 AS $$
   SELECT false
 $$;
+$definition$;
+END IF;
+END;
+$bootstrap$;
 
 -- Note: reservation_status ENUM is NOT stubbed here because 00039 unconditionally
 -- creates `reservation_status_new` then renames it to `reservation_status`.
